@@ -1,6 +1,6 @@
 # Spatial Prototype
 
-Status: local static Columbina preview integrated with passing SDK builds and 34 automated tests, including actual asset loading. User-reported device checks cover the earlier placeholder; character device appearance remains open. Updated: 2026-10-29.
+Status: local static Columbina preview integrated with passing SDK builds and 39 automated tests, including asset loading, opacity, and surface-sidedness checks. The user reported a preliminary headset visual pass after material corrections. Motion and measured performance remain open. Updated: 2026-10-30.
 
 ## Scope
 
@@ -80,7 +80,7 @@ Record each case as pass, fail, or unassessed, with reproduction steps for failu
 | First launch and placement | Controls become usable only with active tracking; the placeholder appears at the requested heading and offsets. |
 | Local character load | Status reports success and Columbina replaces the placeholder at the same placement, scale, and heading. |
 | Missing or invalid local model | Status reports failure; the placeholder remains usable and retry does not reset placement. |
-| Character visual review | Check the static pose, face, hair, eye covering, clothing, feet, texture completeness, and transparency from several angles. Record material differences and performance. |
+| Character visual review | Check the static pose, face, hair, eye covering, clothing, feet, texture completeness, and transparency from several angles. Inspect both sides of front and rear cloth panels. Record material differences and performance. |
 | Movement and head tilt | The placeholder remains at its world anchor rather than following head movement; its upright orientation is maintained. |
 | Scale and yaw | Changes are visible immediately while the anchor stays fixed. Next-placement settings do not move the current anchor. |
 | Repeated entry/exit | Scene and tracking restart without duplicate content or a stale visible placeholder. |
@@ -111,6 +111,12 @@ On 2026-10-29, the user reported testing the four delivered feature groups on a 
 
 This feedback predates the local Columbina integration. It is sufficient to proceed with the visual increment, but is not character appearance acceptance, an independently reproduced result, or a pass for every edge case. The headset system version, tested app revision, room conditions, repeat counts, measured drift, restoration timing, and specific stress cases were not supplied. Keep untested cases open and collect those details during later device sessions.
 
+Subsequent Columbina headset testing found view-dependent eye defects: correct rendering from above, white eye surfaces at eye level, and missing layers with exposed stars from below. The material export has been corrected and passes three-angle comparisons in macOS RealityKit. See the [eye-material correction](characters/columbina-model.md#eye-material-correction) for the diagnosis and local evidence.
+
+The user also reported that front cloth disappeared when viewed from behind, and rear cloth disappeared when viewed from the front. The loaded materials were culling their backfaces. The loader now restores the source's double-sided surfaces, retaining the single-sided shoes and existing opacity.
+
+On 2026-10-30, the user reported no obvious remaining visual issues in a preliminary naked-eye headset check. This is an initial static-appearance pass after the material corrections. The feedback does not establish animation quality or sustained performance; a detailed checklist and measured results were not supplied. Recheck material appearance as natural stance and motion are introduced.
+
 ## Automated verification
 
 The shared `Bina` scheme includes `BinaTests`. Geometry tests exercise heading, offsets, and invalid input; storage tests exercise metadata round-trips, corruption, schema handling, and clearing. Controller-state tests exercise open/close transitions, cancellation, metadata loading, and explicit reset with a fake store.
@@ -127,17 +133,23 @@ Verification recorded on 2026-10-26 with Xcode 27.1 (27A9275):
 
 The test report is `Bina-SpatialPrototype-Tests-2.xcresult`, generated in the local temporary directory. Automated cases do not start a live ARKit session or establish spatial stability. Pause/recenter/resume and unused-anchor cleanup still require the device checks above.
 
-Current character-integration verification recorded on 2026-10-29:
+Current character-integration verification recorded on 2026-10-30:
 
 | Check | Recorded result |
 | --- | --- |
-| Device and Simulator SDK builds | Passed; both built app bundles contain the 26,560,949-byte local character asset. The device build is not a headset run. |
-| visionOS Simulator 27.0 tests | 34 passed, zero failures, zero skips: the previous 27 cases plus six bounds-normalization cases and one actual bundled-asset load case. |
+| Device and Simulator SDK builds | Passed; both built app bundles contain the corrected 26,560,808-byte local character asset with the recorded SHA-256. The device build is not a headset run. |
+| visionOS Simulator 27.0 tests | 39 passed, zero failures, zero skips: the previous 27 cases plus six bounds-normalization cases, four actual bundled-asset cases, and two material-policy cases. |
 | Actual RealityKit asset loading | Passed with normalized 1.6-meter reference height, feet placement, centering, and nonempty geometry. |
 | ARKit USD validation | `usdchecker --arkit` passed. |
 | Authoring preview | Front render inspected; this is not a headset render or proof of exact material fidelity. |
+| Eye-material regression | The old export fails all six opaque eye/face assertions; the corrected export passes. Continuous eye-covering/hair transparency and effective shoe opacity are preserved. |
+| Surface-sidedness regression | The source's 25 double-sided PBR materials retain both faces; shoes retain back-face culling. Nested material configuration preserves opacity and other material types. |
+| macOS RealityKit visual comparison | Matching above/level/below views reproduce white eyes, stars, and exposed layers in the old export; both purple irises remain visible in the corrected export. |
+| Clothing visual comparison | Matching front/rear/oblique and isolated cloth views using the actual runtime helper restore missing backfaces. Three additional eye views preserve the earlier eye correction. These are macOS renders, not headset captures. |
 | Device Hub interaction | GUI discovery, opening, simulator start, and reading succeeded; app-content clicking was unavailable, so the interactive visual walkthrough is incomplete. |
-| Columbina on a physical headset | Not yet tested. Earlier user-reported spatial checks used the placeholder. |
+| Columbina on a physical headset | On 2026-10-30 the user reported no obvious visual issues after the corrections. Preliminary static-appearance pass; motion and measured performance remain open. |
+
+The current result bundle is `Bina-Cloth-Culling-Tests.xcresult` in the local temporary directory. The asset hash is unchanged by the runtime sidedness correction. Retained visual evidence is recorded in the [model intake](characters/columbina-model.md).
 
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 

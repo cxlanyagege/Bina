@@ -56,6 +56,7 @@ enum CharacterAsset {
             ?? bundle.url(forResource: "Columbina", withExtension: "usdz")
         guard let url else { throw CharacterAssetError.missingResource }
         let model = try await Entity(contentsOf: url)
+        configureMaterials(in: model)
         let normalized = Entity()
         normalized.name = "ColumbinaNormalized"
         let pivot = Entity()
@@ -74,5 +75,22 @@ enum CharacterAsset {
         pivot.position = normalization.translation
         normalized.scale = SIMD3(repeating: normalization.scale)
         return normalized
+    }
+
+    /// Restores this Columbina source's sidedness without changing its opacity.
+    static func configureMaterials(in entity: Entity) {
+        if var model = entity.components[ModelComponent.self] {
+            model.materials = model.materials.map { material in
+                guard var surface = material as? PhysicallyBasedMaterial else { return material }
+                // This export imports with back-face culling despite its doubleSided
+                // mesh. All source materials except shoes (19) require both sides.
+                surface.faceCulling = surface.name == "CharacterMaterial_19" ? .back : .none
+                return surface
+            }
+            entity.components.set(model)
+        }
+        for child in entity.children {
+            configureMaterials(in: child)
+        }
     }
 }

@@ -5,6 +5,7 @@ generated character artifacts remain local and must not be redistributed.
 """
 
 import argparse
+from array import array
 import importlib.util
 import json
 import math
@@ -47,6 +48,16 @@ def enable_importer(directory, working):
     return module
 
 
+def texture_alpha_range(image):
+    """Inspect effective alpha; Blender can expose four channels for RGB files."""
+    if image.alpha_mode == "NONE" or image.channels != 4:
+        return (1.0, 1.0)
+    pixels = array("f", [0.0]) * len(image.pixels)
+    image.pixels.foreach_get(pixels)
+    alpha = pixels[3::4]
+    return (min(alpha), max(alpha))
+
+
 def prepare_materials(directory):
     """Use portable preview-surface materials; MMD shaders are not USD shaders."""
     texture_directory = directory / "textures"
@@ -70,11 +81,16 @@ def prepare_materials(directory):
                 raise RuntimeError(f"Missing texture data: {image.filepath}")
             if image.name not in images:
                 destination = texture_directory / f"texture_{len(images):02d}.png"
-                images[image.name] = str(destination)
+                images[image.name] = {
+                    "path": str(destination),
+                    "alphaRange": texture_alpha_range(image),
+                }
                 image.filepath_raw = str(destination)
                 image.file_format = "PNG"
                 image.save()
-            record["texture"] = images[image.name]
+            image_record = images[image.name]
+            record["texture"] = image_record["path"]
+            record["textureAlphaRange"] = image_record["alphaRange"]
         nodes = material.node_tree.nodes
         nodes.clear()
         output = nodes.new("ShaderNodeOutputMaterial")
@@ -88,8 +104,12 @@ def prepare_materials(directory):
             texture = nodes.new("ShaderNodeTexImage")
             texture.image = image
             material.node_tree.links.new(texture.outputs["Color"], surface.inputs["Base Color"])
-            if image.channels == 4 and alpha > 0.99:
+            # An unnecessary opacity graph sends opaque eye layers through
+            # transparency sorting and can expose the geometry behind them.
+            if image_record["alphaRange"][0] < 1.0 and alpha > 0.99:
                 material.node_tree.links.new(texture.outputs["Alpha"], surface.inputs["Alpha"])
+                record["opacity"] = "texture"
+        record.setdefault("opacity", "opaque" if alpha == 1.0 else "constant")
         material.surface_render_method = "DITHERED"
         material.use_backface_culling = False
         materials.append(record)

@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: basic D1 spatial checks passed; local static-character conversion and integration have passing SDK builds and automated tests. Character device appearance and remaining M1 behavior are open. Last updated: 2026-10-29.
+Status: basic D1 spatial checks passed; local static-character conversion and integration have passing SDK builds and automated tests. The user reported a preliminary static-appearance pass on the headset. Natural stance, idle motion, and remaining M1 behavior are open. Last updated: 2026-10-30.
 
 ## Planning rules
 
@@ -26,9 +26,9 @@ Exit evidence: each immediate implementation dependency is either resolved or is
 
 The first placement/restoration experiment now has an implementation. It includes mixed-space entry and exit, a generated placeholder, manual heading-based placement, live scale/yaw controls, anchor-association persistence, recovery status, and explicit forgetting. Device and Simulator SDK builds pass, and 27 automated tests pass on visionOS Simulator 27.0. On 2026-10-29 the user reported that the four delivered feature groups worked on a physical headset. Detailed stress checks and measurements are not yet recorded. See the [spatial prototype guide](spatial-prototype.md#initial-device-feedback) for the scope of that feedback.
 
-The next character experiment now has a local USDZ conversion and asynchronous runtime-loading path. The export passed ARKit USD validation, its front authoring preview was inspected, and current Device/Simulator SDK builds pass. All 34 tests pass, including actual bundled RealityKit loading and six bounds-normalization tests. Headset appearance acceptance remains open. This is partial M1 progress: static source pose is the current scope, while idle motion, attention behavior, automatic floor placement, environmental occlusion, and broader companion behavior remain separate work.
+The next character experiment now has a local USDZ conversion and asynchronous runtime-loading path. The export passed ARKit USD validation, its front authoring preview was inspected, and current Device/Simulator SDK builds pass. All 39 tests pass, including actual bundled RealityKit loading, material regression checks, and six bounds-normalization tests. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. This is partial M1 progress: static source pose is the current scope, while idle motion, attention behavior, automatic floor placement, environmental occlusion, and broader companion behavior remain separate work.
 
-Current priority, following the user's 2026-10-29 request: see Columbina in the real room before adding conversation. First accept the static character's scale, orientation, textures, face, and clothing on device, then identify the next appearance or motion gap. Text conversation and the confirmed-preference lifecycle remain planned; they no longer precede this visual increment.
+Current priority, following the user's 2026-10-29 request: see Columbina in the real room before adding conversation. The preliminary static-appearance check now supports proposing natural stance and a minimal idle loop as the next increment. Text conversation and the confirmed-preference lifecycle remain planned; they no longer precede this visual increment.
 
 | Experiment | Success evidence | Important failure case |
 | --- | --- | --- |
@@ -55,6 +55,22 @@ Acceptance checks:
 - Coherent response to tracking loss and session suspension.
 - Restoration attempts use current anchor validity rather than remembered raw coordinates.
 - Character appearance and a small motion set pass the [asset checklist](character-assets.md).
+
+### Next increment: natural stance and minimal idle
+
+Status: proposed next development task; not implemented.
+
+First verify one reversible skeletal deformation on the delivered model and inspect eyelid controls independently. Rig and shape-key inventory alone do not prove runtime control. Use the skeletal result to prepare a relaxed standing pose with lowered arms and a restrained idle loop. A validated blink can join the loop if the available controls preserve the approved eye portrayal; unresolved facial control does not block the skeletal idle experiment.
+
+Acceptance checks:
+
+- Feet and world placement stay fixed while the upper body moves subtly.
+- Shoulders, elbows, sleeves, skirt, and cloak remain coherent through pose changes; intersections are recorded and corrected.
+- The loop has no visible jump, and pausing or leaving the immersive scene stops its updates cleanly.
+- Eye and cloth material corrections remain intact from several views.
+- A local preview control can pause the idle and return to the reference pose for comparison.
+
+The existing local source is sufficient to begin validation. If its rig or face controls prove inadequate, document the specific missing capability before requesting additional assets. The user supplies headset feedback on posture, motion amplitude, intersections, and comfort; precise device/build details and sustained performance measurements should accompany the next check. Bounded attention toward the user's head is the following increment after stance and idle are stable. Walking, sitting, cloth simulation, and conversation are separate tasks.
 
 ## M2: Conversation, personality, and minimum continuity
 
@@ -114,7 +130,7 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 ## Open inputs
 
 - Review feedback on the source-derived Columbina profile and which lore details need independent verification.
-- Device acceptance of the converted Columbina appearance, including material differences and static pose.
+- Natural standing posture, motion quality, and measured performance after the preliminary static-appearance pass.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
 - Device system version and near-term distribution intent.

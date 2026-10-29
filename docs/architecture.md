@@ -1,6 +1,6 @@
 # Architecture
 
-Status: proposed logical architecture with spatial placement and a local static-character loading path implemented. SDK builds and actual asset-load tests pass; character device appearance is unverified. Last updated: 2026-10-29.
+Status: proposed logical architecture with spatial placement and a local static-character loading path implemented. SDK builds and actual asset-load tests pass; the user reported a preliminary static-appearance pass on the headset. Character motion remains unimplemented. Last updated: 2026-10-30.
 
 ## Design intent
 
@@ -23,6 +23,8 @@ Scene inactivity, provider pauses, and device tracking loss invalidate cached an
 Only placement metadata persists across application launches. Appearance and placement-control values remain in the running model and reset after process restart. See the [prototype guide](spatial-prototype.md) for controls, limits, and validation status. Conversation, personal memory, emotional behavior, scene reconstruction, and reference-object tracking remain unimplemented.
 
 Character loading belongs to the app model independently of each immersive tracking run. It shares an in-flight load, replaces placeholder children only after a valid result, and surfaces missing-resource or load errors with an explicit retry. A repository clone without the ignored local USDZ therefore remains functional as a spatial placeholder build and does not claim that Columbina loaded. The current asset is static; runtime animation, facial expression control, voice, and physics are separate responsibilities still to implement. See [model intake](characters/columbina-model.md).
+
+`CharacterAsset.configureMaterials(in:)` applies the current Columbina asset's presentation contract after import and before attaching the model. It restores two-sided rendering for the source's thin surfaces, retains back-face culling for the single-sided shoe material, and preserves opacity and non-PBR materials. This source-specific material-name contract must be reviewed when replacing the model; it is not a rule for arbitrary future assets.
 
 ## Four responsibilities
 

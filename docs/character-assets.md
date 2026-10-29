@@ -1,7 +1,7 @@
 # Character Asset Specification
 
-Status: general asset contract proposed; one local Columbina static conversion and runtime-loading path implemented. USD validation, actual RealityKit loading, and SDK builds pass; device appearance remains unverified.
-Last reviewed: 2026-10-29.
+Status: general asset contract proposed; one local Columbina static conversion and runtime-loading path implemented. USD validation, actual RealityKit loading, material regressions, and SDK builds pass. The user reported no obvious visual issues in a preliminary headset check; motion and measured performance remain open.
+Last reviewed: 2026-10-30.
 
 ## Purpose and first candidate
 
@@ -16,7 +16,7 @@ The complete asset target should support stable placement, conversation, interru
 Walking, sitting on arbitrary furniture, and dynamic clothing simulation are later capabilities.
 A simple temporary rig may isolate technical problems during validation; it does not replace the intended first character.
 
-The current visual increment is narrower: show Columbina in the static source pose within the existing placement system. The export passed `usdchecker --arkit`, a front authoring preview was inspected, and a test loaded the actual bundled USDZ through RealityKit with verified normalized height, feet position, centering, and nonempty geometry. Device appearance remains open. The imported inventory includes one armature and 60 source shape keys; these counts do not establish working animation, facial control, or lip sync. Idle motion, hair/clothing physics, and expressive behavior are not implemented.
+The current visual increment is narrower: show Columbina in the static source pose within the existing placement system. The export passed `usdchecker --arkit`, a front authoring preview was inspected, and a test loaded the actual bundled USDZ through RealityKit with verified normalized height, feet position, centering, and nonempty geometry. After eye and clothing material corrections, the user reported no obvious visual issues during a preliminary headset check on 2026-10-30. This is subjective static-appearance evidence; motion quality and measured performance remain open. The imported inventory includes one armature and 60 source shape keys; these counts do not establish working animation, facial control, or lip sync. Idle motion, hair/clothing physics, and expressive behavior are not implemented.
 
 ## Terms used in this document
 
@@ -135,6 +135,8 @@ Expression requests describe visible performance, not evidence of an internal em
 
 Treat the original look as a visual reference, not a transferable shader implementation.
 The static conversion uses portable Principled/USD Preview Surface materials. Original toon and sphere shading are not retained, so the result is an approximation requiring RealityKit and headset review. A missing shared `toon01.bmp` warning occurred during import; that shared toon reference is not used after material adaptation.
+Only connect texture opacity when the effective texture alpha contains transparency. Blender may expose four pixel channels for an RGB file; channel count alone can incorrectly classify opaque eye layers as transparent. Preserve intentional continuous opacity rather than applying a blanket cutout threshold. See the [Columbina eye-material correction](characters/columbina-model.md#eye-material-correction) for the source-specific evidence and regression checks.
+Verify backfaces in RealityKit as well as in the authoring tool. The current Columbina export has a double-sided mesh but imports with PBR back-face culling. Its loader explicitly restores the source's 25 double-sided materials while keeping shoes single-sided, without changing transparency or duplicating geometry. Review this source-specific contract when changing the asset.
 Blender's USD exporter approximates supported materials; arbitrary authoring node graphs are not guaranteed to survive.
 Build a small face/hair/clothing material test before polishing the full character.
 [ShaderGraphMaterial](https://developer.apple.com/documentation/realitykit/shadergraphmaterial) is a candidate for reauthoring supported stylized effects.
@@ -161,5 +163,5 @@ supports the baseline controls, and meets the performance target agreed after me
 Retain screenshots or short recordings and a pass/fail checklist with the tested device, OS, app build, and export revision.
 Log unavailable channels and material differences explicitly; choose an adaptation or another asset before promising the capability.
 
-Open decisions: acceptance of the converted appearance, any alternate appearance variant, intended future distribution,
+Open decisions: any alternate appearance variant, intended future distribution,
 standing height, voice source, usable facial channels, and final visual/performance targets. The currently inspected package and tool versions are recorded; wider usage permission is not inferred.

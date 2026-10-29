@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: local Columbina static-preview integration has passing SDK builds and 34 automated tests, including actual asset loading. Character appearance on a headset remains unverified. Last updated: 2026-10-29.
+Status: local Columbina static-preview integration has passing SDK builds and 39 automated tests. The user reported a preliminary headset visual pass after material corrections. Natural stance, idle motion, and measured performance remain open. Last updated: 2026-10-30.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 

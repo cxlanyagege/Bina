@@ -6,9 +6,9 @@ The first character is **Columbina from Genshin Impact**, retaining her characte
 
 ## Project status
 
-The spatial prototype supports mixed immersive entry, manual character placement, saved-world-anchor restoration, recovery, and explicit forgetting. Current Device and Simulator SDK builds pass, and 34 automated tests pass on visionOS Simulator 27.0. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character integration. See the [device feedback](docs/spatial-prototype.md#initial-device-feedback) and [verification record](docs/spatial-prototype.md#automated-verification).
+The spatial prototype supports mixed immersive entry, manual character placement, saved-world-anchor restoration, recovery, and explicit forgetting. Current Device and Simulator SDK builds pass, and 39 automated tests pass on visionOS Simulator 27.0. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character integration. See the [device feedback](docs/spatial-prototype.md#initial-device-feedback) and [verification record](docs/spatial-prototype.md#automated-verification).
 
-The current increment replaces the placeholder with the locally converted Columbina asset after asynchronous loading. USDZ validation, an authoring preview, and a test loading the actual bundled asset through RealityKit passed. The new character's appearance and performance have not yet been tested on a headset.
+The current increment replaces the placeholder with the locally converted Columbina asset after asynchronous loading. Headset testing identified angle-dependent eye rendering and missing clothing backfaces. The corrected export and runtime material policy pass USDZ validation, regression tests, and macOS RealityKit comparisons. On 2026-10-30 the user reported no obvious remaining visual issues in a preliminary headset inspection. Motion validation and sustained performance remain open; see the [model intake](docs/characters/columbina-model.md).
 
 Automatic ground detection, environment occlusion, idle animation, voice, conversation, personal memory, and emotional behavior remain unimplemented. M1 is partially implemented, not complete.
 
