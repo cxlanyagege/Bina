@@ -1,18 +1,20 @@
 # Documentation Guide
 
-Status: planning baseline. Last updated: 2026-10-19.
+Status: local Columbina static-preview integration has passing SDK builds and 34 automated tests, including actual asset loading. Character appearance on a headset remains unverified. Last updated: 2026-10-29.
 
-These documents organize decisions before feature implementation. They describe intended behavior, not capabilities already present in the application.
+These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
 ## Reading order
 
 | Document | Purpose |
 | --- | --- |
 | [Product vision](product-vision.md) | Understand the companion, confirmed character direction, and first complete experience. |
+| [Spatial prototype](spatial-prototype.md) | Run the first D1 experiment and record actual device results. |
 | [Columbina character profile](characters/columbina.md) | Review the adaptation of the supplied identity and personality files. |
 | [Columbina evaluations](characters/columbina-evaluation.md) | Assess personality fidelity through observable scenarios. |
 | [Platform capabilities](platform-capabilities.md) | Distinguish available sensing from approval-dependent or unsupported assumptions. |
 | [Character assets](character-assets.md) | Evaluate a Columbina model and prepare a usable character asset. |
+| [Columbina model intake](characters/columbina-model.md) | Reproduce the local static conversion and understand source and redistribution boundaries. |
 | [Memory and emotion](memory-and-emotion.md) | Define what the character remembers and how personality and emotion remain coherent. |
 | [Architecture](architecture.md) | Follow information from observation through behavior to visible and audible results. |
 | [Milestones](milestones.md) | Choose the next experiment and determine whether its result is sufficient. |
@@ -23,7 +25,7 @@ These documents organize decisions before feature implementation. They describe 
 - **Proposed**: a recommended design that still needs implementation evidence or product refinement.
 - **Open**: information or a choice still needed for dependent work.
 - **Verified platform fact**: behavior supported by a linked official source, with a review date.
-- **Implemented**: behavior present in code and verified through a recorded check. No planned feature currently has this status.
+- **Implemented**: behavior present in code. Record build, automated-test, and device evidence separately; implementation alone does not establish device acceptance.
 
 An available API is not evidence that Bina has implemented a feature. A successful experiment is not a guarantee of performance in every room, network, or device condition.
 

@@ -1,10 +1,28 @@
 # Architecture
 
-Status: proposed logical architecture; no feature implementation. Last updated: 2026-10-19.
+Status: proposed logical architecture with spatial placement and a local static-character loading path implemented. SDK builds and actual asset-load tests pass; character device appearance is unverified. Last updated: 2026-10-29.
 
 ## Design intent
 
 Preserve the current native SwiftUI, RealityKit, and ARKit direction while validating the first complete experience. Separate responsibilities where they have different state, timing, or failure modes. These boundaries do not require separate packages, a plugin framework, or a general-purpose agent platform.
+
+## Current spatial implementation
+
+The first D1 experiment uses one app-owned `SpatialPrototype` observable model to coordinate the control window, mixed immersive scene, and an explicit ARKit world-tracking session. This is a focused spatial controller, not the future conversation or behavior system.
+
+- `SpatialPrototypeView` owns scene appearance, disappearance, and active-phase notifications. Each new tracking run creates fresh providers; teardown stops the session and cancels update tasks.
+- `SpatialPrototype` gates placement on active, running device tracking and displays the placeholder only while both device and selected world anchor are valid. Session-generation tokens reject obsolete asynchronous results; anchor identity filtering rejects replaced anchors.
+- `PlacementGeometry` computes an upright placement from the headset's horizontal heading, a user-selected distance, and a manual vertical offset. It does not detect the floor or perform a surface hit test.
+- `PlaceholderCharacter` provides simple geometry while the local character is loading or unavailable. `CharacterAsset` asynchronously loads the bundled Columbina USDZ and normalizes its visual bounds to a 1.6-meter reference using parent entities, preserving authored rig transforms. Scale and local yaw remain on the existing presentation hierarchy while the saved anchor stays unchanged.
+- `FilePlacementStore` atomically persists the selected anchor UUID, schema version, and creation date. World transforms are never cached as restoration authority. Invalid metadata is preserved until the user explicitly resets it.
+
+Replacement commits the new association before removing the old anchor. If adding or saving the replacement fails, the previous association remains selected. Cleanup errors are surfaced without selecting an obsolete anchor. The restoration wait changes explanatory text after eight seconds; it neither deletes the record nor prevents later recovery.
+
+Scene inactivity, provider pauses, and device tracking loss invalidate cached anchor observations. Resume uses current updates or a fresh snapshot guarded by session generation and observation revision. Reconciliation serially cleans unused app-owned anchors; this assumes the prototype is the sole owner of world anchors. Future anchor responsibilities must refine that ownership policy. Cleanup is blocked while saved metadata is unreadable, until explicit reset.
+
+Only placement metadata persists across application launches. Appearance and placement-control values remain in the running model and reset after process restart. See the [prototype guide](spatial-prototype.md) for controls, limits, and validation status. Conversation, personal memory, emotional behavior, scene reconstruction, and reference-object tracking remain unimplemented.
+
+Character loading belongs to the app model independently of each immersive tracking run. It shares an in-flight load, replaces placeholder children only after a valid result, and surfaces missing-resource or load errors with an explicit retry. A repository clone without the ignored local USDZ therefore remains functional as a spatial placeholder build and does not claim that Columbina loaded. The current asset is static; runtime animation, facial expression control, voice, and physics are separate responsibilities still to implement. See [model intake](characters/columbina-model.md).
 
 ## Four responsibilities
 

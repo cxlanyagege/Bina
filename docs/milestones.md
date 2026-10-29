@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: proposed implementation sequence; feature work has not started. Last updated: 2026-10-19.
+Status: basic D1 spatial checks passed; local static-character conversion and integration have passing SDK builds and automated tests. Character device appearance and remaining M1 behavior are open. Last updated: 2026-10-29.
 
 ## Planning rules
 
@@ -10,7 +10,7 @@ Use the user's Apple Vision Pro for spatial and character evaluation. Record mea
 
 ## D0: Documentation and source intake
 
-Current state: documentation drafted; persona source review and its design adaptation are complete. Model intake, device details, and character-profile review remain open. Runtime integration has not started.
+Current state: documentation drafted; persona source review and its design adaptation are complete. The user has initially reviewed the documents. A local model source and notice have been inspected and conversion completed. Headset version details remain open; runtime persona integration has not started.
 
 Deliverables:
 
@@ -23,6 +23,12 @@ Deliverables:
 Exit evidence: each immediate implementation dependency is either resolved or isolated behind a documented fallback. Documents distinguish confirmed choices from proposals. Source review does not imply runtime persona integration, independent canon verification, model availability, rights, or device results.
 
 ## D1: Independent feasibility experiments
+
+The first placement/restoration experiment now has an implementation. It includes mixed-space entry and exit, a generated placeholder, manual heading-based placement, live scale/yaw controls, anchor-association persistence, recovery status, and explicit forgetting. Device and Simulator SDK builds pass, and 27 automated tests pass on visionOS Simulator 27.0. On 2026-10-29 the user reported that the four delivered feature groups worked on a physical headset. Detailed stress checks and measurements are not yet recorded. See the [spatial prototype guide](spatial-prototype.md#initial-device-feedback) for the scope of that feedback.
+
+The next character experiment now has a local USDZ conversion and asynchronous runtime-loading path. The export passed ARKit USD validation, its front authoring preview was inspected, and current Device/Simulator SDK builds pass. All 34 tests pass, including actual bundled RealityKit loading and six bounds-normalization tests. Headset appearance acceptance remains open. This is partial M1 progress: static source pose is the current scope, while idle motion, attention behavior, automatic floor placement, environmental occlusion, and broader companion behavior remain separate work.
+
+Current priority, following the user's 2026-10-29 request: see Columbina in the real room before adding conversation. First accept the static character's scale, orientation, textures, face, and clothing on device, then identify the next appearance or motion gap. Text conversation and the confirmed-preference lifecycle remain planned; they no longer precede this visual increment.
 
 | Experiment | Success evidence | Important failure case |
 | --- | --- | --- |
@@ -39,6 +45,8 @@ Exit evidence: results identify a workable path for the first experience and doc
 ## M1: Spatial character presence
 
 Integrate a mixed immersive scene, explicit placement, a validated character asset, basic idle behavior, and attention toward the user based on available input. Include anchor restoration and a placement recovery path.
+
+Current partial result: [local Columbina model intake and conversion](characters/columbina-model.md), a static source pose, and a loader that retains the placeholder until the character succeeds. Inventory counts and a valid USDZ do not satisfy the idle, facial-control, or expressive-motion requirements.
 
 Acceptance checks:
 
@@ -106,7 +114,7 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 ## Open inputs
 
 - Review feedback on the source-derived Columbina profile and which lore details need independent verification.
-- Candidate Columbina model source and actual format.
+- Device acceptance of the converted Columbina appearance, including material differences and static pose.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
 - Device system version and near-term distribution intent.

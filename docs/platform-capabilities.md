@@ -1,10 +1,10 @@
 # Platform Capabilities
 
-Status: verified platform baseline with proposed product choices. Reviewed: 2026-10-19. Sources include visionOS 27 documentation.
+Status: platform baseline with a limited D1 implementation. Platform sources reviewed: 2026-10-19; implementation status updated: 2026-10-29. Sources include visionOS 27 documentation.
 
 ## Local project baseline
 
-The current project targets visionOS 27.0 and contains a window-based starter scene. It has no implemented immersive scene, ARKit session, conversation service, or persistent memory. The user has an Apple Vision Pro; record its system version before the first device experiment.
+The current project targets visionOS 27.0 and implements a mixed immersive scene, explicit world-tracking session, generated placeholder, and local anchor-association storage. Device and Simulator SDK builds pass, and 27 automated tests pass on visionOS Simulator 27.0. The user reported that the four basic feature groups passed on a physical headset on 2026-10-29; detailed device measurements remain open. Conversation and personal memory remain unimplemented. Record the headset system version with the next device result.
 
 Do not infer device support or permission from the deployment target. Check provider support, current authorization, and session state at runtime.
 
@@ -24,7 +24,9 @@ Do not infer device support or permission from the deployment target. Check prov
 
 ## Space and lifecycle
 
-Bina's proposed initial sensing experience uses a mixed `ImmersiveSpace`: the app occupies a Full Space while the user can still see passthrough. Full Space is an application presentation mode, not a requirement to render a fully virtual environment. The system permits one immersive space at a time. [1][9]
+Bina's implemented initial sensing experience uses a mixed `ImmersiveSpace`: the app occupies a Full Space while the user can still see passthrough. Full Space is an application presentation mode, not a requirement to render a fully virtual environment. The system permits one immersive space at a time. [1][9]
+
+This prototype starts only `WorldTrackingProvider`; it does not request scene reconstruction, plane, hand, or camera data. Manual height is measured below the current headset pose and is not evidence of ground detection. The runtime checks support and tracks provider state; unsupported environments show an explanation rather than substituting simulated tracking. See [current behavior and device checks](spatial-prototype.md).
 
 Avoid the blanket claim that every ARKit provider only works in Full Space. Approved enterprise main-camera access can operate in Shared Space as well as Immersive Space starting with visionOS 26. This exception does not grant ordinary shared-space content equivalent environment sensing. [10]
 

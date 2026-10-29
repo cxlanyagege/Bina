@@ -6,8 +6,19 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		B1AA0000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C3107AE30865C1C007FCA2D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C3107B530865C1C007FCA2D;
+			remoteInfo = Bina;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		1C3107B630865C1C007FCA2D /* Bina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bina.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1AA00000000000000000002 /* BinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -32,10 +43,20 @@
 			path = Bina;
 			sourceTree = "<group>";
 		};
+		B1AA00000000000000000003 /* BinaTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BinaTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		1C3107B330865C1C007FCA2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		B1AA00000000000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -47,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				1C3107B830865C1C007FCA2D /* Bina */,
+				B1AA00000000000000000003 /* BinaTests */,
 				1C3107B730865C1C007FCA2D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,6 +77,7 @@
 			isa = PBXGroup;
 			children = (
 				1C3107B630865C1C007FCA2D /* Bina.app */,
+				B1AA00000000000000000002 /* BinaTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,6 +103,27 @@
 			productReference = 1C3107B630865C1C007FCA2D /* Bina.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B1AA00000000000000000001 /* BinaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */;
+			buildPhases = (
+				B1AA00000000000000000004 /* Sources */,
+				B1AA00000000000000000005 /* Frameworks */,
+				B1AA00000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1AA0000000000000000000B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B1AA00000000000000000003 /* BinaTests */,
+			);
+			name = BinaTests;
+			productName = BinaTests;
+			productReference = B1AA00000000000000000002 /* BinaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -92,6 +136,10 @@
 				TargetAttributes = {
 					1C3107B530865C1C007FCA2D = {
 						CreatedOnToolsVersion = 27.1;
+					};
+					B1AA00000000000000000001 = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = 1C3107B530865C1C007FCA2D;
 					};
 				};
 			};
@@ -110,12 +158,18 @@
 			projectRoot = "";
 			targets = (
 				1C3107B530865C1C007FCA2D /* Bina */,
+				B1AA00000000000000000001 /* BinaTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1C3107B430865C1C007FCA2D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		B1AA00000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -128,7 +182,20 @@
 			files = (
 			);
 		};
+		B1AA00000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B1AA0000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1C3107B530865C1C007FCA2D /* Bina */;
+			targetProxy = B1AA0000000000000000000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1C3107C730865C1D007FCA2D /* Debug configuration for PBXNativeTarget "Bina" */ = {
@@ -310,6 +377,52 @@
 			};
 			name = Release;
 		};
+		B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SWZ4MK4TS3;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
+			};
+			name = Debug;
+		};
+		B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SWZ4MK4TS3;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -326,6 +439,14 @@
 			buildConfigurations = (
 				1C3107C730865C1D007FCA2D /* Debug configuration for PBXNativeTarget "Bina" */,
 				1C3107C830865C1D007FCA2D /* Release configuration for PBXNativeTarget "Bina" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */,
+				B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */,
 			);
 			defaultConfigurationName = Release;
 		};

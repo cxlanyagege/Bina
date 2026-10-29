@@ -1,20 +1,22 @@
 # Character Asset Specification
 
-Status: proposed; no character asset, conversion pipeline, or animation controller is implemented.
-Last reviewed: 2026-10-19.
+Status: general asset contract proposed; one local Columbina static conversion and runtime-loading path implemented. USD validation, actual RealityKit loading, and SDK builds pass; device appearance remains unverified.
+Last reviewed: 2026-10-29.
 
 ## Purpose and first candidate
 
 Bina is a companion and interactive character whose presence should feel coherent over time.
 The selected first character is Columbina from Genshin Impact, preserving her original character identity and personality.
-Model intake is pending: no model file or package provenance has been supplied, and availability, terms, and technical compatibility remain unverified.
+The Luna VIII distributor package has been obtained and inspected, and its PMX model converted to a local USDZ. Source, attribution, hashes, and the supplied notice are recorded in [Columbina model intake](characters/columbina-model.md). Neither source nor converted asset is committed or approved here for redistribution.
 The visual asset contract is separate from the format used to represent and load the character's persona.
 The user's OpenClaw identity and personality files have been reviewed in the [Columbina profile](characters/columbina.md); they are not an assumed Bina runtime format.
 See [product vision](product-vision.md) and [memory and emotion](memory-and-emotion.md) for portrayal and continuity requirements.
 
-The first asset should support stable placement, conversation, interruption, and pointing at one tracked object.
+The complete asset target should support stable placement, conversation, interruption, and pointing at one tracked object.
 Walking, sitting on arbitrary furniture, and dynamic clothing simulation are later capabilities.
 A simple temporary rig may isolate technical problems during validation; it does not replace the intended first character.
+
+The current visual increment is narrower: show Columbina in the static source pose within the existing placement system. The export passed `usdchecker --arkit`, a front authoring preview was inspected, and a test loaded the actual bundled USDZ through RealityKit with verified normalized height, feet position, centering, and nonempty geometry. Device appearance remains open. The imported inventory includes one armature and 60 source shape keys; these counts do not establish working animation, facial control, or lip sync. Idle motion, hair/clothing physics, and expressive behavior are not implemented.
 
 ## Terms used in this document
 
@@ -38,11 +40,7 @@ Record the following before declaring a candidate usable:
 - Whether model, textures, motions, voice, and other included components have different permissions.
 - Importer, authoring application, exporter, and operating-system versions used in each conversion.
 
-The [HoYoLAB resource article](https://www.hoyolab.com/article/118389) is a source lead to inspect with the actual package.
-Its substantive content and package-specific terms were not available for verification during this review.
-No permission to redistribute a character in an application, publish a build, or use a particular voice is established here.
-Record a specific unresolved question rather than treating a downloadable file or fan-video permission as application permission.
-This is an asset intake requirement, not a legal conclusion about any particular model.
+The [Luna VIII Bilibili activity page](https://www.bilibili.com/blackboard/era/pwamk8wIpoip4GFN.html) directly links the inspected archive. Its supplied notice prohibits redistribution and commercial use; the current candidate remains a private local-preview asset. The [intake record](characters/columbina-model.md) summarizes the notice without making a legal conclusion or establishing public-build or voice permissions.
 
 ## Proposed conversion pipeline
 
@@ -55,12 +53,12 @@ This is an asset intake requirement, not a legal conclusion about any particular
 7. Compare against authoring references, record discrepancies and measurements, and iterate.
 8. Retain the editable authoring project, export settings, mapping revision, and validation results for reproducible updates.
 
-USD/USDZ is the proposed runtime delivery route, not an assumption that a source model can be loaded unchanged.
+USD/USDZ is the current local runtime delivery route; source PMX content is deliberately adapted rather than loaded unchanged.
 Apple documents skeletal animation and rigging requirements in its [USD authoring guidance](https://developer.apple.com/documentation/usd/creating-usd-files-for-apple-devices).
 Blender can export armatures, skinned meshes, relative shape keys, and packaged USDZ; export behavior is version-dependent.
 Use the [Blender USD manual](https://docs.blender.org/manual/en/4.2/files/import_export/usd.html) as a documented baseline and verify the installed release.
 
-The actual source format is unknown. Conditional routes include:
+The current source is PMX and uses the Blender/MMD Tools route. Conditional routes for future source packages include:
 
 | Source supplied | Candidate authoring route | Must be verified |
 | --- | --- | --- |
@@ -70,7 +68,7 @@ The actual source format is unknown. Conditional routes include:
 
 [MMD Tools](https://github.com/MMD-Blender/blender_mmd_tools) supports PMX/PMD import, but documents physics and IK differences from MMD.
 Its existence does not establish that a selected model will convert correctly.
-No game extraction tooling, importer, or third-party dependency is installed as part of this proposal.
+Blender 4.5.15 and MMD Tools 4.5.14 were obtained for isolated local conversion. No game extraction is used. The reproducible conversion script and local-output conventions are documented in the [intake record](characters/columbina-model.md).
 
 ## Spatial and skeleton contract
 
@@ -136,6 +134,7 @@ Expression requests describe visible performance, not evidence of an internal em
 ## Materials, hair, and clothing
 
 Treat the original look as a visual reference, not a transferable shader implementation.
+The static conversion uses portable Principled/USD Preview Surface materials. Original toon and sphere shading are not retained, so the result is an approximation requiring RealityKit and headset review. A missing shared `toon01.bmp` warning occurred during import; that shared toon reference is not used after material adaptation.
 Blender's USD exporter approximates supported materials; arbitrary authoring node graphs are not guaranteed to survive.
 Build a small face/hair/clothing material test before polishing the full character.
 [ShaderGraphMaterial](https://developer.apple.com/documentation/realitykit/shadergraphmaterial) is a candidate for reauthoring supported stylized effects.
@@ -162,5 +161,5 @@ supports the baseline controls, and meets the performance target agreed after me
 Retain screenshots or short recordings and a pass/fail checklist with the tested device, OS, app build, and export revision.
 Log unavailable channels and material differences explicitly; choose an adaptation or another asset before promising the capability.
 
-Open decisions: actual model package and appearance variant, source and terms, intended distribution,
-standing height, voice source, available facial channels, authoring tool versions, and final visual/performance targets.
+Open decisions: acceptance of the converted appearance, any alternate appearance variant, intended future distribution,
+standing height, voice source, usable facial channels, and final visual/performance targets. The currently inspected package and tool versions are recorded; wider usage permission is not inferred.

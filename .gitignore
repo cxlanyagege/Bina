@@ -60,3 +60,7 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Character source packages and converted models remain local; upstream terms prohibit redistribution.
+LocalAssets/
+Bina/Resources/Characters/Columbina.usdz

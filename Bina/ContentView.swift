@@ -1,25 +1,135 @@
-//
-//  ContentView.swift
-//  Bina
-//
-//  Created by 沈赫 on 2026/10/19.
-//
-
 import SwiftUI
-import RealityKit
 
 struct ContentView: View {
+    @Bindable var prototype: SpatialPrototype
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    @State private var showsForgetConfirmation = false
+
     var body: some View {
-        VStack {
-            Model3D(named: "Scene", bundle: .main)
-                .padding(.bottom, 50)
-
-            Text("Hello, world!")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Bina · 角色预览").font(.largeTitle)
+                    Text("将角色放入房间，调整位置、尺寸和朝向。")
+                        .foregroundStyle(.secondary)
+                }
+                GroupBox("角色模型") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label(prototype.characterDescription, systemImage: "person.crop.rectangle")
+                        if prototype.characterState == .loading {
+                            ProgressView()
+                        }
+                        if let message = prototype.characterMessage {
+                            Text(message).font(.callout).foregroundStyle(.orange)
+                        }
+                        if prototype.characterState == .failed || prototype.characterState == .notLoaded {
+                            Button("重新载入模型") {
+                                Task { await prototype.loadCharacter() }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                GroupBox("空间状态") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label(prototype.trackingDescription, systemImage: "viewfinder")
+                        Text(prototype.placementDescription)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            Button(prototype.spaceState == .closed ? "进入空间" : "退出空间") {
+                                Task { await toggleSpace() }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(prototype.isTransitioning)
+                            if prototype.canRestartTracking {
+                                Button("重试定位") {
+                                    Task { await prototype.restartTracking() }
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                GroupBox("下一次放置") {
+                    VStack(alignment: .leading, spacing: 14) {
+                        valueSlider("与头显的水平距离", value: $prototype.placementDistance, range: 0.75...3, unit: "米")
+                        valueSlider("脚底低于头显", value: $prototype.feetBelowHead, range: 0...2, unit: "米")
+                        Text("面向空处，调整高度后点击放置。这是手动高度，不会自动识别地面。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button(prototype.hasSavedPlacement ? "重新放置并保存" : "放置并保存") {
+                            Task { await prototype.placeInFront() }
+                        }
+                        .disabled(!prototype.canPlace)
+                    }
+                }
+                GroupBox("角色外观") {
+                    VStack(alignment: .leading, spacing: 14) {
+                        valueSlider("身高", value: $prototype.characterHeight, range: 0.4...1.9, unit: "米")
+                        valueSlider("朝向调整", value: $prototype.headingDegrees, range: -180...180, unit: "度", step: 5)
+                    }
+                }
+                if let message = prototype.message {
+                    Label(message, systemImage: "exclamationmark.circle")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                        .accessibilityIdentifier("spatialPrototype.message")
+                }
+                if prototype.hasSavedPlacement || prototype.storageNeedsReset {
+                    Button("忘记保存的位置", role: .destructive) {
+                        showsForgetConfirmation = true
+                    }
+                    .disabled(prototype.isBusy || prototype.isTransitioning)
+                }
+                Text("再次进入时会尝试恢复同一位置。暂时失去定位时，替身会隐藏；可回到原处等待，也可重新放置。外观与放置参数在本次应用运行期间保留。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(28)
         }
-        .padding()
+        .frame(width: 540, height: 760)
+        .task { await prototype.loadCharacter() }
+        .confirmationDialog("忘记保存的位置？", isPresented: $showsForgetConfirmation, titleVisibility: .visible) {
+            Button("忘记位置", role: .destructive) {
+                Task { await prototype.forgetPlacement() }
+            }
+        } message: {
+            Text("这只会清除空间原型的位置记录。之后需要重新放置替身。")
+        }
     }
-}
 
-#Preview(windowStyle: .automatic) {
-    ContentView()
+    private func valueSlider(
+        _ title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        unit: String,
+        step: Double = 0.05
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text("\(value.wrappedValue, specifier: "%.2f") \(unit)")
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+            Slider(value: value, in: range, step: step).accessibilityLabel(title)
+        }
+    }
+
+    private func toggleSpace() async {
+        if prototype.spaceState == .closed {
+            guard prototype.beginOpening() else { return }
+            switch await openImmersiveSpace(id: SpatialPrototype.spaceID) {
+            case .opened: break
+            case .userCancelled: prototype.openingDidFail(message: nil)
+            case .error: prototype.openingDidFail(message: "无法进入空间，请稍后重试。")
+            @unknown default: prototype.openingDidFail(message: "空间未能打开，请重试。")
+            }
+        } else if prototype.beginClosing() {
+            await dismissImmersiveSpace()
+        }
+    }
 }
