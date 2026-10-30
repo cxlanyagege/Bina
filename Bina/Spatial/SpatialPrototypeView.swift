@@ -4,10 +4,18 @@ import RealityKit
 struct SpatialPrototypeView: View {
     let prototype: SpatialPrototype
     @Environment(\.scenePhase) private var scenePhase
+    @State private var motionSubscription: EventSubscription?
+    @State private var motionToken: UUID?
 
     var body: some View {
-        RealityView { content in
+        RealityView { [prototype] content in
             content.add(prototype.contentEntity)
+            motionSubscription?.cancel()
+            let token = prototype.beginMotionUpdates()
+            motionToken = token
+            motionSubscription = content.subscribe(to: SceneEvents.Update.self) { [weak prototype] event in
+                prototype?.advanceCharacterMotion(by: event.deltaTime, token: token)
+            }
         }
         .task {
             prototype.spaceDidAppear()
@@ -18,6 +26,10 @@ struct SpatialPrototypeView: View {
             prototype.setSceneActive(phase == .active)
         }
         .onDisappear {
+            motionSubscription?.cancel()
+            motionSubscription = nil
+            prototype.endMotionUpdates(token: motionToken)
+            motionToken = nil
             prototype.spaceDidDisappear()
         }
     }

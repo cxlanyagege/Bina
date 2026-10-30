@@ -1,6 +1,6 @@
 # Architecture
 
-Status: proposed logical architecture with spatial placement and a local static-character loading path implemented. SDK builds and actual asset-load tests pass; the user reported a preliminary static-appearance pass on the headset. Character motion remains unimplemented. Last updated: 2026-10-30.
+Status: proposed logical architecture with spatial placement, character loading, relaxed stance, procedural idle, and preview controls implemented. The user found posture and motion generally acceptable and confirmed that the calibrated pose resolved the reported cuff penetration on visionOS 27.2. Bounded head attention remains proposed; measured performance remains open. Last updated: 2026-10-30.
 
 ## Design intent
 
@@ -22,9 +22,20 @@ Scene inactivity, provider pauses, and device tracking loss invalidate cached an
 
 Only placement metadata persists across application launches. Appearance and placement-control values remain in the running model and reset after process restart. See the [prototype guide](spatial-prototype.md) for controls, limits, and validation status. Conversation, personal memory, emotional behavior, scene reconstruction, and reference-object tracking remain unimplemented.
 
-Character loading belongs to the app model independently of each immersive tracking run. It shares an in-flight load, replaces placeholder children only after a valid result, and surfaces missing-resource or load errors with an explicit retry. A repository clone without the ignored local USDZ therefore remains functional as a spatial placeholder build and does not claim that Columbina loaded. The current asset is static; runtime animation, facial expression control, voice, and physics are separate responsibilities still to implement. See [model intake](characters/columbina-model.md).
+Character loading belongs to the app model independently of each immersive tracking run. It shares an in-flight load, replaces placeholder children only after a valid result, and surfaces missing-resource or load errors with an explicit retry. A repository clone without the ignored local USDZ therefore remains functional as a spatial placeholder build and does not claim that Columbina loaded. Idle preparation is a separate failure boundary: missing or invalid pose data retains the loaded static character and reports an idle-specific message. Facial expression control, attention toward the user, voice, and physics remain separate responsibilities. See [model intake](characters/columbina-model.md).
 
 `CharacterAsset.configureMaterials(in:)` applies the current Columbina asset's presentation contract after import and before attaching the model. It restores two-sided rendering for the source's thin surfaces, retains back-face culling for the single-sided shoe material, and preserves opacity and non-PBR materials. This source-specific material-name contract must be reviewed when replacing the model; it is not a rule for arbitrary future assets.
+
+## Current stance and idle implementation
+
+- The converter assigns unique ASCII bone names before USD export. Earlier sanitized name collisions produced a visible model without usable runtime joints. The corrected model and generated pose metadata form one asset-specific contract.
+- Pose authoring owns garment clearance for the selected static stance. The cuff correction retains 26-degree upper-arm lowering, removes the added elbow bend, and adducts each thumb by 6 degrees. The authoring check rejects hand intersections with the main cuff surfaces; a native regression checks the imported skinned geometry at sampled idle phases. This calibration adds no runtime cloth solver or per-frame collision work.
+- `CharacterIdlePose` validates the metadata schema, finite affine deltas, motion roles, and fixed-joint exclusions. File decoding and SHA-256 verification run off the main actor; the pose must match the exact bundled USDZ before binding.
+- `CharacterIdleMotion` owns reference joint transforms and a relaxed target derived from local deltas. Each frame samples those baselines rather than accumulating rotations. Only upper-body joints receive subtle breathing and sway; pelvis, legs, feet, presentation pivot, and world anchor remain unchanged.
+- `CharacterIdlePlayback` owns deterministic playback intent, cycle time, and the reference-to-natural transition. The idle repeats over 11 seconds with a 5.5-second breathing cycle. Pause preserves the current phase; reference selection restores the original pose; returning to natural idle blends over 0.9 seconds. Invalid frame durations are rejected and long gaps are capped.
+- `SpatialPrototypeView` retains one `SceneEvents.Update` subscription. A generation token rejects callbacks from replaced subscriptions; disappearance cancels the subscription and invalidates its token. `SpatialPrototype` advances motion only while the character is visible in the open space, so tracking loss or inactivity freezes its clock.
+
+Per-frame playback state and rig bindings are excluded from observation. Only explicit mode changes update the control window; animation does not invalidate SwiftUI on every frame. This presentation controller does not infer attention, emotion, or conversational activity.
 
 ## Four responsibilities
 

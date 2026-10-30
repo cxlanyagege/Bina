@@ -6,6 +6,7 @@ generated character artifacts remain local and must not be redistributed.
 
 import argparse
 from array import array
+import hashlib
 import importlib.util
 import json
 import math
@@ -56,6 +57,32 @@ def texture_alpha_range(image):
     image.pixels.foreach_get(pixels)
     alpha = pixels[3::4]
     return (min(alpha), max(alpha))
+
+
+def prepare_skeleton(armature):
+    """Avoid USD identifier collisions while retaining source names locally."""
+    bones = list(armature.data.bones)
+    source_names = {f"Joint_{index:04d}": bone.name for index, bone in enumerate(bones)}
+    prefix = "BinaTemporary_"
+    while any(bone.name.startswith(prefix) for bone in bones):
+        prefix = "_" + prefix
+    for index, bone in enumerate(bones):
+        bone.name = f"{prefix}{index:04d}"
+    for index, bone in enumerate(bones):
+        expected = f"Joint_{index:04d}"
+        bone.name = expected
+        if bone.name != expected:
+            raise RuntimeError("Could not assign a unique USD-safe joint name.")
+    armature.data.name = "ColumbinaSkeleton"
+    return source_names
+
+
+def prepare_idle_pose(armature, source_names):
+    path = Path(__file__).with_name("columbina_idle_pose.py")
+    spec = importlib.util.spec_from_file_location("columbina_idle_pose", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.build_idle_pose(armature, source_names)
 
 
 def prepare_materials(directory):
@@ -199,8 +226,12 @@ def main():
         raise RuntimeError("PMX import failed.")
     imported = list(bpy.context.scene.objects)
     meshes = [obj for obj in imported if obj.type == "MESH"]
+    armatures = [obj for obj in imported if obj.type == "ARMATURE"]
     if not meshes:
         raise RuntimeError("Source contains no mesh objects.")
+    if len(armatures) != 1:
+        raise RuntimeError("The Columbina preview requires exactly one armature.")
+    source_names = prepare_skeleton(armatures[0])
     materials = prepare_materials(args.working)
     root = bpy.data.objects.new("Columbina", None)
     bpy.context.scene.collection.objects.link(root)
@@ -222,11 +253,15 @@ def main():
     low, high = mesh_bounds(meshes)
     root.location = (-(low.x + high.x) / 2, -(low.y + high.y) / 2, -low.z)
     bpy.context.view_layer.update()
+    idle_pose = prepare_idle_pose(armatures[0], source_names)
     bpy.ops.object.select_all(action="DESELECT")
     for obj in [root, *imported]:
         obj.select_set(True)
     bpy.context.view_layer.objects.active = root
     export_model(args.output.resolve())
+    idle_pose["modelSHA256"] = hashlib.sha256(args.output.read_bytes()).hexdigest()
+    pose_output = args.output.with_name("ColumbinaIdlePose.json")
+    pose_output.write_text(json.dumps(idle_pose, indent=2), encoding="utf-8")
     report = {
         "blender": bpy.app.version_string,
         "meshes": len(meshes),
@@ -234,6 +269,8 @@ def main():
         "triangles": sum(sum(len(face.vertices) - 2 for face in obj.data.polygons) for obj in meshes),
         "materials": materials,
         "armatures": sum(obj.type == "ARMATURE" for obj in imported),
+        "jointSourceNames": source_names,
+        "idlePose": str(pose_output),
         "shapeKeys": sum(len(obj.data.shape_keys.key_blocks) - 1 for obj in meshes if obj.data.shape_keys),
         "outputBytes": args.output.stat().st_size,
         "staticPreview": True,

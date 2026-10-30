@@ -1,20 +1,20 @@
 # Spatial Prototype
 
-Status: local static Columbina preview integrated with passing SDK builds and 39 automated tests, including asset loading, opacity, and surface-sidedness checks. The user reported a preliminary headset visual pass after material corrections. Motion and measured performance remain open. Updated: 2026-10-30.
+Status: the user found posture and motion generally acceptable and confirmed that the calibrated pose resolved the reported cuff penetration on visionOS 27.2. SDK builds, all 57 simulator tests, USD validation, and desktop close-up checks pass. Detailed device measurements and broader costume validation remain open. Updated: 2026-10-30.
 
 ## Scope
 
 The app opens a mixed `ImmersiveSpace`, places a character using ARKit world tracking, and attempts to restore the selected anchor across sessions. It asynchronously loads the locally converted Columbina USDZ, retaining the generated humanoid placeholder while loading or on failure. Both use a 1.6-meter reference height before the user changes scale.
 
-This does not complete M1. There is no automatic floor detection, surface snapping, occlusion, collision avoidance, character animation, conversation, or personal memory. The real room remains visible through passthrough.
+This does not complete M1. There is no automatic floor detection, surface snapping, occlusion, collision avoidance, attention toward the user, facial animation, conversation, or personal memory. The real room remains visible through passthrough.
 
 ## Local Columbina preview
 
-The current asset is a static source pose with portable material adaptation. The export passed `usdchecker --arkit`, a front authoring preview was inspected, and an automated test loaded the actual bundled USDZ through RealityKit. These checks do not establish exact material fidelity or headset appearance. Original toon and sphere effects, idle motion, expression control, lip sync, voice, and hair/clothing physics are not implemented.
+The current preview adds a relaxed stance and restrained procedural idle to the locally converted character. Unique ASCII joint names repair the earlier export's name collisions. Pose metadata is paired to the exact USDZ hash and supplies relaxed joint deltas and upper-body motion roles. Current SDK builds, all 57 tests, USD validation, and macOS RealityKit close-up checks pass. Original toon and sphere effects, expression control, lip sync, voice, and hair/clothing physics are not implemented.
 
-The file `Bina/Resources/Characters/Columbina.usdz` exists in this working checkout and is intentionally ignored by Git. A clone does not automatically contain it. Keep the original and converted assets local under the source notice; the [model intake record](characters/columbina-model.md) provides provenance, hashes, reproduction instructions, and current validation limits.
+The files `Bina/Resources/Characters/Columbina.usdz` and `ColumbinaIdlePose.json` exist in this working checkout and are intentionally ignored by Git. A clone does not automatically contain them. The pose file must come from the same model export. Keep the original and generated assets local under the source notice; the [model intake record](characters/columbina-model.md) provides provenance, hashes, reproduction instructions, and current validation limits.
 
-The control window distinguishes model loading, success, and failure. A missing or unreadable asset leaves the spatial placeholder available, shows an explicit explanation, and offers a model-load retry. Do not interpret a visible placeholder as a successful Columbina preview.
+The control window distinguishes model loading, success, and failure. A missing or unreadable model leaves the spatial placeholder available, shows an explicit explanation, and offers a model-load retry. Missing, invalid, or mismatched idle data keeps the loaded static model and explains why stance/idle controls are unavailable. Do not interpret a visible placeholder as a successful Columbina preview.
 
 ## Local developer tools
 
@@ -22,16 +22,16 @@ The user identifies Device Hub as the current developer GUI entry point, with th
 
 ## Run on Apple Vision Pro
 
-1. Record the headset system and Xcode versions. The project currently requires visionOS 27.0 or later.
+1. Record the headset system build and Xcode versions. The user reports visionOS 27.2 as of 2026-10-30; the project still requires 27.0 or later.
 2. Open `Bina.xcodeproj` in Xcode and select the shared `Bina` scheme.
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
-4. For a character-enabled build, confirm the ignored local USDZ exists at the path above before building. Build and run while wearing the headset.
+4. For a character-enabled build with idle, confirm both local resources from the same export exist at the paths above. Build and run while wearing the headset.
 5. Check model status in the control window. Wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
 6. Use the enter-space button and wait for world tracking to become available. An unsupported environment shows a message; it does not perform fake placement.
 7. Look approximately horizontally toward the desired location. Set the horizontal distance and the distance from the headset down to the character's feet, then choose place-and-save.
-8. Adjust scale and yaw. These appearance changes are live; placement-distance and foot-offset changes apply when the next placement is requested. The source pose remains static.
-9. Inspect face, eye covering, hair, clothing, footwear, textures, and transparency from the front, sides, and back. Record differences from the authoring preview.
-10. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns. If unavailable, wait at the original location or explicitly place again.
+8. Adjust scale and yaw. These appearance changes are live; placement-distance and foot-offset changes apply when the next placement is requested. Natural stance is selected by default, and idle advances only while the character is visible.
+9. Pause/resume idle and compare the reference pose with the natural stance. Inspect feet, shoulders, wrists, sleeves, skirt/cloak clearance, eyes, and transparency from several views. Record posture or clothing differences and any motion jump.
+10. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns and idle updates restart while preserving the selected in-process pause/reference mode. If the anchor is unavailable, wait at the original location or explicitly place again.
 
 The interface is in Simplified Chinese. The control names below describe their meaning in English.
 
@@ -46,12 +46,16 @@ The interface is in Simplified Chinese. The control names below describe their m
 | Place/re-place and save | Uses current valid device pose, projected horizontal heading, and the chosen offsets. The character initially faces back toward the user. |
 | Height | 0.4–1.9 meters; initially 1.6. Changes visible character scale without moving its anchor. |
 | Heading adjustment | Local yaw from -180 to 180 degrees. It does not make the character continuously turn toward the user. |
+| Pause/resume idle | Freezes the current joint sample and cycle phase, then continues from that phase. Unavailable in reference mode or when idle preparation fails. |
+| Reference/natural comparison | Restores the original source pose for comparison; returning to natural idle blends over 0.9 seconds. The placement anchor is unchanged. |
 | Retry tracking | Available after tracking failure; creates a fresh session/provider while retaining placement metadata. |
 | Forget saved position | Requires confirmation, clears only the prototype's placement association, and hides the placeholder. Placement can then start again. |
 
 The geometry helper ignores head pitch and roll so the placeholder stays upright. Looking nearly straight up or down provides no usable horizontal heading and prompts another placement attempt. Physical floor contact depends on the manually chosen foot offset; leaning or changing head height before placement changes that reference.
 
 Appearance and placement controls survive leaving and reentering the immersive space within the same process. They reset to defaults after application restart. Only the saved anchor association persists; the prior scale and yaw are not restored.
+
+Idle repeats on an 11-second cycle with 5.5-second breathing, using small upper-body joint rotations. The pelvis, legs, feet, character pivot, and world anchor remain fixed. User pause preserves phase; tracking loss, scene inactivity, or hidden content also freezes time without changing playback intent. Exiting the immersive view cancels its render-update subscription and invalidates the callback token. Playback mode and phase are in-memory preview state and are not persisted across process restarts.
 
 ## Persistence and recovery
 
@@ -80,10 +84,13 @@ Record each case as pass, fail, or unassessed, with reproduction steps for failu
 | First launch and placement | Controls become usable only with active tracking; the placeholder appears at the requested heading and offsets. |
 | Local character load | Status reports success and Columbina replaces the placeholder at the same placement, scale, and heading. |
 | Missing or invalid local model | Status reports failure; the placeholder remains usable and retry does not reset placement. |
+| Missing or mismatched idle data | The static model remains available, the idle explanation is visible, and no incorrect skeleton mapping is applied. |
 | Character visual review | Check the static pose, face, hair, eye covering, clothing, feet, texture completeness, and transparency from several angles. Inspect both sides of front and rear cloth panels. Record material differences and performance. |
+| Natural stance and idle | Arms and shoulders look relaxed; subtle motion loops without a jump, fixed feet remain planted, and sleeves/skirt/cloak do not show new intersections. |
+| Pause/resume and reference comparison | Pause freezes the current pose; resume continues its phase. Reference restores the source pose, then natural idle returns smoothly without moving placement. |
 | Movement and head tilt | The placeholder remains at its world anchor rather than following head movement; its upright orientation is maintained. |
 | Scale and yaw | Changes are visible immediately while the anchor stays fixed. Next-placement settings do not move the current anchor. |
-| Repeated entry/exit | Scene and tracking restart without duplicate content or a stale visible placeholder. |
+| Repeated entry/exit | Scene, tracking, and render-update subscription restart without duplicate content or stale callbacks. Natural idle resumes when visible; a user pause or reference selection stays selected within the same process. |
 | App restart in the same room | Restoration is attempted through the saved UUID. Record actual success and time rather than assuming it. |
 | Missing location or different room | No guessed placement appears. Waiting beyond eight seconds retains the saved association and offers re-placement. |
 | Recenter with Digital Crown | The current anchor transform updates while the physical placement remains credible. Record any discontinuity. |
@@ -117,6 +124,8 @@ The user also reported that front cloth disappeared when viewed from behind, and
 
 On 2026-10-30, the user reported no obvious remaining visual issues in a preliminary naked-eye headset check. This is an initial static-appearance pass after the material corrections. The feedback does not establish animation quality or sustained performance; a detailed checklist and measured results were not supplied. Recheck material appearance as natural stance and motion are introduced.
 
+The user subsequently reported visionOS 27.2 and requested the natural-stance/idle increment. After trying it, the user found posture and motion generally acceptable but reported severe cuff penetration that persisted while paused. On 2026-10-30, after testing the calibrated pose, the user confirmed that the issue was resolved. This is a user-reported cuff-fix pass, separate from the earlier static-appearance feedback; no detailed checklist or performance measurements accompanied it.
+
 ## Automated verification
 
 The shared `Bina` scheme includes `BinaTests`. Geometry tests exercise heading, offsets, and invalid input; storage tests exercise metadata round-trips, corruption, schema handling, and clearing. Controller-state tests exercise open/close transitions, cancellation, metadata loading, and explicit reset with a fake store.
@@ -133,7 +142,7 @@ Verification recorded on 2026-10-26 with Xcode 27.1 (27A9275):
 
 The test report is `Bina-SpatialPrototype-Tests-2.xcresult`, generated in the local temporary directory. Automated cases do not start a live ARKit session or establish spatial stability. Pause/recenter/resume and unused-anchor cleanup still require the device checks above.
 
-Current character-integration verification recorded on 2026-10-30:
+Preceding static/material-correction verification recorded on 2026-10-30:
 
 | Check | Recorded result |
 | --- | --- |
@@ -149,7 +158,34 @@ Current character-integration verification recorded on 2026-10-30:
 | Device Hub interaction | GUI discovery, opening, simulator start, and reading succeeded; app-content clicking was unavailable, so the interactive visual walkthrough is incomplete. |
 | Columbina on a physical headset | On 2026-10-30 the user reported no obvious visual issues after the corrections. Preliminary static-appearance pass; motion and measured performance remain open. |
 
-The current result bundle is `Bina-Cloth-Culling-Tests.xcresult` in the local temporary directory. The asset hash is unchanged by the runtime sidedness correction. Retained visual evidence is recorded in the [model intake](characters/columbina-model.md).
+That baseline result bundle is `Bina-Cloth-Culling-Tests.xcresult` in the local temporary directory. Its asset hash was unchanged by the runtime sidedness correction. The new skeletal export has a separate paired pose file and intake record.
+
+Historical stance/idle verification before the cuff correction, recorded on 2026-10-30:
+
+| Check | Recorded result |
+| --- | --- |
+| Device and Simulator SDK builds | Passed; both app bundles contain the matching model and pose file from the new export. The device SDK build is not a headset run. |
+| visionOS Simulator 27.0 tests | 56 passed, zero failures, zero skips: the preceding 39 cases plus eight playback cases, five pose-validation/pairing cases, and four bundled skeleton/motion cases. |
+| USD and skeletal import | `usdchecker --arkit` passed; RealityKit imports 790 uniquely named joints. |
+| Native macOS pose/motion comparison | Thirty broad views cover reference and natural poses at 0, 2.75, 6, and 11 seconds across six viewing directions. These missed the cuff penetration subsequently reported on the headset. |
+| Native motion invariants | Fixed-foot world transforms and model-root matrices remain unchanged. Pause and hidden updates preserve phase; resume advances; reference restoration is exact. |
+| Headset stance/idle feedback | Posture and motion were generally acceptable to the user on visionOS 27.2, but severe cuff penetration remained visible even while paused. This was not an appearance acceptance. |
+
+The result bundle is `Bina-Idle-Tests-2.xcresult` in the local temporary directory. Runtime evidence is retained in `LocalAssets/Columbina/idle-diagnostics/`, including `runtime-verification.json`. Exact asset hashes and preparation instructions belong in the [model intake](characters/columbina-model.md).
+
+The cuff correction retains the relaxed arm lowering, removes the added elbow bend, and gently adducts the thumbs. The exact source reference retains its tiny original intersection; this calibration is not a general cloth collision solver. The user has confirmed the reported issue resolved. Preserve the cuff regressions and repeat relevant close-up checks when adding further motion.
+
+Current cuff-correction verification, recorded on 2026-10-30:
+
+| Check | Recorded result |
+| --- | --- |
+| Authoring geometry | Zero strict hand/main-cuff crossings on both sides in the natural pose; zero movement across 10,870 lower-body vertices; source pose bases restored exactly. |
+| visionOS Simulator 27.0 tests | 57 passed, zero failures, zero skips, including the new actual-mesh cuff regression at 0, 2.75, 6, and 11 seconds. Result bundle: `/private/tmp/Bina-Cuff-Fix-Tests.xcresult`. |
+| USD and SDK builds | `usdchecker --arkit`, Simulator test build, and generic visionOS device build passed. Both app bundles contain the exact current paired model and pose resources. |
+| Native close-up comparison | 84 final-resource RealityRenderer captures cover seven stages, two wrists, and six directions. They are byte-identical to the reviewed corrected candidate; the large thumb penetration and small front-view sliver are removed in the natural pose. |
+| Corrected-build headset feedback | User-reported cuff-fix pass on 2026-10-30, using the previously reported visionOS 27.2 headset. No detailed checklist was supplied; scene comfort and sustained performance remain unmeasured. |
+
+The close-ups and transition captures are retained in `LocalAssets/Columbina/sleeve-diagnostics/production-final/`. Exact fingerprints, regression scope, and source-reference limitations are recorded in the [model intake](characters/columbina-model.md#cuff-penetration-correction).
 
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 

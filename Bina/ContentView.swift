@@ -71,6 +71,27 @@ struct ContentView: View {
                         valueSlider("朝向调整", value: $prototype.headingDegrees, range: -180...180, unit: "度", step: 5)
                     }
                 }
+                GroupBox("站姿与待机") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(prototype.idleDescription).font(.callout)
+                        if let message = prototype.characterIdleMessage {
+                            Text(message).font(.callout).foregroundStyle(.orange)
+                        }
+                        HStack {
+                            Button(prototype.characterIdle?.mode == .paused ? "继续待机" : "暂停待机") {
+                                prototype.toggleIdlePlayback()
+                            }
+                            .disabled(prototype.characterIdle == nil || prototype.characterIdle?.mode == .reference)
+                            Button(prototype.characterIdle?.mode == .reference ? "恢复自然待机" : "还原参考姿势") {
+                                prototype.toggleReferencePose()
+                            }
+                            .disabled(prototype.characterIdle == nil)
+                        }
+                        Text("暂停可保留当前姿势。切换参考姿势，便于比较站姿和衣服效果。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 if let message = prototype.message {
                     Label(message, systemImage: "exclamationmark.circle")
                         .font(.callout)

@@ -51,9 +51,7 @@ enum CharacterAsset {
     static let referenceHeight: Float = 1.6
 
     static func load(in bundle: Bundle = .main) async throws -> Entity {
-        let url = bundle.url(forResource: "Columbina", withExtension: "usdz", subdirectory: "Characters")
-            ?? bundle.url(forResource: "Columbina", withExtension: "usdz", subdirectory: "Resources/Characters")
-            ?? bundle.url(forResource: "Columbina", withExtension: "usdz")
+        let url = resourceURL("Columbina", extension: "usdz", in: bundle)
         guard let url else { throw CharacterAssetError.missingResource }
         let model = try await Entity(contentsOf: url)
         configureMaterials(in: model)
@@ -75,6 +73,23 @@ enum CharacterAsset {
         pivot.position = normalization.translation
         normalized.scale = SIMD3(repeating: normalization.scale)
         return normalized
+    }
+
+    static func loadIdleMotion(for character: Entity, in bundle: Bundle = .main) async throws -> CharacterIdleMotion {
+        guard let modelURL = resourceURL("Columbina", extension: "usdz", in: bundle) else {
+            throw CharacterAssetError.missingResource
+        }
+        guard let poseURL = resourceURL("ColumbinaIdlePose", extension: "json", in: bundle) else {
+            throw CharacterIdleError.missingConfiguration
+        }
+        let pose = try await CharacterIdlePose.load(modelURL: modelURL, poseURL: poseURL)
+        return try CharacterIdleMotion(character: character, pose: pose)
+    }
+
+    static func resourceURL(_ name: String, extension fileExtension: String, in bundle: Bundle) -> URL? {
+        bundle.url(forResource: name, withExtension: fileExtension, subdirectory: "Characters")
+            ?? bundle.url(forResource: name, withExtension: fileExtension, subdirectory: "Resources/Characters")
+            ?? bundle.url(forResource: name, withExtension: fileExtension)
     }
 
     /// Restores this Columbina source's sidedness without changing its opacity.

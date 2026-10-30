@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: local Columbina static-preview integration has passing SDK builds and 39 automated tests. The user reported a preliminary headset visual pass after material corrections. Natural stance, idle motion, and measured performance remain open. Last updated: 2026-10-30.
+Status: relaxed stance, restrained idle, and pause/reference controls are implemented. The user found posture and motion generally acceptable and confirmed that the cuff correction resolved the reported issue on visionOS 27.2. Bounded head attention is the proposed next increment; detailed device measurements remain open. See the spatial prototype and model intake for verification evidence. Last updated: 2026-10-30.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -14,7 +14,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Columbina evaluations](characters/columbina-evaluation.md) | Assess personality fidelity through observable scenarios. |
 | [Platform capabilities](platform-capabilities.md) | Distinguish available sensing from approval-dependent or unsupported assumptions. |
 | [Character assets](character-assets.md) | Evaluate a Columbina model and prepare a usable character asset. |
-| [Columbina model intake](characters/columbina-model.md) | Reproduce the local static conversion and understand source and redistribution boundaries. |
+| [Columbina model intake](characters/columbina-model.md) | Reproduce local model/pose preparation and understand source and redistribution boundaries. |
 | [Memory and emotion](memory-and-emotion.md) | Define what the character remembers and how personality and emotion remain coherent. |
 | [Architecture](architecture.md) | Follow information from observation through behavior to visible and audible results. |
 | [Milestones](milestones.md) | Choose the next experiment and determine whether its result is sufficient. |

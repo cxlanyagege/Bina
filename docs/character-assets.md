@@ -1,6 +1,6 @@
 # Character Asset Specification
 
-Status: general asset contract proposed; one local Columbina static conversion and runtime-loading path implemented. USD validation, actual RealityKit loading, material regressions, and SDK builds pass. The user reported no obvious visual issues in a preliminary headset check; motion and measured performance remain open.
+Status: general asset contract proposed; local Columbina loading, relaxed stance, restrained idle, and comparison controls are implemented. The user found posture and motion generally acceptable and confirmed that pose calibration resolved the reported cuff penetration on visionOS 27.2. Broader costume validation and measured performance remain open.
 Last reviewed: 2026-10-30.
 
 ## Purpose and first candidate
@@ -16,7 +16,13 @@ The complete asset target should support stable placement, conversation, interru
 Walking, sitting on arbitrary furniture, and dynamic clothing simulation are later capabilities.
 A simple temporary rig may isolate technical problems during validation; it does not replace the intended first character.
 
-The current visual increment is narrower: show Columbina in the static source pose within the existing placement system. The export passed `usdchecker --arkit`, a front authoring preview was inspected, and a test loaded the actual bundled USDZ through RealityKit with verified normalized height, feet position, centering, and nonempty geometry. After eye and clothing material corrections, the user reported no obvious visual issues during a preliminary headset check on 2026-10-30. This is subjective static-appearance evidence; motion quality and measured performance remain open. The imported inventory includes one armature and 60 source shape keys; these counts do not establish working animation, facial control, or lip sync. Idle motion, hair/clothing physics, and expressive behavior are not implemented.
+The preceding visual increment showed Columbina in the source pose within the existing placement system. It passed USD validation, actual bundled RealityKit loading, and bounds/material regressions. After eye and clothing corrections, the user reported no obvious visual issues during a preliminary headset check on 2026-10-30. The current increment adds a relaxed standing pose, restrained skeletal idle, and pause/reference comparison. The user subsequently found posture and motion generally acceptable on visionOS 27.2, while identifying severe cuff penetration that remained visible when paused. That feedback exposed a static-pose defect missed by the earlier full-body comparisons. After pose calibration, the user confirmed that this issue was resolved. Build, test, and close-up verification evidence belong in the [model intake](characters/columbina-model.md). Hair/clothing physics, facial control, lip sync, and attention toward the user remain unimplemented.
+
+Natural stance requires `ColumbinaIdlePose.json` paired with the exact `Columbina.usdz` by SHA-256. Both are local-only generated character artifacts. The converter now preserves unique ASCII joint paths because sanitized non-ASCII names in the prior export collided and prevented runtime skeletal control. Pose preparation, mapping, and hashes belong in the [model intake](characters/columbina-model.md). A missing or invalid pose file leaves the static model available and reports the unavailable motion.
+
+The runtime samples reference and relaxed transforms directly on the imported skeleton. Upper-body breathing and sway leave lower-body joints and world placement fixed. Pause freezes the current sample, reference selection restores the source pose, and returning to natural idle uses a short blend. These controls support deformation and clothing checks; they do not establish working facial controls, cloth simulation, or expressive character behavior. The source inventory includes one armature and 60 shape keys, which still require individual validation for later capabilities.
+
+The cuff correction keeps the upper arms lowered by 26 degrees, removes the added elbow bend, and adducts the thumbs by 6 degrees to clear the main sleeve surfaces. Authoring validation requires zero strict hand/cuff crossings in the natural pose, and a native regression checks the actual imported skinning at selected idle phases. The check is specific to the current hand and main-cuff materials; it does not establish collision-free arbitrary poses or dynamic clothing simulation. The user confirmed the cuff issue resolved on 2026-10-30; no detailed angle checklist or measured results accompanied that feedback.
 
 ## Terms used in this document
 
@@ -80,6 +86,7 @@ These are proposed Bina conventions, to be confirmed by the first successful exp
 - Keep the placement transform independent of the animated skeleton so a clip cannot move the world anchor.
 - Validate transforms and bind matrices together; avoid blindly applying transforms after skinning or relying on negative scale.
 - Use one deforming joint hierarchy for the first character, with stable joint paths and an explicit reference pose.
+- Check that joint paths remain unique after exporter name sanitization; an inventory in the source file does not prove usable runtime joints.
 - Inventory pelvis, spine, chest, neck, head, arms, hands, legs, feet, and any available eye, finger, or accessory joints.
 - Record missing capabilities rather than guessing joint correspondence from names alone.
 
@@ -89,7 +96,7 @@ Authoring IK controls, drivers, constraints, and plugins are not a runtime contr
 Bake the evaluated joint animation where needed, while retaining the editable rig in the authoring source.
 Blender documents USD limitations including unsupported bendy bones and absolute shape keys in the cited exporter baseline.
 
-Initially use clips with stationary placement and no unrequested root translation.
+Initially use clips or procedural poses with stationary placement and no unrequested root translation.
 Record clip name, duration, authoring frame rate, loop boundaries, reference pose, and intended transition points.
 Retarget imported motions in authoring and check shoulders, wrists, knees, feet, and costume intersections.
 Runtime retargeting is optional and requires a separate feasibility test.
@@ -162,6 +169,8 @@ The first candidate passes when it loads with all dependencies, has correct scal
 supports the baseline controls, and meets the performance target agreed after measurement.
 Retain screenshots or short recordings and a pass/fail checklist with the tested device, OS, app build, and export revision.
 Log unavailable channels and material differences explicitly; choose an adaptation or another asset before promising the capability.
+
+The user reports visionOS 27.2 as of 2026-10-30, found posture and motion generally acceptable, and confirmed the cuff correction resolved the reported issue. Detailed shoulder, skirt/cloak, fixed-foot, lifecycle, and sustained-comfort checks remain useful when introducing further motion; the cuff feedback does not establish those results.
 
 Open decisions: any alternate appearance variant, intended future distribution,
 standing height, voice source, usable facial channels, and final visual/performance targets. The currently inspected package and tool versions are recorded; wider usage permission is not inferred.

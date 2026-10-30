@@ -25,6 +25,8 @@ final class SpatialPrototype {
     private(set) var restorationTimedOut = false
     private(set) var characterState = CharacterState.notLoaded
     private(set) var characterMessage: String?
+    private(set) var characterIdle: CharacterIdleMotion?
+    private(set) var characterIdleMessage: String?
     var placementDistance = 2.0
     var feetBelowHead = 1.4
     var characterHeight = 1.6 { didSet { updateAppearance() } }
@@ -50,6 +52,7 @@ final class SpatialPrototype {
     @ObservationIgnored private var lastAnchorRefresh: TimeInterval = 0
     @ObservationIgnored private var characterLoadTask: Task<Void, Never>?
     @ObservationIgnored private var characterLoadToken: UUID?
+    @ObservationIgnored private var motionUpdateToken: UUID?
 
     init(store: (any PlacementPersisting)? = nil) {
         self.store = store ?? FilePlacementStore()
@@ -102,11 +105,24 @@ final class SpatialPrototype {
             }
             do {
                 let model = try await CharacterAsset.load()
+                let idle: CharacterIdleMotion?
+                let idleMessage: String?
+                do {
+                    idle = try await CharacterAsset.loadIdleMotion(for: model)
+                    idleMessage = nil
+                } catch {
+                    idle = nil
+                    idleMessage = (error as? CharacterIdleError)?.errorDescription
+                        ?? "无法读取站姿数据，当前保留静态模型。请检查角色资源后重新运行。"
+                    self.logger.error("Preparing character idle failed: \(String(describing: error), privacy: .private)")
+                }
                 guard self.characterLoadToken == token else { return }
                 self.character.children.removeAll()
                 self.character.addChild(model)
                 self.updateAppearance()
                 self.characterState = .loaded
+                self.characterIdle = idle
+                self.characterIdleMessage = idleMessage
             } catch {
                 guard self.characterLoadToken == token else { return }
                 self.characterState = .failed
@@ -117,6 +133,43 @@ final class SpatialPrototype {
         }
         characterLoadTask = task
         await task.value
+    }
+
+    var idleDescription: String {
+        guard let characterIdle else { return "站姿与待机动作尚未就绪。" }
+        switch characterIdle.mode {
+        case .reference: return "参考姿势：原始模型姿势。"
+        case .paused: return "待机已暂停，保持当前姿势。"
+        case .playing:
+            return contentEntity.isEnabled ? "自然站姿与轻微待机动作正在播放。" : "自然待机已就绪，角色显示后继续播放。"
+        }
+    }
+
+    func toggleIdlePlayback() {
+        guard let characterIdle else { return }
+        if characterIdle.mode == .playing { characterIdle.pause() }
+        else if characterIdle.mode == .paused { characterIdle.resume() }
+    }
+
+    func toggleReferencePose() {
+        guard let characterIdle else { return }
+        if characterIdle.mode == .reference { characterIdle.showNatural() }
+        else { characterIdle.showReference() }
+    }
+
+    func beginMotionUpdates() -> UUID {
+        let token = UUID()
+        motionUpdateToken = token
+        return token
+    }
+
+    func endMotionUpdates(token: UUID?) {
+        if motionUpdateToken == token { motionUpdateToken = nil }
+    }
+
+    func advanceCharacterMotion(by deltaTime: TimeInterval, token: UUID) {
+        guard motionUpdateToken == token else { return }
+        characterIdle?.advance(by: deltaTime, isVisible: spaceState == .open && contentEntity.isEnabled)
     }
 
     var trackingDescription: String {
@@ -163,6 +216,7 @@ final class SpatialPrototype {
     func spaceDidAppear() { spaceState = .open }
 
     func spaceDidDisappear() {
+        motionUpdateToken = nil
         stopTracking()
         spaceState = .closed
     }

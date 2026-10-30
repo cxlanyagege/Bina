@@ -64,3 +64,7 @@ fastlane/test_output
 # Character source packages and converted models remain local; upstream terms prohibit redistribution.
 LocalAssets/
 Bina/Resources/Characters/Columbina.usdz
+Bina/Resources/Characters/ColumbinaIdlePose.json
+
+# Local Python authoring caches.
+__pycache__/
