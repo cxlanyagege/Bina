@@ -19,17 +19,42 @@ final class CharacterIdleMotion {
     private(set) var isHairPhysicsAvailable = false
     private(set) var hairPhysicsMessage: String? = CharacterPhysicsError.missingProfile.errorDescription
     private(set) var physicsTimingDescription: String?
+    private(set) var face: CharacterFaceMotion?
+    private(set) var faceMessage: String? = CharacterFaceError.missingProfile.errorDescription
     @ObservationIgnored private var playback = CharacterIdlePlayback()
     @ObservationIgnored private var attention = CharacterHeadAttention()
     @ObservationIgnored private let character: Entity
     @ObservationIgnored private let rigs: [Rig]
+    @ObservationIgnored private let modelSHA256: String
     @ObservationIgnored private var hairPhysics: CharacterHairPhysics?
     @ObservationIgnored private var physicsDurations: [Double] = []
     @ObservationIgnored private var timingCursor = 0
     @ObservationIgnored private let logger = Logger(subsystem: "Bina", category: "CharacterPhysics")
+    @ObservationIgnored private let faceLogger = Logger(subsystem: "Bina", category: "CharacterFace")
 
     var cycleTime: TimeInterval { playback.cycleTime }
     var hairPhysicsDiagnostics: CharacterHairPhysics.Diagnostics? { hairPhysics?.diagnostics }
+
+    func configureFace(_ profile: CharacterFaceProfile) throws {
+        guard rigs.count == 1, profile.modelSHA256 == modelSHA256 else { throw CharacterFaceError.mismatchedAsset }
+        let rig = rigs[0]
+        let binding = try CharacterFaceBinding(model: rig.model, profile: profile,
+            referenceWeights: rig.referenceFaceWeights, referenceMaterials: rig.referenceMaterials)
+        let replacement = CharacterFaceMotion(binding: binding)
+        face?.restoreReference()
+        face = replacement
+        faceMessage = nil
+        if mode == .reference { replacement.restoreReference() }
+        else { try replacement.present(influence: 1) }
+    }
+
+    func reportFaceUnavailable(_ error: Error) {
+        face?.restoreReference()
+        face = nil
+        faceMessage = (error as? CharacterFaceError)?.errorDescription
+            ?? "无法读取面部数据，已保留原模型表情。请检查资源后重新运行。"
+        faceLogger.error("Face presentation unavailable: \(String(describing: error), privacy: .private)")
+    }
 
     func configureHairPhysics(_ profile: CharacterPhysicsProfile, pose: CharacterIdlePose) throws {
         guard rigs.count == 1 else { throw CharacterPhysicsError.invalidBinding("Expected one character rig.") }
@@ -64,6 +89,7 @@ final class CharacterIdleMotion {
     init(character: Entity, pose: CharacterIdlePose) throws {
         try pose.validate()
         self.character = character
+        modelSHA256 = pose.modelSHA256
         rigs = try Self.skinnedModels(in: character).map { try Rig(model: $0, character: character, pose: pose) }
         guard !rigs.isEmpty else { throw CharacterIdleError.missingSkeleton }
         applyPose()
@@ -105,6 +131,7 @@ final class CharacterIdleMotion {
         hairPhysics?.showDebug(false)
         mode = playback.mode
         for rig in rigs { rig.model.jointTransforms = rig.reference }
+        face?.restoreReference()
     }
 
     func showNatural() {
@@ -156,6 +183,10 @@ final class CharacterIdleMotion {
             }
             rig.model.jointTransforms = transforms
         }
+        // Facial weights and cover visibility share playback gating, while the
+        // skeleton remains under the single joint-transform writer above.
+        do { try face?.advance(by: deltaTime, influence: 1) }
+        catch { reportFaceUnavailable(error) }
     }
 
     private static func rotate(_ transform: inout Transform, degrees: Float, axis: SIMD3<Float>) {
@@ -173,6 +204,8 @@ final class CharacterIdleMotion {
     private struct Rig {
         let model: ModelEntity
         let reference: [Transform]
+        let referenceFaceWeights: BlendShapeWeightsComponent?
+        let referenceMaterials: [any Material]
         let natural: [Transform]
         let spine: Int
         let chest: Int
@@ -183,6 +216,8 @@ final class CharacterIdleMotion {
         init(model: ModelEntity, character: Entity, pose: CharacterIdlePose) throws {
             self.model = model
             reference = model.jointTransforms
+            referenceFaceWeights = model.components[BlendShapeWeightsComponent.self]
+            referenceMaterials = model.model?.materials ?? []
             let leaves = model.jointNames.map { String($0.split(separator: "/").last ?? "") }
             guard reference.count == leaves.count, Set(leaves).count == leaves.count else {
                 throw CharacterIdleError.invalidConfiguration("The imported skeleton has ambiguous joint paths.")

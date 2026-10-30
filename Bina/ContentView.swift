@@ -112,6 +112,15 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                GroupBox("面部与眼部状态") {
+                    if let motion = prototype.characterIdle, let face = motion.face {
+                        CharacterFaceControls(face: face, isPlaying: motion.mode == .playing)
+                    } else {
+                        Text(prototype.characterIdle?.faceMessage ?? "面部控制尚未就绪。")
+                            .font(.callout).foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
                 if let message = prototype.message {
                     Label(message, systemImage: "exclamationmark.circle")
                         .font(.callout)

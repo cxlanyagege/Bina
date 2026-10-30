@@ -1,6 +1,6 @@
 # Character Secondary Motion and Collision
 
-Status: the focused hair/collar experiment and rear-lock stability correction are implemented. All 95 tests and the visionOS device SDK build pass. Headset feedback confirmed the cheek locks improved but found rear-hair twitching; the correction awaits a new headset check. Full-garment cloth remains proposed. Reviewed: 2026-10-30.
+Status: the focused hair/collar experiment and rear-lock correction are implemented. The user reported no major issue in the subsequent headset check, a preliminary stability pass. The current 115-test facial suite retains the hair regressions. Full-costume quality and sustained performance remain open; full-garment cloth remains proposed. Reviewed: 2026-10-30.
 
 ## Problem and recommendation
 
@@ -75,7 +75,7 @@ Physics uses reference-height character coordinates. Translation changes over 0.
 
 The preview exposes hair physics (default enabled), physical debug geometry (default hidden), and an explicit timing snapshot. Green segments/cyan tips show the selected chains; translucent orange capsules show the collision proxies. Debug mode temporarily multiplies the model's opacity by 0.3 to expose interior chains. Hiding debug geometry, entering reference mode, or disposing the simulation restores the previous opacity component exactly. Debug changes do not advance animation time. CPU timing is a ring of the most recent 600 update costs, including binding/solver work and debug updates when enabled; it excludes GPU rendering and the rest of the app.
 
-The generated `Bina/Resources/Characters/ColumbinaPhysics.json` is 4,230 bytes with SHA-256 `289b0d2e69e8813bb33d1934e27fa7d626bea0c971fd05a38b5c29db236ef8e4`. It is paired to the unchanged cuff-fix USDZ and intentionally ignored by Git. The original model, pose JSON, geometry, weights, and textures were not rewritten. Regenerate the local profile to include both rear-chain limits. The optional fields retain schema-1 decoding compatibility; older profiles omit these additional protections.
+The current `Bina/Resources/Characters/ColumbinaPhysics.json` is 4,151 bytes, SHA-256 `592b517b008c4ccb4728796986ac498ee5e4d9ae5005da46ed558caeafa18098`, and remains ignored by Git. Subsequent [facial preparation](facial-presentation.md) re-paired its model hash and serialization to the repaired USDZ; all numerical physics settings remain unchanged. That repair preserves base geometry, skinning, materials, and textures. Regenerate older profiles to include both rear-chain limits. The optional fields retain schema-1 decoding compatibility; older profiles omit these protections.
 
 ## Rear-lock stability correction
 

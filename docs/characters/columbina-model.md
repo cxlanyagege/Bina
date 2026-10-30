@@ -1,6 +1,6 @@
 # Columbina Model Intake
 
-Status: selected hair physics/collision and a rear-lock stability correction are implemented. All 95 simulator tests and SDK builds pass, including actual skinned hair/collar, motion continuity, and cuff regressions. The original USDZ and stance data remain unchanged. Headset quality/performance acceptance and broader costume validation remain open. Reviewed: 2026-10-30.
+Status: selected hair physics, two eye states, natural blinking, and restrained facial previews are implemented. All 115 simulator tests and SDK builds pass. Facial targets were repaired without changing base geometry, skinning, or material data; paired metadata hashes were updated. Facial headset acceptance and sustained performance remain open. Reviewed: 2026-10-30.
 
 ## Source and identity
 
@@ -18,7 +18,7 @@ The original activity-page HTML was checked for the archive URL. Third-party ind
 
 The archive contains one PMX model, a supplied readme, and texture/support files for the body, face, hair, eyes, eye covering, dress, shoes, toon shading, and sphere effects. Original PMX and notice filenames remain unchanged in the local source directory.
 
-No separate second PMX file was found for open-eye versus closed-eye presentation. Eye controls, morph behavior, skeleton quality, and texture interpretation still need authoring and runtime inspection; filenames alone do not establish those capabilities.
+No separate second PMX file was found for open-eye versus closed-eye presentation. The same retained mesh now supports covered/closed and uncovered/open states through a repaired eyelid target and source-cover opacity. See [facial presentation](../facial-presentation.md) for verified mappings and remaining visual/device checks.
 
 ## Supplied notice
 
@@ -37,7 +37,7 @@ This is an intake summary of the supplied notice, not a legal conclusion or a gr
 
 This candidate is being evaluated for a private, local Vision Pro preview. Neither public application distribution nor redistribution of the original or converted model is part of this intake.
 
-`LocalAssets/` and the runtime outputs `Bina/Resources/Characters/Columbina.usdz` and `ColumbinaIdlePose.json` are excluded by `.gitignore`. Do not commit or upload the archive, extracted textures, editable authoring project, converted character asset, or derived pose data. The application source and this metadata document remain separate from those local assets. A clone without the local USDZ reports a missing asset and retains the placeholder. A valid static model can still load if motion preparation fails; the application reports the motion error separately.
+`LocalAssets/` and the runtime outputs `Columbina.usdz`, `ColumbinaIdlePose.json`, `ColumbinaPhysics.json`, and `ColumbinaFace.json` under `Bina/Resources/Characters/` are excluded by `.gitignore`. Do not commit or upload the archive, textures, authoring project, converted character asset, or derived metadata. A clone without the USDZ retains the placeholder. Invalid pose data retains a static model; invalid physics or face data retains primary motion and reports that feature separately.
 
 Revisit the asset source and applicable permissions before any public build, shared asset package, or commercial distribution. The repository's own software license does not extend to this model.
 
@@ -47,7 +47,7 @@ The selected tools are Blender 4.5.15 and MMD Tools 4.5.14, obtained for isolate
 
 PMX import and USDZ export completed with Y-up orientation and a 180-degree source-front correction. Materials were deliberately adapted to portable Principled/USD Preview Surface shading; original toon and sphere effects were not retained. The importer warned that shared `toon01.bmp` was missing; that reference is unused after adaptation.
 
-The current runtime file is 26,565,047 bytes, with verified SHA-256 `778f6a594d04ef61e7fd733682dd1ed2755b0631c61546678e7843c76029eb22`. Its paired `ColumbinaIdlePose.json` is 3,753 bytes, with SHA-256 `2c664448b0bd0ff6f2da5cdcb4ee01f98db3ea5774dd96966628e3dacc17358c`; the JSON embeds the exact model SHA-256. The conversion report records 55,943 vertices, 80,794 triangles, 26 materials, 10 packaged textures, one armature, and 60 source shape keys. Rig and shape inventory alone is not proof of runtime control.
+The facially repaired runtime file is 26,931,049 bytes, SHA-256 `5b35b6406d1f2962ca1860a947ab969e70b27e72d12965d2a5835fbd454cc806`. Its paired `ColumbinaIdlePose.json` is 3,754 bytes, SHA-256 `f1ab63a2840d6f39122910451e92ce7bcd6a5816d6d696e35bf838d6c3c31558`; only the embedded model hash and serialization changed. The original conversion records 55,943 vertices, 80,794 triangles, 26 materials, 10 textures, one armature, and 60 source shape keys. The facial repair preserves non-facial USD data and texture bytes, rebuilds unique facial targets, and validates six semantic channels. Original pre-face resources remain in `LocalAssets/Columbina/facial-audit/before-face/`.
 
 The initial conversion passed `usdchecker --arkit`, device and Simulator SDK builds, and bundled RealityKit loading checks for normalized height, feet placement, centering, and nonempty geometry. Its authoring project, front preview, and report remain in `LocalAssets/Columbina/converted/`. The historical eye-corrected static asset and working files remain in `LocalAssets/Columbina/eye-fix/`; that asset is 26,560,808 bytes with SHA-256 `18f7c1e1c13abb985a595747283ccc431add227219c4e967eac4c06f37a308ce`. The pre-eye-correction asset remains at `LocalAssets/Columbina/diagnostics/eyes-before.usdz`. The first skeletal export and pose remain in `LocalAssets/Columbina/idle/`; the cuff correction, authoring project, and conversion report are in `LocalAssets/Columbina/sleeve-fix/`. Every USDZ entry's uncompressed payload is byte-identical between those two skeletal exports; archive metadata changes the container hash. The cuff correction changes pose metadata, not mesh, weights, textures, or materials.
 
@@ -125,11 +125,19 @@ Subsequent headset testing found hair/collar penetration and rigid accessory beh
 
 Four selected chains now use spring dynamics: side locks `Joint_0054...0056` and `Joint_0057...0059`, and upper rear locks `Joint_0070...0077` and `Joint_0107...0114`. The solver changes only those 22 local rotations, sharing one skeletal driver between both hair layers. Eight capsule proxies follow the primary neck/chest pose. The model, skin weights, textures, material policy, and accepted arm/thumb deltas are unchanged; this is not a full replay of the original MMD physics graph.
 
-The generated local `ColumbinaPhysics.json` is 4,230 bytes, SHA-256 `289b0d2e69e8813bb33d1934e27fa7d626bea0c971fd05a38b5c29db236ef8e4`, and embeds the current USDZ hash. Bundle all three paired resources. Regenerate older local profiles to include rear-chain angle and speed limits. A missing/invalid physics profile leaves primary motion usable and reports the unavailable feature. The [secondary-motion contract](../secondary-motion.md#reproduce-the-local-profile) provides generation commands, settings, controls, reset policy, verification coverage, and remaining device checks.
+The current local `ColumbinaPhysics.json` is 4,151 bytes, SHA-256 `592b517b008c4ccb4728796986ac498ee5e4d9ae5005da46ed558caeafa18098`. Facial preparation updated its model hash and serialization while retaining all numerical settings. Bundle all four resources. Older physics profiles need the rear-chain angle and speed limits. Missing/invalid physics data retains primary motion and reports the unavailable feature. The [secondary-motion contract](../secondary-motion.md#reproduce-the-local-profile) records generation, controls, reset policy, and device checks.
 
 The user subsequently confirmed improved cheek locks but reported rear-hair twitching during head turns and model rotation. Rear locks now evaluate rest direction/twist against the complete primary pose, with 0.65-radian shape and 2-radian/second motion limits. The solver uses explicit quaternion identity, avoids converting contact correction into velocity, and preserves history through ordinary yaw.
 
-The corrected suite passes all 95 tests with zero failures/skips at `/private/tmp/Bina-Rear-Hair-Regression-Tests-3.xcresult`. Actual imported-mesh tests cover both hair layers against selected collar surfaces at seven settled targets; continuous tests cover 30/60/90/120 FPS and heading-slider changes. A normalized 11-second sweep has zero selected-region crossings across 24 mesh samples. These checks protect the selected contact region and tested motion paths, not all costume surfaces or arbitrary movements. The earlier cuff-fix headset pass remains separate from this correction's pending headset acceptance.
+The preceding rear-lock correction passed 95 tests at `/private/tmp/Bina-Rear-Hair-Regression-Tests-3.xcresult`. Imported-mesh checks cover both hair layers against selected collar surfaces at seven settled targets; motion tests cover 30/60/90/120 FPS and heading changes. Its normalized sweep had zero selected-region crossings across 24 samples. The user subsequently reported no major issue in that headset check, a preliminary stability pass without sustained performance measurements. The current facial suite retains all those automated regressions.
+
+### Facial targets, eye states, and previews
+
+The original export had 60 facial names but only seven target prims because of sanitized-name collisions; RealityKit imported no usable facial mapping. The local repair reconstructs 60 unique sparse targets from the retained basis-matched Blender mesh. Base geometry, skeleton, weights, UVs, materials, and texture bytes remain unchanged. The face profile selects eyelid closure, smile, two brow controls, and two mouth controls.
+
+Normal playback defaults to visible eye covering with closed eyes. Uncovering fades the covering before opening the eyes; covering reverses that order. Only the uncovered state schedules natural blinking. Neutral, gentle smile, curiosity, and relaxed/open/round mouth previews are manually selectable. Pause, visibility gating, exact source reference, replacement, and fallback are covered independently from skeleton ownership.
+
+`ColumbinaFace.json` is 349 bytes, SHA-256 `4543fb045c0c4ec06c97691188b975e18d44a8d613f8698fd785ae7c7ae8363f`. All 115 tests pass at `/private/tmp/Bina-Facial-States-Tests.xcresult`; a supplemental per-frame ownership test passes at `/private/tmp/Bina-Facial-Ownership-Tests.xcresult`. Native renders cover nine facial states from four views. See [facial presentation](../facial-presentation.md) for preparation, channels, lifecycle, and pending headset acceptance. Facial preview labels do not implement emotion, conversation, or lip sync.
 
 ## Reproduce locally
 
@@ -143,6 +151,6 @@ Use the retained original PMX file and a locally obtained MMD Tools directory. R
   --working LocalAssets/Columbina/sleeve-fix --turn-around
 ```
 
-The converter also writes `ColumbinaIdlePose.json` beside the USDZ. Bundle both outputs. Headset testing should compare the natural and reference poses, pause and resume the idle, inspect sleeves, skirt, shoulder cape, and cloak during movement, and check the eye covering, hair detail, and shoes for preserved transparency. Continue checking identity, complete textures, scale, upright orientation, fixed feet, scene re-entry, and frame stability. Record material or costume differences rather than treating adapted shading as an exact reproduction.
+The converter writes the base USDZ and `ColumbinaIdlePose.json`. Generate its paired physics profile using the [physics preparation instructions](../secondary-motion.md#reproduce-the-local-profile), then run the [facial repair](../facial-presentation.md#reproduce-the-local-repair) and bundle the four repaired resources together. On the headset, compare natural/reference poses, pause/resume, both eye states, blinking, mouth/expression previews, and moving costume surfaces. Continue checking textures, scale, upright orientation, fixed feet, re-entry, and frame stability. Record differences rather than treating adapted shading as an exact reproduction.
 
 See the [character asset specification](../character-assets.md) for the general asset contract and the [character profile](columbina.md) for portrayal requirements.

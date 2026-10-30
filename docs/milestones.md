@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: basic D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 95 tests pass after the rear-lock stability correction. The correction awaits a new headset quality/performance check; remaining M1 behavior is open. Last updated: 2026-10-30.
+Status: D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, head attention, selected hair physics, two eye states, blinking, and facial previews are implemented. All 115 tests pass. The latest hair check has a preliminary pass; facial headset acceptance and sustained performance remain open. Last updated: 2026-10-30.
 
 ## Planning rules
 
@@ -46,7 +46,7 @@ Exit evidence: results identify a workable path for the first experience and doc
 
 Integrate a mixed immersive scene, explicit placement, a validated character asset, basic idle behavior, and attention toward the user based on available input. Include anchor restoration and a placement recovery path.
 
-Current partial result: [local Columbina model intake and conversion](characters/columbina-model.md), relaxed stance and idle, bounded head attention, and a loader that retains the placeholder until the character succeeds. The user found posture and motion generally acceptable and confirmed the cuff correction. Attention's headset acceptance, facial control, expressive motion, broader costume validation, and measured performance remain open for validation or implementation as applicable.
+Current partial result: [local model intake](characters/columbina-model.md), stance/idle, head attention, selected hair physics, two eye states, blinking, manual facial previews, and a loader retaining the placeholder until success. The user found stance/idle acceptable, confirmed the cuff correction, and reported no major issue in the latest rear-hair check. Facial acceptance, conversational expressive behavior, broader costume validation, and measured performance remain open.
 
 Acceptance checks:
 
@@ -96,7 +96,13 @@ The source audit found 607 rigid bodies, 956 spring joints, and mappings for all
 
 The user confirmed improved cheek locks but found rear hair twitching during head turns and model rotation. The subsequent correction adds primary-pose chain guides, valid hard quaternion limits, non-impulsive contact correction, angular-speed bounds, and yaw-preserving history. The [secondary-motion contract](secondary-motion.md) records the solver, profile, controls, debug geometry, CPU timing snapshot, 95-test pass, and native mesh/motion comparisons. Selected collar-region and continuity checks pass on desktop; the next gate is a new headset check of rear-hair stability, natural lag/settling, pause/re-entry/scale behavior, and measured device cost. After that gate, expand selected accessories or evaluate a native cloth panel. Authored clearance, weights, and fitted collar deformation remain part of the broader solution.
 
-After that gate, validate a small set of facial channels, then prioritize the M2 text-personality and confirmed-memory loop before expanding voice and coordinated mouth motion. This is a proposed sequence, not evidence that those capabilities exist.
+The subsequent user report found no major issue in the rear-hair correction. Record a preliminary stability pass while retaining the broader costume/performance checks.
+
+### Facial channels and eye-state presentation
+
+The facial increment repairs the source export's blend-shape naming collisions, validates six semantic controls, and adds covered/closed versus uncovered/open presentation. The cover fades before eyes open and returns after they close. Uncovered eyes blink naturally. Neutral/smile/curiosity and relaxed/open/round mouth shapes are manual previews. Playback gating, reference restore, safe replacement, primary-motion fallback, and per-frame skeleton/material ownership are tested.
+
+The [facial contract](facial-presentation.md) records 115 passing tests, repaired/paired resources, native renders, and pending device review. After that gate, prioritize the M2 text-personality and confirmed-memory loop before voice and synchronized mouth motion. Those conversational capabilities remain proposals.
 
 ## M2: Conversation, personality, and minimum continuity
 
@@ -156,7 +162,7 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 ## Open inputs
 
 - Review feedback on the source-derived Columbina profile and which lore details need independent verification.
-- Head-attention naturalness and affected hair/collar deformation on the headset, broader transition quality, and measured performance. The reported cuff issue has a user-reported pass.
+- Facial presentation on the headset, broader transition/costume quality, and measured performance. The cuff issue has a user-reported pass, and the latest rear-hair check has a preliminary stability pass.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
 - Full device system build and near-term distribution intent; the user-reported system version is 27.2.

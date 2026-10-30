@@ -1,6 +1,6 @@
 # Architecture
 
-Status: proposed logical architecture with spatial placement, character loading, relaxed stance, procedural idle, bounded head attention, and preview controls implemented. The user confirmed the cuff correction on visionOS 27.2; attention acceptance and measured performance remain open. Last updated: 2026-10-30.
+Status: proposed logical architecture with spatial placement, character loading, stance/idle, head attention, selected hair physics, and facial previews implemented. Covered/closed and uncovered/open eye states share existing playback gating. The user reported no major issue in the latest hair check; facial acceptance and measured performance remain open. Last updated: 2026-10-30.
 
 ## Design intent
 
@@ -42,6 +42,8 @@ Per-frame playback state and rig bindings are excluded from observation. Only ex
 Headset feedback subsequently found hair/collar penetration. `CharacterHairPhysics` now extends the same pose owner with a fixed-step spring stage for four accessory chains, after attention and before the single final joint write. `SpringBonePhysics` contains framework-independent integration/contact/clock math. `CharacterPhysicsProfile` validates local-only data paired to the exact model; the binding checks contiguous head-descendant chains and excludes primary body/attention/stance joints. `CharacterPhysicsDebugOverlay` owns optional diagnostic geometry separately from pose state.
 
 Physics resets kinetic history after visibility interruption, significant translation/scale changes, delayed frames, and reference transitions. Character yaw preserves the character-local simulation history. Rear locks use primary-pose orientation guides and angular-speed bounds to avoid accumulated bend/twist and contact jumps; contact position corrections do not inject velocity. Pause freezes the full pose. Profile or simulation failures retain primary motion and provide an explanation; no solver error is silently ignored. The [secondary-motion contract](secondary-motion.md) records normalization, constraint priorities, update limits, resource generation, and actual-mesh verification. Native garment cloth remains separate work requiring explicit visual/deformer ownership and verified update ordering.
+
+The facial stage uses the same playing/visible lifecycle without adding a skeleton writer. `CharacterFacePlayback` owns framework-independent timing and bounded channels; `CharacterFaceMotion` exposes preview intent; `CharacterFaceBinding` owns imported blend weights and the eye-cover material. `CharacterFaceProfile` validates exact model pairing and semantic names. Imported weights/materials are captured before preview changes, allowing exact reference restoration, safe replacement, and independent fallback. The [facial contract](facial-presentation.md) records the repaired asset, two eye states, sequencing, and manual-preview scope. Facial labels do not infer emotional state or conversational activity.
 
 ## Four responsibilities
 

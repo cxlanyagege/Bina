@@ -1,6 +1,6 @@
 # Bounded Head Attention
 
-Status: implemented. Subsequent hair/collar feedback led to selected hair physics/collision and a rear-lock stability correction, now covered by the 95-test suite. The corrected dynamic costume still awaits headset acceptance on visionOS 27.2. Updated: 2026-10-30.
+Status: implemented. Subsequent hair/collar feedback led to selected hair physics and a rear-lock correction; the user now reports no major issue in that check. The current 115-test suite also covers independent facial previews. Broader costume and measured headset performance remain open on visionOS 27.2. Updated: 2026-10-30.
 
 ## Experience and scope
 

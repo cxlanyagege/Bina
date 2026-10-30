@@ -91,6 +91,13 @@ enum CharacterAsset {
             let profile = try await CharacterPhysicsProfile.load(modelURL: modelURL, profileURL: profileURL)
             try motion.configureHairPhysics(profile, pose: pose)
         } catch { motion.reportHairPhysicsUnavailable(error) }
+        do {
+            guard let profileURL = resourceURL("ColumbinaFace", extension: "json", in: bundle) else {
+                throw CharacterFaceError.missingProfile
+            }
+            let profile = try await CharacterFaceProfile.load(modelURL: modelURL, profileURL: profileURL)
+            try motion.configureFace(profile)
+        } catch { motion.reportFaceUnavailable(error) }
         return motion
     }
 

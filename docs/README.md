@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: relaxed stance, idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 95 simulator tests pass after the rear-lock stability correction. The user confirmed the earlier cuff correction and improved cheek locks on visionOS 27.2; rear-hair quality/performance acceptance remains open. See the spatial prototype, secondary-motion contract, and model intake for verification evidence. Last updated: 2026-10-30.
+Status: relaxed stance, idle, head attention, selected hair physics, two eye states, blinking, expression/mouth previews, and comparison controls are implemented. All 115 simulator tests pass. The user reported no major issue in the latest rear-hair check; facial quality and sustained performance remain open on visionOS 27.2. See the spatial prototype, facial presentation, secondary-motion contract, and model intake for evidence. Last updated: 2026-10-30.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -12,6 +12,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Spatial prototype](spatial-prototype.md) | Run the first D1 experiment and record actual device results. |
 | [Head attention](head-attention.md) | Understand bounded neck/head motion, controls, lifecycle, and validation limits. |
 | [Secondary motion](secondary-motion.md) | Reproduce selected hair physics and review collision scope, controls, native cloth options, and verification. |
+| [Facial presentation](facial-presentation.md) | Reproduce facial target repair, covered/closed and uncovered/open states, blinking, previews, and lifecycle checks. |
 | [Columbina character profile](characters/columbina.md) | Review the adaptation of the supplied identity and personality files. |
 | [Columbina evaluations](characters/columbina-evaluation.md) | Assess personality fidelity through observable scenarios. |
 | [Platform capabilities](platform-capabilities.md) | Distinguish available sensing from approval-dependent or unsupported assumptions. |
