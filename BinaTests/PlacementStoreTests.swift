@@ -42,6 +42,39 @@ struct PlacementStoreTests {
         }
     }
 
+    @Test func legacyPlacementKeepsItsOriginalOriginSemantics() throws {
+        let id = UUID()
+        let data = Data("{\"schemaVersion\":1,\"anchorID\":\"\(id)\",\"createdAt\":0}".utf8)
+        let placement = try JSONDecoder().decode(SavedPlacement.self, from: data)
+        #expect(placement.anchorID == id)
+        #expect(placement.alignment == nil)
+    }
+
+    @Test func groundedPlacementPersistsOnlyItsAnchorAndSoleAlignment() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appendingPathComponent("grounded.json")
+            let placement = SavedPlacement(anchorID: UUID(), alignment: .soleContact)
+            let store = FilePlacementStore(fileURL: url)
+            try store.save(placement)
+            let restored = try store.load()
+            #expect(restored == placement)
+            let object = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String:Any])
+            #expect(Set(object.keys) == Set(["schemaVersion","anchorID","createdAt","alignment"]))
+            #expect(object["alignment"] as? String == "soleContact")
+        }
+    }
+
+    @Test func unknownAlignmentIsReportedWithoutDeletingTheRecord() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appendingPathComponent("unknown-alignment.json")
+            let data = Data("{\"schemaVersion\":1,\"anchorID\":\"\(UUID())\",\"createdAt\":0,\"alignment\":\"future\"}".utf8)
+            try data.write(to: url)
+            #expect(throws: DecodingError.self) { try FilePlacementStore(fileURL: url).load() }
+            let retained = try Data(contentsOf: url)
+            #expect(retained == data)
+        }
+    }
+
     @Test func corruptedFileIsReportedAndPreserved() throws {
         try withTemporaryDirectory { directory in
             let url = directory.appendingPathComponent("placement.json")

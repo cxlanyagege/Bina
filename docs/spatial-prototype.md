@@ -1,12 +1,12 @@
 # Spatial Prototype
 
-Status: stance/idle, head attention, selected hair physics, two eye states, blinking, and facial previews are implemented. All 115 simulator tests and both SDK builds pass. The latest hair check has a preliminary user-reported pass; facial headset quality and sustained performance remain pending on visionOS 27.2. Updated: 2026-10-30.
+Status: classified-floor preview/confirmation, calibrated sole contact, manual-height fallback, stance/idle, head attention, selected hair physics, and facial previews are implemented. The user reported preliminary hair stability and natural facial presentation. Floor contact, sensing/recovery behavior, and sustained performance require headset checks on visionOS 27.2. Updated: 2026-10-31.
 
 ## Scope
 
 The app opens a mixed `ImmersiveSpace`, places a character using ARKit world tracking, and attempts to restore the selected anchor across sessions. It asynchronously loads the locally converted Columbina USDZ, retaining the generated humanoid placeholder while loading or on failure. Both use a 1.6-meter reference height before the user changes scale.
 
-This does not complete M1. Automatic floor detection, surface snapping, environment occlusion/collision avoidance, conversational behavior, and personal memory remain unimplemented. Facial controls are manual previews. The real room remains visible through passthrough.
+This does not complete M1. The [floor workflow](floor-placement.md) requires stable, classified floor coverage and explicit confirmation, then uses the existing world-anchor path. Environment occlusion/collision avoidance, walking, foot IK, conversational behavior, and personal memory remain unimplemented. Facial controls are manual previews. The real room remains visible through passthrough.
 
 ## Local Columbina preview
 
@@ -27,12 +27,12 @@ The user identifies Device Hub as the current developer GUI entry point, with th
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
 4. For a character-enabled build with motion and facial controls, confirm all four matching local resources exist at the paths above. Build and run while wearing the headset.
 5. Check model status in the control window. Wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
-6. Use the enter-space button and wait for world tracking to become available. An unsupported environment shows a message; it does not perform fake placement.
-7. Look approximately horizontally toward the desired location. Set the horizontal distance and the distance from the headset down to the character's feet, then choose place-and-save.
-8. Adjust scale and yaw. These appearance changes are live; placement-distance and foot-offset changes apply when the next placement is requested. Natural stance is selected by default, and idle advances only while the character is visible.
+6. Use the enter-space button, allow the system world-sensing request for floor detection, and wait for tracking. Denied or unsupported plane sensing leaves manual-height placement available; no simulated floor is substituted.
+7. Select stand-on-floor, slowly inspect the real floor, and wait for stable-floor status. Face the desired direction, choose the horizontal distance, then preview. Inspect the green foot-range disk and confirm placement/save. If no suitable floor is found, adjust distance/direction or switch to manual height and choose the headset-to-feet offset before place-and-save.
+8. Adjust scale and yaw. Grounded placements retain the same sole contact point; legacy/manual placements retain their original pivot. Placement-distance and manual foot-offset changes apply to the next request. Appearance changes cancel an unconfirmed floor preview. Natural stance is selected by default, and idle advances only while the character is visible.
 9. With attention enabled, move sideways, sit/stand, approach, and pass behind the character. Compare with attention disabled. Pause/resume and compare the reference pose with the natural stance. Inspect neck, hair, collar, feet, shoulders, sleeves, skirt/cloak, eyes, and transparency. Record deformation differences and any motion jump.
 10. In the facial group, compare covered/closed with uncovered/open. Inspect automatic and manual blinks, reverse an eye-state transition, preview neutral/smile/curiosity and mouth shapes, then check pause/reference/re-entry. Review both close facial views and conversational distance.
-10. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns and idle updates restart while preserving the selected in-process pause/reference mode. If the anchor is unavailable, wait at the original location or explicitly place again.
+11. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns and idle updates restart while preserving the selected in-process pause/reference mode. If the anchor is unavailable, wait at the original location or explicitly place again.
 
 The interface is in Simplified Chinese. The control names below describe their meaning in English.
 
@@ -42,10 +42,14 @@ The interface is in Simplified Chinese. The control names below describe their m
 | --- | --- |
 | Enter/exit space | Opens or dismisses the mixed immersive scene. Transitions prevent duplicate open/close requests. |
 | Model status and retry | Reports whether Columbina loaded; retries a failed or missing local asset without changing saved placement. |
+| Placement mode | Stand-on-floor is the default; manual height remains available when floor sensing is denied, unavailable, or insufficient. |
 | Horizontal distance | 0.75–3.0 meters; initially 2.0. Applies to the next placement. |
-| Feet below headset | 0–2.0 meters; initially 1.4. A manual vertical offset, not measured floor height. |
-| Place/re-place and save | Uses current valid device pose, projected horizontal heading, and the chosen offsets. The character initially faces back toward the user. |
-| Height | 0.4–1.9 meters; initially 1.6. Changes visible character scale without moving its anchor. |
+| Preview floor placement | Uses fresh device heading and stable classified floor coverage to freeze a world-space green disk. Re-preview replaces it; head movement does not make it follow. |
+| Confirm floor placement and save | Revalidates the preview, settings, tracking, and floor support before committing a sole-aligned world anchor. Cancellation leaves the saved placement untouched. |
+| Retry floor detection | Creates fresh tracking/plane providers after a floor denial or failure, retaining saved placement. Allow system permission first when needed. |
+| Feet below headset | Manual-height mode only: 0–2.0 meters, initially 1.4. A manual vertical offset, not measured floor height. |
+| Manual place/re-place and save | Uses current valid device pose, projected horizontal heading, and the chosen offsets. The character initially faces back toward the user. |
+| Height | 0.4–1.9 meters; initially 1.6. Changes visible character scale without moving its anchor; grounded records retain the sole pivot. |
 | Heading adjustment | Local yaw from -180 to 180 degrees. It does not make the character continuously turn toward the user. |
 | Pause/resume idle | Freezes the complete current pose, including attention and cycle phase, then continues from that pose. Toggle changes take effect on resume. Unavailable in reference mode or when idle preparation fails. |
 | Look toward me | Enabled by default; gently turns neck/head toward a fresh tracked device position. Rear, near, invalid, or missing targets return toward neutral. Disabling blends toward neutral during playback. |
@@ -58,7 +62,7 @@ The interface is in Simplified Chinese. The control names below describe their m
 | Retry tracking | Available after tracking failure; creates a fresh session/provider while retaining placement metadata. |
 | Forget saved position | Requires confirmation, clears only the prototype's placement association, and hides the placeholder. Placement can then start again. |
 
-The geometry helper ignores head pitch and roll so the placeholder stays upright. Looking nearly straight up or down provides no usable horizontal heading and prompts another placement attempt. Physical floor contact depends on the manually chosen foot offset; leaning or changing head height before placement changes that reference.
+The heading helper ignores head pitch and roll so the character stays upright. Looking nearly straight up or down provides no usable horizontal heading and prompts another placement attempt. Floor mode solves height from a classified mesh, checks complete foot-range coverage, and keeps a frozen preview until confirmation or invalidation. Confirmed placement does not resnap as planes refine. Manual mode still depends on the chosen head-relative offset. See the [floor contract](floor-placement.md) for thresholds, calibration, and limitations on slopes/uneven ground.
 
 Appearance and placement controls survive leaving and reentering the immersive space within the same process. They reset to defaults after application restart. Only the saved anchor association persists; the prior scale and yaw are not restored.
 
@@ -72,7 +76,7 @@ Face playback shares playing/visible gating, but owns only blend weights and the
 
 ## Persistence and recovery
 
-ARKit owns world-anchor persistence. Bina writes `Application Support/Bina/spatial-placement.json` inside its application container, with schema version, anchor UUID, and creation date. It does not restore from cached world coordinates. [Apple world-anchor guidance](https://developer.apple.com/documentation/visionos/tracking-points-in-world-space)
+ARKit owns world-anchor persistence. Bina writes `Application Support/Bina/spatial-placement.json` inside its application container, with schema version, anchor UUID, creation date, and optional `soleContact` alignment. Existing schema-1 records without alignment retain their original model-origin semantics. Loading does not rewrite them. Plane meshes/IDs and raw world coordinates are not stored as restoration authority. [Apple world-anchor guidance](https://developer.apple.com/documentation/visionos/tracking-points-in-world-space)
 
 - The placeholder is hidden whenever the scene is inactive, the provider is not running, or device/anchor tracking is invalid. Scene inactivity, provider pauses, and device-tracking loss invalidate cached anchor observations. Resuming first refreshes current anchors before rendering; the old pose is not reused as evidence of recovery.
 - Session-generation and anchor-revision checks reject snapshots that became obsolete during an asynchronous read, as well as late results from previous sessions. Current valid updates can make the placeholder visible again.
@@ -86,7 +90,7 @@ ARKit owns world-anchor persistence. Bina writes `Application Support/Bina/spati
 
 The cleanup policy assumes this prototype is the application's only world-anchor owner. Add explicit ownership rules before other features begin storing anchors; do not reuse the single-placement policy unchanged for multiple independent spatial features.
 
-This prototype does not request camera, hand, plane, or scene-reconstruction data. World tracking itself does not require user authorization; support and session validity are still checked. See [platform capabilities](platform-capabilities.md).
+World tracking itself does not require user authorization. Floor detection additionally requests world-sensing authorization with a purpose string in `Info.plist`. The prototype does not request camera, hand, or scene-reconstruction data. Support, authorization, and individual provider state are checked. See [platform capabilities](platform-capabilities.md).
 
 ## Device acceptance checklist
 
@@ -94,7 +98,10 @@ Record each case as pass, fail, or unassessed, with reproduction steps for failu
 
 | Case | Expected observation |
 | --- | --- |
-| First launch and placement | Controls become usable only with active tracking; the placeholder appears at the requested heading and offsets. |
+| First launch and placement | Floor preview needs active tracking and stable floor coverage; confirmation places at the inspected green disk. Manual-height fallback uses its chosen offsets. |
+| Floor permission/fallback | Allowed permission enables classification; denial/revocation hides the preview while retaining manual mode and valid saved-world placement. |
+| Ground contact and preview | Inspect seated/standing placement, all supported heights, and several headings. Both feet fit the disk and meet the real floor; head movement leaves the preview frozen. Tables/unknown planes cannot substitute for the floor. |
+| Floor evidence changes | Loss of tracking/support cancels the unconfirmed preview. Confirmed placements remain tied to the saved world anchor through later plane refinements. |
 | Local character load | Status reports success and Columbina replaces the placeholder at the same placement, scale, and heading. |
 | Missing or invalid local model | Status reports failure; the placeholder remains usable and retry does not reset placement. |
 | Missing or mismatched idle data | The static model remains available, the idle explanation is visible, and no incorrect skeleton mapping is applied. |
@@ -141,6 +148,8 @@ The user also reported that front cloth disappeared when viewed from behind, and
 On 2026-10-30, the user reported no obvious remaining visual issues in a preliminary naked-eye headset check. This is an initial static-appearance pass after the material corrections. The feedback does not establish animation quality or sustained performance; a detailed checklist and measured results were not supplied. Recheck material appearance as natural stance and motion are introduced.
 
 The user subsequently reported visionOS 27.2 and requested the natural-stance/idle increment. After trying it, the user found posture and motion generally acceptable but reported severe cuff penetration that persisted while paused. On 2026-10-30, after testing the calibrated pose, the user confirmed that the issue was resolved. This is a user-reported cuff-fix pass, separate from the earlier static-appearance feedback; no detailed checklist or performance measurements accompanied it.
+
+Subsequent user feedback reported no major issue with the corrected rear hair and found the facial presentation natural. These are preliminary stability/naturalness passes without a complete visual checklist or sustained measurements. The user then chose the first real-floor placement increment before walking animations. No physical-device floor result is recorded yet.
 
 ## Automated verification
 
@@ -237,9 +246,24 @@ Current facial verification, recorded on 2026-10-30:
 | Per-frame ownership supplement | One strengthened ownership test passed at `/private/tmp/Bina-Facial-Ownership-Tests.xcresult`, including every frame of cover-opacity changes. |
 | SDK builds/resources | Simulator and generic visionOS device builds pass; all four bundled resources match the local source bytes. Facial repair retains base geometry, skinning, material data, and texture bytes. |
 | Native rendering | Nine facial/control states from front, quarter, above, and below views demonstrate covered closure, uncovered opening/blinking, expressions, mouth shapes, return, and reference. |
-| Device acceptance | Facial naturalness, transition appearance, frame cost, and sustained thermal behavior remain pending on the user's visionOS 27.2 headset. |
+| Subsequent device feedback | The user found the facial presentation natural. Detailed transition/rendering checks, frame cost, and sustained thermal behavior remain open on visionOS 27.2. |
 
 The [facial contract](facial-presentation.md) records exact resources, source backup, repair commands, lifecycle, and preview scope.
+
+### Floor placement verification
+
+Verification recorded on 2026-10-31:
+
+| Check | Recorded result |
+| --- | --- |
+| Full visionOS Simulator 27.0 suite | 145 passed, zero failures/skips, no reported runtime warnings. The preceding 115 cases plus seven surface, fourteen floor-evidence/preview, three persistence, three controller-state, and three actual-foot cases. Final result after contact-calibration observability correction: `/private/tmp/Bina-Floor-Placement-Final-Tests.xcresult`. |
+| SDK builds and bundled resources | Simulator test build and generic visionOS device build passed with Xcode 27.1 (27A9275), signing disabled. Both app bundles retain all four exact character resources, the world-sensing purpose string, and the 27.0 minimum target. This is not a headset installation or sensor run. |
+| Actual foot contact and coverage | Independent CPU skinning includes exposed foot skin and shoe ornaments. Contact and complete disk coverage pass at character heights 0.4, 1.6, and 1.9 meters and headings 0, 90, and -180 degrees. Saved sole alignment preserves the foot pivot; legacy records retain their origin without a load-time save. |
+| Calibration measurement | At the normalized 1.6-meter reference, contact center is approximately `(0, 0, -0.162226)` meters and the conservative radius is `0.126108` meters, before the 3-centimeter placement margin. This is geometry measurement, not observed room contact error. |
+| Interactive Simulator UI | The screenshot request did not produce an image and was cancelled. No completed visual walkthrough of the new controls/marker is claimed. |
+| Live sensing and physical contact | Not yet assessed on the user's headset. Authorization UI, actual classified-plane delivery, detection delay, recentering, visible contact accuracy, drift, and sustained cost require the physical test. |
+
+The [floor contract](floor-placement.md) owns the physical-headset checklist. Local evidence is retained in `LocalAssets/Columbina/floor-diagnostics/`; no character resource is rewritten by this increment.
 
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 
@@ -257,7 +281,8 @@ Date / app revision:
 Xcode version / build:
 Device model / visionOS version:
 Room and lighting conditions:
-Placement distance / foot offset / height / yaw:
+Placement mode / distance / manual foot offset / height / yaw:
+Floor authorization / detection delay / visible sole error:
 Build result:
 Automated test result / result bundle:
 Device checklist results:

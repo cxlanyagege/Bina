@@ -54,15 +54,26 @@ struct ContentView: View {
                 }
                 GroupBox("下一次放置") {
                     VStack(alignment: .leading, spacing: 14) {
-                        valueSlider("与头显的水平距离", value: $prototype.placementDistance, range: 0.75...3, unit: "米")
-                        valueSlider("脚底低于头显", value: $prototype.feetBelowHead, range: 0...2, unit: "米")
-                        Text("面向空处，调整高度后点击放置。这是手动高度，不会自动识别地面。")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Button(prototype.hasSavedPlacement ? "重新放置并保存" : "放置并保存") {
-                            Task { await prototype.placeInFront() }
+                        Picker("放置方式", selection: $prototype.placementMode) {
+                            Text("站到地板").tag(SpatialPrototype.PlacementMode.floor)
+                            Text("手动高度").tag(SpatialPrototype.PlacementMode.manualHeight)
                         }
-                        .disabled(!prototype.canPlace)
+                        .pickerStyle(.segmented)
+                        .disabled(prototype.isBusy)
+                        valueSlider("与头显的水平距离", value: $prototype.placementDistance, range: 0.75...3, unit: "米")
+                            .disabled(prototype.isBusy)
+                        if prototype.placementMode == .floor {
+                            FloorPlacementControls(prototype: prototype)
+                        } else {
+                            valueSlider("脚底低于头显", value: $prototype.feetBelowHead, range: 0...2, unit: "米")
+                                .disabled(prototype.isBusy)
+                            Text("面向空处，调整高度后放置。这是手动高度，可在未识别到地面时使用。")
+                                .font(.caption).foregroundStyle(.secondary)
+                            Button(prototype.hasSavedPlacement ? "重新放置并保存" : "放置并保存") {
+                                Task { await prototype.placeInFront() }
+                            }
+                            .disabled(!prototype.canPlace)
+                        }
                     }
                 }
                 GroupBox("角色外观") {
@@ -71,6 +82,7 @@ struct ContentView: View {
                         valueSlider("朝向调整", value: $prototype.headingDegrees, range: -180...180, unit: "度", step: 5)
                     }
                 }
+                .disabled(prototype.isBusy)
                 GroupBox("站姿与待机") {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(prototype.idleDescription).font(.callout)

@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, head attention, selected hair physics, two eye states, blinking, and facial previews are implemented. All 115 tests pass. The latest hair check has a preliminary pass; facial headset acceptance and sustained performance remain open. Last updated: 2026-10-30.
+Status: D1 spatial checks and preliminary appearance have user-reported passes. Floor preview/confirmation, calibrated sole contact, stance/idle, head attention, selected hair physics, two eye states, blinking, and facial previews are implemented. The latest hair and facial checks have preliminary passes. Floor acceptance and sustained performance remain open. Last updated: 2026-10-31.
 
 ## Planning rules
 
@@ -26,9 +26,9 @@ Exit evidence: each immediate implementation dependency is either resolved or is
 
 The first placement/restoration experiment now has an implementation. It includes mixed-space entry and exit, a generated placeholder, manual heading-based placement, live scale/yaw controls, anchor-association persistence, recovery status, and explicit forgetting. Device and Simulator SDK builds pass, and 27 automated tests pass on visionOS Simulator 27.0. On 2026-10-29 the user reported that the four delivered feature groups worked on a physical headset. Detailed stress checks and measurements are not yet recorded. See the [spatial prototype guide](spatial-prototype.md#initial-device-feedback) for the scope of that feedback.
 
-The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved. Bounded head attention is now implemented with separate headset acceptance pending; current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). This remains partial M1 progress: automatic floor placement, environmental occlusion, measured performance, and broader companion behavior are separate work.
+The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved. Head attention, selected hair physics, and facial channels were added subsequently; the latest hair/facial checks have preliminary passes. Current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). Floor preview/confirmation is now implemented but needs physical-room acceptance. Environmental occlusion, measured performance, and broader companion behavior remain separate work.
 
-Current priority, following the user's 2026-10-29 request: see Columbina in the real room before adding conversation. On 2026-10-30 the user requested implementation of natural stance, minimal idle, and comparison controls. Text conversation and the confirmed-preference lifecycle remain planned; they no longer precede this visual increment.
+Current priority: validate Columbina standing on the real floor before adding walking animations. This follows the user's visual-presence work, the preliminary hair/facial passes, and explicit authorization of the first floor increment. Text conversation and the confirmed-preference lifecycle remain planned.
 
 | Experiment | Success evidence | Important failure case |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ Exit evidence: results identify a workable path for the first experience and doc
 
 Integrate a mixed immersive scene, explicit placement, a validated character asset, basic idle behavior, and attention toward the user based on available input. Include anchor restoration and a placement recovery path.
 
-Current partial result: [local model intake](characters/columbina-model.md), stance/idle, head attention, selected hair physics, two eye states, blinking, manual facial previews, and a loader retaining the placeholder until success. The user found stance/idle acceptable, confirmed the cuff correction, and reported no major issue in the latest rear-hair check. Facial acceptance, conversational expressive behavior, broader costume validation, and measured performance remain open.
+Current partial result: [local model intake](characters/columbina-model.md), [floor preview/confirmation](floor-placement.md), calibrated sole contact, stance/idle, head attention, selected hair physics, two eye states, blinking, manual facial previews, and a loader retaining the placeholder until success. The user found stance/idle acceptable, confirmed the cuff correction, reported no major issue in the latest rear-hair check, and found the facial preview natural. Floor acceptance, conversational expressive behavior, broader costume validation, and measured performance remain open.
 
 Acceptance checks:
 
@@ -102,7 +102,24 @@ The subsequent user report found no major issue in the rear-hair correction. Rec
 
 The facial increment repairs the source export's blend-shape naming collisions, validates six semantic controls, and adds covered/closed versus uncovered/open presentation. The cover fades before eyes open and returns after they close. Uncovered eyes blink naturally. Neutral/smile/curiosity and relaxed/open/round mouth shapes are manual previews. Playback gating, reference restore, safe replacement, primary-motion fallback, and per-frame skeleton/material ownership are tested.
 
-The [facial contract](facial-presentation.md) records 115 passing tests, repaired/paired resources, native renders, and pending device review. After that gate, prioritize the M2 text-personality and confirmed-memory loop before voice and synchronized mouth motion. Those conversational capabilities remain proposals.
+The [facial contract](facial-presentation.md) records its 115-test baseline, repaired/paired resources, and native renders. Subsequent user feedback found the preview natural, a preliminary pass without sustained performance measurements. The user selected floor placement as the next visual increment. M2 text personality and confirmed memory remain proposals, before voice and synchronized mouth motion.
+
+### First real-floor placement
+
+Status: implemented; physical-headset acceptance pending. The [floor contract](floor-placement.md) records the workflow, geometry thresholds, calibration, fallback, and verification.
+
+An authorized horizontal plane provider supplies classified floor meshes to a separate evidence/preview model. Stable actual-mesh coverage permits a frozen green landing preview; explicit confirmation commits a sole-aligned world anchor through the existing replacement transaction. Contact includes both exposed feet and shoe ornaments. Scale/yaw preserve that contact point, and plane refinements do not continually move a confirmed character. Older records retain their original origin semantics; denied/unavailable sensing retains manual height.
+
+Acceptance checks:
+
+- Preview and confirmation work with actual classified floors on the user's visionOS 27.2 headset; tables and unknown horizontal surfaces are excluded.
+- Both feet visibly meet the floor at seated/standing head heights and supported character heights/headings.
+- A pending preview stays fixed while looking around and clears on stale support/tracking; confirmation preserves the old placement on failure.
+- Permission denial/revocation leaves the manual path and valid saved-world placement usable.
+- Existing manual records and new sole-aligned records restore without silent migration or cached-coordinate fallback.
+- Idle, attention, hair, facial, and cuff regressions remain coherent after placement and recovery.
+
+Walking, navigation, room collision, foot IK, and environment occlusion remain later increments. Device evidence for ground contact should precede motion that moves the feet.
 
 ## M2: Conversation, personality, and minimum continuity
 
@@ -162,7 +179,7 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 ## Open inputs
 
 - Review feedback on the source-derived Columbina profile and which lore details need independent verification.
-- Facial presentation on the headset, broader transition/costume quality, and measured performance. The cuff issue has a user-reported pass, and the latest rear-hair check has a preliminary stability pass.
+- Real-floor contact and sensing/recovery on the headset, broader transition/costume quality, and measured performance. Cuff correction, rear-hair stability, and facial naturalness have preliminary user-reported passes.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
 - Full device system build and near-term distribution intent; the user-reported system version is 27.2.

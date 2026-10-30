@@ -6,11 +6,13 @@ The first character is **Columbina from Genshin Impact**, retaining her characte
 
 ## Project status
 
-The spatial prototype supports mixed immersive entry, manual character placement, saved-world-anchor restoration, recovery, and explicit forgetting. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character integration. Build and automated-test evidence are recorded in the [verification record](docs/spatial-prototype.md#automated-verification), alongside the [device feedback](docs/spatial-prototype.md#initial-device-feedback).
+The spatial prototype supports mixed immersive entry, classified-floor placement with preview and confirmation, manual-height fallback, saved-world-anchor restoration, recovery, and explicit forgetting. Grounded placements use calibrated sole contact through scale and heading changes. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character and floor increments. Build and automated-test evidence are recorded in the [verification record](docs/spatial-prototype.md#automated-verification), alongside the [device feedback](docs/spatial-prototype.md#initial-device-feedback).
 
-The current preview implements relaxed stance, procedural idle, bounded head attention, selected hair physics, two eye states, natural blinking, restrained expressions, mouth previews, and pause/reference controls. Covered eyes remain closed; uncovered eyes blink naturally. Facial targets were repaired without re-exporting base geometry, skinning, materials, or textures. All 115 simulator tests pass, including face lifecycle, continuous hair motion, actual hair/collar, and cuff regressions. The user reported no major issue in the latest hair check; facial quality and sustained performance need a new headset review. See [Facial presentation](docs/facial-presentation.md), [Secondary motion](docs/secondary-motion.md), [head attention](docs/head-attention.md), and the [model intake](docs/characters/columbina-model.md).
+The current preview implements relaxed stance, procedural idle, bounded head attention, selected hair physics, two eye states, natural blinking, restrained expressions, mouth previews, and pause/reference controls. Covered eyes remain closed; uncovered eyes blink naturally. Facial targets were repaired without re-exporting base geometry, skinning, materials, or textures. The user reported no major issue in the latest hair check and found the facial preview natural. These are preliminary passes; measured performance and broader costume checks remain open. See [Floor placement](docs/floor-placement.md), [Facial presentation](docs/facial-presentation.md), [Secondary motion](docs/secondary-motion.md), [head attention](docs/head-attention.md), and the [model intake](docs/characters/columbina-model.md).
 
-Automatic ground detection, environment occlusion, speech synchronization, voice, conversation, personal memory, and emotional behavior remain unimplemented. Facial labels are manual previews. M1 is partially implemented, not complete.
+Floor detection and contact still require physical-headset acceptance. Environment occlusion, walking, foot IK, speech synchronization, voice, conversation, personal memory, and emotional behavior remain unimplemented. Facial labels are manual previews. M1 is partially implemented, not complete.
+
+The current full suite passes 145 tests on visionOS Simulator 27.0, including actual foot contact/coverage and the preceding character regressions. Simulator results do not establish real-room floor accuracy; see the [floor verification record](docs/spatial-prototype.md#floor-placement-verification).
 
 The current Xcode project has a visionOS 27.0 minimum deployment target.
 
@@ -19,6 +21,7 @@ The current Xcode project has a visionOS 27.0 minimum deployment target.
 Start with the [documentation guide](docs/README.md). The main documents are:
 
 - [Spatial prototype](docs/spatial-prototype.md): run instructions, controls, persistence behavior, and device checklist.
+- [Floor placement](docs/floor-placement.md): classified-floor evidence, landing preview, sole calibration, fallback, and device checks.
 - [Head attention](docs/head-attention.md): bounded head/neck turns, target validity, preview controls, and verification.
 - [Product vision](docs/product-vision.md): confirmed goals, first experience, and scope.
 - [Columbina character profile](docs/characters/columbina.md): source-derived personality, relationship premise, and adaptation boundaries.

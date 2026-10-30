@@ -10,12 +10,15 @@ struct SpatialPrototypeView: View {
     var body: some View {
         RealityView { [prototype] content in
             content.add(prototype.contentEntity)
+            content.add(prototype.floorMarker.root)
             motionSubscription?.cancel()
             let token = prototype.beginMotionUpdates()
             motionToken = token
             motionSubscription = content.subscribe(to: SceneEvents.Update.self) { [weak prototype] event in
                 prototype?.advanceCharacterMotion(by: event.deltaTime, token: token)
             }
+        } update: { _ in
+            prototype.floorMarker.update(prototype.canShowFloorPreview ? prototype.floorPlacement.preview : nil)
         }
         .task {
             prototype.spaceDidAppear()

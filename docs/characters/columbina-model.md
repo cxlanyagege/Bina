@@ -1,6 +1,6 @@
 # Columbina Model Intake
 
-Status: selected hair physics, two eye states, natural blinking, and restrained facial previews are implemented. All 115 simulator tests and SDK builds pass. Facial targets were repaired without changing base geometry, skinning, or material data; paired metadata hashes were updated. Facial headset acceptance and sustained performance remain open. Reviewed: 2026-10-30.
+Status: selected hair physics, two eye states, natural blinking, restrained facial previews, and calibrated real-floor placement are implemented. Facial targets were repaired without changing base geometry, skinning, or material data; paired metadata hashes were updated. The user reported preliminary hair stability and natural facial presentation. Floor acceptance and sustained performance remain open. Reviewed: 2026-10-31.
 
 ## Source and identity
 
@@ -51,7 +51,7 @@ The facially repaired runtime file is 26,931,049 bytes, SHA-256 `5b35b6406d1f296
 
 The initial conversion passed `usdchecker --arkit`, device and Simulator SDK builds, and bundled RealityKit loading checks for normalized height, feet placement, centering, and nonempty geometry. Its authoring project, front preview, and report remain in `LocalAssets/Columbina/converted/`. The historical eye-corrected static asset and working files remain in `LocalAssets/Columbina/eye-fix/`; that asset is 26,560,808 bytes with SHA-256 `18f7c1e1c13abb985a595747283ccc431add227219c4e967eac4c06f37a308ce`. The pre-eye-correction asset remains at `LocalAssets/Columbina/diagnostics/eyes-before.usdz`. The first skeletal export and pose remain in `LocalAssets/Columbina/idle/`; the cuff correction, authoring project, and conversion report are in `LocalAssets/Columbina/sleeve-fix/`. Every USDZ entry's uncompressed payload is byte-identical between those two skeletal exports; archive metadata changes the container hash. The cuff correction changes pose metadata, not mesh, weights, textures, or materials.
 
-The application loads the asset asynchronously and normalizes its reference pose to 1.6 meters through parent entities, preserving authored rig transforms. The placeholder is replaced only after a valid model loads. The current increment applies calibrated joint deltas and small upper-body motion independently of the model pivot and saved world placement.
+The application loads the asset asynchronously and normalizes its reference pose to 1.6 meters through parent entities, preserving authored rig transforms. The placeholder is replaced only after a valid model loads. Calibrated joint deltas and small upper-body motion are independent of saved world placement. [Floor placement](../floor-placement.md) additionally measures shoe ornaments (material 19) and exposed foot skin (material 00) before attachment/idle, then corrects the presentation parent around their sole contact point. It does not rewrite the four asset files. Older manual placements retain their original pivot.
 
 ### Eye material correction
 
@@ -93,7 +93,7 @@ The paired JSON records schema version 1, four column-major joint-delta matrices
 
 `CharacterIdleMotion` derives every frame from the imported reference joint transforms. It composes the four natural-stance deltas with that baseline, then adds restrained spine, chest, neck, and head rotations. `CharacterIdlePlayback` uses an 11-second periodic cycle containing a 5.5-second breathing wave, with a smooth 0.9-second return from the reference pose. The pelvis, leg joints, model pivot, and world anchor are not animated by this controller.
 
-The preview supports pausing in the current pose, resuming from the same phase, showing the exact imported reference pose, and returning smoothly to the natural stance. Hidden or inactive characters retain their phase; delayed frames are clamped rather than fast-forwarding primary motion. Attention and selected hair dynamics were added separately after this original idle increment. Walking, blinking, lip sync, and broad garment cloth remain unimplemented.
+The preview supports pausing in the current pose, resuming from the same phase, showing the exact imported reference pose, and returning smoothly to the natural stance. Hidden or inactive characters retain their phase; delayed frames are clamped rather than fast-forwarding primary motion. Attention, selected hair dynamics, and blinking were added separately after this original idle increment. Walking, lip sync, and broad garment cloth remain unimplemented.
 
 The preceding idle implementation passed all 56 simulator tests with no failures or skips; its historical result bundle is `Bina-Idle-Tests-2.xcresult` in the local temporary directory. The generic visionOS device build also passed. That run predates the cuff calibration and geometric regression.
 
@@ -137,7 +137,7 @@ The original export had 60 facial names but only seven target prims because of s
 
 Normal playback defaults to visible eye covering with closed eyes. Uncovering fades the covering before opening the eyes; covering reverses that order. Only the uncovered state schedules natural blinking. Neutral, gentle smile, curiosity, and relaxed/open/round mouth previews are manually selectable. Pause, visibility gating, exact source reference, replacement, and fallback are covered independently from skeleton ownership.
 
-`ColumbinaFace.json` is 349 bytes, SHA-256 `4543fb045c0c4ec06c97691188b975e18d44a8d613f8698fd785ae7c7ae8363f`. All 115 tests pass at `/private/tmp/Bina-Facial-States-Tests.xcresult`; a supplemental per-frame ownership test passes at `/private/tmp/Bina-Facial-Ownership-Tests.xcresult`. Native renders cover nine facial states from four views. See [facial presentation](../facial-presentation.md) for preparation, channels, lifecycle, and pending headset acceptance. Facial preview labels do not implement emotion, conversation, or lip sync.
+`ColumbinaFace.json` is 349 bytes, SHA-256 `4543fb045c0c4ec06c97691188b975e18d44a8d613f8698fd785ae7c7ae8363f`. The facial baseline passed all 115 tests at `/private/tmp/Bina-Facial-States-Tests.xcresult`; a supplemental per-frame ownership test passed at `/private/tmp/Bina-Facial-Ownership-Tests.xcresult`. Native renders cover nine facial states from four views. Subsequent user feedback found the preview natural, without detailed performance measurements. See [facial presentation](../facial-presentation.md) for preparation, channels, lifecycle, and remaining acceptance. Facial preview labels do not implement emotion, conversation, or lip sync.
 
 ## Reproduce locally
 

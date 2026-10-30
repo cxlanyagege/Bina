@@ -1,14 +1,18 @@
 import Foundation
 
 struct SavedPlacement: Codable, Equatable {
+    enum Alignment: String, Codable { case soleContact }
     let schemaVersion: Int
     let anchorID: UUID
     let createdAt: Date
+    /// Missing in older records, whose anchor denotes the original presentation origin.
+    let alignment: Alignment?
 
-    init(anchorID: UUID, createdAt: Date = Date()) {
+    init(anchorID: UUID, createdAt: Date = Date(), alignment: Alignment? = nil) {
         schemaVersion = 1
         self.anchorID = anchorID
         self.createdAt = createdAt
+        self.alignment = alignment
     }
 }
 

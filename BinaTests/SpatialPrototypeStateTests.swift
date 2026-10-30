@@ -1,4 +1,5 @@
 import Foundation
+import ARKit
 import RealityKit
 import Testing
 @testable import Bina
@@ -176,6 +177,66 @@ struct SpatialPrototypeStateTests {
         #expect(prototype.message != nil)
         #expect(!prototype.isBusy)
     }
+
+    @Test func unrelatedProviderStatesCannotStopWorldTracking() {
+        let prototype = SpatialPrototype(store: StubPlacementStore())
+        let world = StateTestProvider(), planes = StateTestProvider()
+        prototype.receiveSessionProviderState([world], state: .running, error: nil, worldProvider: world)
+        #expect(prototype.trackingState == .running)
+        prototype.receiveSessionProviderState([planes], state: .stopped, error: nil, worldProvider: world)
+        #expect(prototype.trackingState == .running)
+        prototype.receiveSessionProviderState([world], state: .paused, error: nil, worldProvider: world)
+        #expect(prototype.trackingState == .paused)
+    }
+
+    @Test func appearanceModeAndDistanceChangesInvalidateAnUnconfirmedFloorPreview() {
+        let prototype = SpatialPrototype(store: StubPlacementStore())
+        for change in 0..<4 {
+            let token = UUID(), surface = FloorTestGeometry.rectangle()
+            prototype.floorPlacement.beginRun(token)
+            prototype.floorPlacement.setAvailability(.running, token: token)
+            prototype.floorPlacement.setTrackingAvailable(true, token: token)
+            prototype.floorPlacement.receive(surface, token: token, now: 1)
+            prototype.floorPlacement.reconcile([surface], token: token, now: 2)
+            #expect(prototype.floorPlacement.prepare(device: FloorTestGeometry.device(), settings: FloorTestGeometry.settings, now: 2))
+            switch change {
+            case 0: prototype.characterHeight = 1.2
+            case 1: prototype.headingDegrees = 45
+            case 2: prototype.placementDistance = 1.5
+            default: prototype.placementMode = .manualHeight
+            }
+            #expect(prototype.floorPlacement.preview == nil)
+        }
+    }
+
+    @Test func floorEvidenceAloneCannotAuthorizeSavingAndDisappearanceClearsIt() async {
+        let saved = SavedPlacement(anchorID: UUID())
+        let store = StubPlacementStore(placement: saved)
+        let prototype = SpatialPrototype(store: store)
+        let token = UUID(), surface = FloorTestGeometry.rectangle()
+        prototype.floorPlacement.beginRun(token)
+        prototype.floorPlacement.setAvailability(.running, token: token)
+        prototype.floorPlacement.setTrackingAvailable(true, token: token)
+        prototype.floorPlacement.receive(surface, token: token, now: 1)
+        prototype.floorPlacement.reconcile([surface], token: token, now: 2)
+        #expect(prototype.floorPlacement.prepare(device: FloorTestGeometry.device(), settings: FloorTestGeometry.settings, now: 2))
+        #expect(!prototype.canConfirmFloor)
+        await prototype.confirmFloorPlacement()
+        #expect(store.saveCount == 0)
+        #expect(store.placement == saved)
+        prototype.spaceDidDisappear()
+        #expect(prototype.floorPlacement.preview == nil)
+        #expect(prototype.floorPlacement.availability == .idle)
+        prototype.floorPlacement.receive(surface, token: token, now: 3)
+        #expect(prototype.floorPlacement.stableSurfaceCount == 0)
+    }
+}
+
+private final class StateTestProvider: DataProvider, @unchecked Sendable {
+    nonisolated static var isSupported: Bool { true }
+    nonisolated static var requiredAuthorizations: [ARKitSession.AuthorizationType] { [] }
+    nonisolated var state: DataProviderState { .running }
+    nonisolated var description: String { "Synthetic provider state" }
 }
 
 @MainActor

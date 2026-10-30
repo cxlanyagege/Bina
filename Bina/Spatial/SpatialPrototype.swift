@@ -13,6 +13,7 @@ final class SpatialPrototype {
     enum SpaceState { case closed, opening, open, closing }
     enum TrackingState { case idle, starting, running, paused, unsupported, failed }
     enum CharacterState { case notLoaded, loading, loaded, failed }
+    enum PlacementMode { case floor, manualHeight }
 
     private(set) var spaceState = SpaceState.closed
     private(set) var trackingState = TrackingState.idle
@@ -27,13 +28,18 @@ final class SpatialPrototype {
     private(set) var characterMessage: String?
     private(set) var characterIdle: CharacterIdleMotion?
     private(set) var characterIdleMessage: String?
-    var placementDistance = 2.0
+    let floorPlacement = FloorPlacement()
+    var placementMode = PlacementMode.floor { didSet { floorPlacement.cancelPreview() } }
+    var placementDistance = 2.0 { didSet { floorPlacement.cancelPreview() } }
     var feetBelowHead = 1.4
-    var characterHeight = 1.6 { didSet { updateAppearance() } }
-    var headingDegrees = 0.0 { didSet { updateAppearance() } }
+    var characterHeight = 1.6 { didSet { updateAppearance(); floorPlacement.cancelPreview() } }
+    var headingDegrees = 0.0 { didSet { updateAppearance(); floorPlacement.cancelPreview() } }
 
     @ObservationIgnored let contentEntity = Entity()
+    @ObservationIgnored let floorMarker = FloorPlacementMarker()
     @ObservationIgnored private let character = Entity()
+    @ObservationIgnored private lazy var floorDetection = FloorDetection(placement: floorPlacement)
+    private var groundContact: CharacterGroundContact? = .placeholder
     @ObservationIgnored private let store: any PlacementPersisting
     @ObservationIgnored private let logger = Logger(subsystem: "Bina", category: "SpatialPrototype")
     @ObservationIgnored private var session: ARKitSession?
@@ -77,6 +83,28 @@ final class SpatialPrototype {
     var canRestartTracking: Bool {
         spaceState == .open && trackingState == .failed && !isBusy
     }
+    var canPreviewFloor: Bool {
+        canPlace && placementMode == .floor && groundContact != nil
+            && floorPlacement.availability == .running && floorPlacement.stableSurfaceCount > 0
+    }
+    var canConfirmFloor: Bool {
+        guard canPlace, placementMode == .floor, let preview = floorPlacement.preview,
+              let settings = floorSettings else { return false }
+        return floorPlacement.canConfirm(id: preview.id, settings: settings, now: ProcessInfo.processInfo.systemUptime)
+    }
+    var canRetryFloorDetection: Bool {
+        spaceState == .open && isSceneActive && !isBusy && !isTransitioning
+            && [.denied,.failed].contains(floorPlacement.availability)
+    }
+    var canShowFloorPreview: Bool {
+        spaceState == .open && isSceneActive && trackingState == .running && deviceIsTracked
+            && floorPlacement.trackingAvailable
+    }
+    private var floorSettings: FloorPlacementSettings? {
+        guard let groundContact else { return nil }
+        return FloorPlacementSettings(distance: Float(placementDistance), characterScale: Float(characterHeight)/CharacterAsset.referenceHeight,
+            headingRadians: Float(headingDegrees) * .pi / 180, contactRadius: groundContact.radius)
+    }
 
     var characterDescription: String {
         switch characterState {
@@ -105,6 +133,16 @@ final class SpatialPrototype {
             }
             do {
                 let model = try await CharacterAsset.load()
+                let contact: CharacterGroundContact?
+                let groundMessage: String?
+                do {
+                    contact = try CharacterGroundContact.measure(in: model)
+                    groundMessage = nil
+                } catch {
+                    contact = nil
+                    groundMessage = CharacterGroundContactError.invalidGeometry.errorDescription
+                    self.logger.error("Measuring sole contact failed: \(String(describing: error), privacy: .private)")
+                }
                 let idle: CharacterIdleMotion?
                 let idleMessage: String?
                 do {
@@ -117,10 +155,13 @@ final class SpatialPrototype {
                     self.logger.error("Preparing character idle failed: \(String(describing: error), privacy: .private)")
                 }
                 guard self.characterLoadToken == token else { return }
+                self.floorPlacement.cancelPreview()
+                self.groundContact = contact
                 self.character.children.removeAll()
                 self.character.addChild(model)
                 self.updateAppearance()
                 self.characterState = .loaded
+                self.characterMessage = groundMessage
                 self.characterIdle = idle
                 self.characterIdleMessage = idleMessage
             } catch {
@@ -242,9 +283,16 @@ final class SpatialPrototype {
     }
 
     func startTracking() async {
+        await startTracking(includeFloorDetection: true)
+    }
+
+    private func startTracking(includeFloorDetection: Bool) async {
         guard spaceState == .open, session == nil else { return }
         guard WorldTrackingProvider.isSupported else {
             trackingState = .unsupported
+            let token = UUID()
+            floorPlacement.beginRun(token)
+            floorPlacement.setAvailability(.unsupported, token: token)
             return
         }
 
@@ -267,20 +315,37 @@ final class SpatialPrototype {
         eventTask = Task { [weak self] in
             for await event in session.events {
                 guard !Task.isCancelled, let self, self.generation == token else { return }
-                if case let .dataProviderStateChanged(_, state, error) = event {
-                    self.receiveProviderState(state, error: error)
+                switch event {
+                case let .dataProviderStateChanged(providers, state, error):
+                    self.receiveSessionProviderState(providers, state: state, error: error, worldProvider: provider)
+                case let .authorizationChanged(type, status):
+                    self.floorDetection.receiveAuthorization(type: type, status: status, token: token)
+                @unknown default: break
                 }
             }
         }
 
+        let planes: PlaneDetectionProvider?
+        if includeFloorDetection { planes = await floorDetection.prepare(session: session, token: token) }
+        else { floorDetection.startUnavailable(token: token); planes = nil }
+        guard generation == token, !Task.isCancelled else { return }
         do {
-            try await session.run([provider])
+            var providers: [any DataProvider] = [provider]
+            if let planes { providers.append(planes) }
+            try await session.run(providers)
             guard generation == token, !Task.isCancelled else { return }
             receiveProviderState(provider.state, error: nil)
+            if let planes { floorDetection.receiveState(providers: [planes], state: planes.state, error: nil, token: token) }
             startDeviceUpdates(provider: provider, token: token)
             startRestorationWait(token: token)
         } catch {
             guard generation == token else { return }
+            if planes != nil, includeFloorDetection {
+                logger.error("Combined floor/world tracking failed; retrying world tracking alone: \(String(describing: error), privacy: .private)")
+                stopTracking()
+                await startTracking(includeFloorDetection: false)
+                return
+            }
             trackingState = .failed
             message = "无法启动定位，请重试定位或退出后重新进入空间。"
             logger.error("Starting ARKit failed: \(String(describing: error), privacy: .private)")
@@ -295,24 +360,50 @@ final class SpatialPrototype {
         await startTracking()
     }
 
+    func retryFloorDetection() async {
+        guard canRetryFloorDetection else { return }
+        stopTracking()
+        await startTracking()
+    }
+
+    func prepareFloorPlacement() {
+        guard canPreviewFloor, let settings = floorSettings, let device = currentDeviceTransform() else { return }
+        floorPlacement.prepare(device: device, settings: settings, now: ProcessInfo.processInfo.systemUptime)
+    }
+
+    func confirmFloorPlacement() async {
+        guard canConfirmFloor, let preview = floorPlacement.preview, currentDeviceTransform() != nil else { return }
+        await commitPlacement(transform: preview.transform, floorPreview: preview)
+    }
+
     func placeInFront() async {
-        guard canPlace, let provider, let token = generation else { return }
-        guard let device = provider.queryDeviceAnchor(atTimestamp: CACurrentMediaTime()),
-              device.isTracked else {
-            deviceIsTracked = false
-            invalidateAnchors()
-            message = "头显定位已变化，请等待定位恢复后重试。"
-            return
-        }
+        guard canPlace, let device = currentDeviceTransform() else { return }
         guard let transform = PlacementGeometry.transform(
-            inFrontOf: device.originFromAnchorTransform,
+            inFrontOf: device,
             distance: Float(placementDistance),
             verticalOffset: -Float(feetBelowHead)
         ) else {
             message = "请平视前方后重试放置。"
             return
         }
+        floorPlacement.cancelPreview()
+        await commitPlacement(transform: transform, floorPreview: nil)
+    }
 
+    private func currentDeviceTransform() -> simd_float4x4? {
+        guard let provider, provider.state == .running,
+              let device = provider.queryDeviceAnchor(atTimestamp: CACurrentMediaTime()), device.isTracked else {
+            deviceIsTracked = false
+            invalidateAnchors()
+            updateVisibility()
+            message = "头显定位已变化，请等待定位恢复后重试。"
+            return nil
+        }
+        return device.originFromAnchorTransform
+    }
+
+    private func commitPlacement(transform: simd_float4x4, floorPreview: FloorPlacementPreview?) async {
+        guard canPlace, let provider, let token = generation else { return }
         isBusy = true
         message = nil
         let anchor = WorldAnchor(originFromAnchorTransform: transform)
@@ -333,13 +424,23 @@ final class SpatialPrototype {
             anchors.removeValue(forKey: anchor.id)
             return
         }
-        guard generation == token, canCommitPlacement else {
+        let worldIsValid = generation == token && canCommitPlacement && currentDeviceTransform() != nil
+        let floorIsValid = floorPreview.map { preview in
+            placementMode == .floor && floorSettings.map {
+                floorPlacement.canConfirm(id: preview.id, settings: $0, now: ProcessInfo.processInfo.systemUptime)
+            } == true
+        } ?? true
+        guard worldIsValid, floorIsValid else {
+            if generation == token, floorPreview != nil {
+                floorPlacement.cancelPreview(message: "预览已失效，原位置保持不变。请恢复定位后重新预览。")
+            }
+            anchors.removeValue(forKey: anchor.id)
             _ = await removeAnchor(anchor.id, from: provider)
             return
         }
 
         let previous = savedPlacement
-        let replacement = SavedPlacement(anchorID: anchor.id)
+        let replacement = SavedPlacement(anchorID: anchor.id, alignment: floorPreview == nil ? nil : .soleContact)
         do {
             try store.save(replacement)
         } catch {
@@ -352,6 +453,8 @@ final class SpatialPrototype {
 
         // Commit the association before removing the old anchor; late updates cannot select it again.
         savedPlacement = replacement
+        updateAppearance()
+        if let floorPreview { floorPlacement.finishPreview(id: floorPreview.id) }
         anchors = anchors.filter { $0.key == anchor.id }
         restorationTimedOut = false
         updateAnchor()
@@ -376,6 +479,8 @@ final class SpatialPrototype {
         }
         let previous = savedPlacement
         savedPlacement = nil
+        floorPlacement.cancelPreview()
+        updateAppearance()
         storageNeedsReset = false
         restorationTimedOut = false
         restorationTask?.cancel()
@@ -390,6 +495,7 @@ final class SpatialPrototype {
 
     private func stopTracking() {
         generation = nil
+        floorDetection.stop()
         anchorTask?.cancel()
         eventTask?.cancel()
         deviceTask?.cancel()
@@ -432,6 +538,13 @@ final class SpatialPrototype {
         updateAnchor()
     }
 
+    /// A floor-provider failure must not disable an otherwise valid world-tracking run.
+    func receiveSessionProviderState(_ providers: [any DataProvider], state: DataProviderState,
+                                     error: ARKitSession.Error?, worldProvider: any DataProvider) {
+        if providers.contains(where: { $0 === worldProvider }) { receiveProviderState(state, error: error) }
+        if let token = generation { floorDetection.receiveState(providers: providers, state: state, error: error, token: token) }
+    }
+
     private func receiveProviderState(_ state: DataProviderState, error: ARKitSession.Error?) {
         switch state {
         case .initialized: trackingState = .starting
@@ -467,6 +580,7 @@ final class SpatialPrototype {
                     await self.refreshAnchors(provider: provider, token: token)
                 }
                 self.updateVisibility()
+                self.floorDetection.refresh(now: now, token: token)
                 do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
             }
         }
@@ -543,12 +657,20 @@ final class SpatialPrototype {
         contentEntity.isEnabled = spaceState == .open && isSceneActive
             && trackingState == .running && deviceIsTracked && anchorIsTracked
         if !contentEntity.isEnabled { characterIdle?.invalidateAttentionTarget() }
+        if let token = generation {
+            floorDetection.setTrackingAvailable(spaceState == .open && isSceneActive
+                && trackingState == .running && deviceIsTracked, token: token)
+        }
     }
 
     private func updateAppearance() {
         guard characterHeight.isFinite, headingDegrees.isFinite else { return }
         character.scale = SIMD3(repeating: Float(characterHeight) / CharacterAsset.referenceHeight)
         character.orientation = simd_quatf(angle: Float(headingDegrees * .pi / 180), axis: [0, 1, 0])
+        if savedPlacement?.alignment == .soleContact, let groundContact {
+            character.position = groundContact.correction(scale: Float(characterHeight)/CharacterAsset.referenceHeight,
+                                                         heading: Float(headingDegrees * .pi/180))
+        } else { character.position = .zero }
     }
 
     private func removeAnchor(_ id: UUID, from provider: WorldTrackingProvider) async -> Bool {

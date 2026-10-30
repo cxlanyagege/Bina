@@ -1,6 +1,6 @@
 # Facial Presentation and Eye States
 
-Status: the two eye states, natural blinking, restrained expression previews, and mouth previews are implemented. All 115 simulator tests, a supplemental per-frame ownership check, and both SDK builds pass. Native renders have been reviewed; headset naturalness and sustained performance remain pending. Updated: 2026-10-30.
+Status: the two eye states, natural blinking, restrained expression previews, and mouth previews are implemented. The facial baseline passed 115 simulator tests, a supplemental per-frame ownership check, and both SDK builds. Native renders were reviewed, and subsequent user feedback found the headset preview natural. Detailed transition/rendering checks and sustained performance remain open. Updated: 2026-10-31.
 
 ## Scope and portrayal
 
@@ -95,6 +95,6 @@ Native RealityRenderer captures under `LocalAssets/Columbina/facial-audit/candid
 
 All 115 tests pass with zero failures/skips and no runtime warnings at `/private/tmp/Bina-Facial-States-Tests.xcresult`: the preceding 95 plus nine playback, four profile, and seven actual-asset facial cases. A strengthened ownership test checks every frame of opacity transitions and passes separately at `/private/tmp/Bina-Facial-Ownership-Tests.xcresult`. The generic visionOS device SDK build passes with signing disabled. Both app bundles contain all four exact source resources. Local fingerprints, invariants, native capture counts, and acceptance limits are recorded in `LocalAssets/Columbina/facial-audit/verification-manifest.json`.
 
-Headset review on the user's reported visionOS 27.2 remains required for perceived blink pace, mask transitions, expression fidelity, rendering quality, frame cost, and sustained performance. The user's preceding report that rear hair showed no major issue is a preliminary stability pass for that earlier correction, not a facial acceptance.
+The user subsequently found the facial preview natural on the reported visionOS 27.2 headset. Record a preliminary naturalness pass; no detailed blink/transition checklist, frame costs, or sustained measurements accompanied it. The earlier rear-hair report remains a separately scoped preliminary stability pass.
 
-After this gate, prioritize the documented text-personality and confirmed-memory loop before speech playback and synchronized mouth motion. Facial preview labels do not replace that future behavior or emotional-continuity design.
+The user next chose [real-floor placement](floor-placement.md) before walking animations. The documented text-personality and confirmed-memory loop remains future work before speech playback and synchronized mouth motion. Facial preview labels do not replace that behavior or emotional-continuity design.
