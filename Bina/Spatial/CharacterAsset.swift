@@ -83,7 +83,15 @@ enum CharacterAsset {
             throw CharacterIdleError.missingConfiguration
         }
         let pose = try await CharacterIdlePose.load(modelURL: modelURL, poseURL: poseURL)
-        return try CharacterIdleMotion(character: character, pose: pose)
+        let motion = try CharacterIdleMotion(character: character, pose: pose)
+        do {
+            guard let profileURL = resourceURL("ColumbinaPhysics", extension: "json", in: bundle) else {
+                throw CharacterPhysicsError.missingProfile
+            }
+            let profile = try await CharacterPhysicsProfile.load(modelURL: modelURL, profileURL: profileURL)
+            try motion.configureHairPhysics(profile, pose: pose)
+        } catch { motion.reportHairPhysicsUnavailable(error) }
+        return motion
     }
 
     static func resourceURL(_ name: String, extension fileExtension: String, in bundle: Bundle) -> URL? {

@@ -87,7 +87,27 @@ struct ContentView: View {
                             }
                             .disabled(prototype.characterIdle == nil)
                         }
-                        Text("暂停可保留当前姿势。切换参考姿势，便于比较站姿和衣服效果。")
+                        if let motion = prototype.characterIdle {
+                            Toggle("看向我", isOn: Bindable(motion).isAttentionEnabled)
+                                .accessibilityIdentifier("character.attention")
+                            Toggle("头发物理", isOn: Bindable(motion).isHairPhysicsEnabled)
+                                .disabled(!motion.isHairPhysicsAvailable)
+                                .accessibilityIdentifier("character.hairPhysics")
+                            Toggle("显示物理调试", isOn: Bindable(motion).showsPhysicsDebug)
+                                .disabled(!motion.isHairPhysicsAvailable)
+                            if let message = motion.hairPhysicsMessage {
+                                Text(message).font(.callout).foregroundStyle(.orange)
+                            }
+                            if motion.isHairPhysicsAvailable {
+                                Button("记录物理计算耗时") { motion.recordPhysicsTiming() }
+                                if let timing = motion.physicsTimingDescription {
+                                    Text(timing).font(.caption).foregroundStyle(.secondary)
+                                }
+                                Text("当前模拟部分发束。调试显示中，绿色为发束骨骼，橙色为碰撞范围。")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Text("她会轻轻转头看向你，走到身后或靠得太近时自然回正。暂停会冻结整个姿势，开关改动在继续后生效；参考姿势保留原始模型效果。")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

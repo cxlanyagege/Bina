@@ -1,6 +1,6 @@
 # Character Asset Specification
 
-Status: general asset contract proposed; local Columbina loading, relaxed stance, restrained idle, and comparison controls are implemented. The user found posture and motion generally acceptable and confirmed that pose calibration resolved the reported cuff penetration on visionOS 27.2. Broader costume validation and measured performance remain open.
+Status: general asset contract proposed; local Columbina loading, relaxed stance, restrained idle, bounded head attention, and comparison controls are implemented. The user confirmed the cuff correction on visionOS 27.2; attention acceptance, broader costume validation, and measured performance remain open.
 Last reviewed: 2026-10-30.
 
 ## Purpose and first candidate
@@ -13,16 +13,20 @@ The user's OpenClaw identity and personality files have been reviewed in the [Co
 See [product vision](product-vision.md) and [memory and emotion](memory-and-emotion.md) for portrayal and continuity requirements.
 
 The complete asset target should support stable placement, conversation, interruption, and pointing at one tracked object.
-Walking, sitting on arbitrary furniture, and dynamic clothing simulation are later capabilities.
+Walking and sitting on arbitrary furniture remain later capabilities. Targeted hair/collar secondary motion and collision are implemented for four hair chains and await headset validation; see [Secondary motion](secondary-motion.md).
 A simple temporary rig may isolate technical problems during validation; it does not replace the intended first character.
 
-The preceding visual increment showed Columbina in the source pose within the existing placement system. It passed USD validation, actual bundled RealityKit loading, and bounds/material regressions. After eye and clothing corrections, the user reported no obvious visual issues during a preliminary headset check on 2026-10-30. The current increment adds a relaxed standing pose, restrained skeletal idle, and pause/reference comparison. The user subsequently found posture and motion generally acceptable on visionOS 27.2, while identifying severe cuff penetration that remained visible when paused. That feedback exposed a static-pose defect missed by the earlier full-body comparisons. After pose calibration, the user confirmed that this issue was resolved. Build, test, and close-up verification evidence belong in the [model intake](characters/columbina-model.md). Hair/clothing physics, facial control, lip sync, and attention toward the user remain unimplemented.
+The preceding visual increment showed Columbina in the source pose within the existing placement system. It passed USD validation, actual bundled loading, and bounds/material regressions. The user reported a preliminary appearance pass, generally acceptable stance/idle, and later a cuff-fix pass on visionOS 27.2. Head attention then exposed hair/collar penetration. Four selected hair chains now have spring dynamics and collision proxies; verification belongs in the [model intake](characters/columbina-model.md), [head-attention contract](head-attention.md), and [secondary-motion contract](secondary-motion.md). Full garment cloth, facial control, and lip sync remain unimplemented.
 
 Natural stance requires `ColumbinaIdlePose.json` paired with the exact `Columbina.usdz` by SHA-256. Both are local-only generated character artifacts. The converter now preserves unique ASCII joint paths because sanitized non-ASCII names in the prior export collided and prevented runtime skeletal control. Pose preparation, mapping, and hashes belong in the [model intake](characters/columbina-model.md). A missing or invalid pose file leaves the static model available and reports the unavailable motion.
 
 The runtime samples reference and relaxed transforms directly on the imported skeleton. Upper-body breathing and sway leave lower-body joints and world placement fixed. Pause freezes the current sample, reference selection restores the source pose, and returning to natural idle uses a short blend. These controls support deformation and clothing checks; they do not establish working facial controls, cloth simulation, or expressive character behavior. The source inventory includes one armature and 60 shape keys, which still require individual validation for later capabilities.
 
 The cuff correction keeps the upper arms lowered by 26 degrees, removes the added elbow bend, and adducts the thumbs by 6 degrees to clear the main sleeve surfaces. Authoring validation requires zero strict hand/cuff crossings in the natural pose, and a native regression checks the actual imported skinning at selected idle phases. The check is specific to the current hand and main-cuff materials; it does not establish collision-free arbitrary poses or dynamic clothing simulation. The user confirmed the cuff issue resolved on 2026-10-30; no detailed angle checklist or measured results accompanied that feedback.
+
+Head attention reuses the same paired resources without re-exporting them. The binding validates the imported skeleton and composes the neck/head turn in the asset's parent spaces. Permitted turn limits require headset review of hair, collar, and face deformation; a desktop close-up pass does not accept all costume behavior. Pause freezes attention together with idle, and reference mode still restores the exact imported pose.
+
+The hair correction uses 22 retained bones and eight body/collar capsule proxies, with one driver for both hair layers. `ColumbinaPhysics.json` is paired to the same USDZ and stays local. The solver/settings are independently calibrated; the original PMX's complete physical configuration is not replayed. A native cloth API probe passes compilation for visionOS 27.0, but garment binding and device cost remain unvalidated. See [Secondary motion](secondary-motion.md) for selected-region coverage and fallback behavior.
 
 ## Terms used in this document
 
@@ -153,7 +157,7 @@ Check face readability, eye highlights, color space, normal direction, thin surf
 Apple identifies texture size and layered transparency as important costs in its [USD guidance](https://developer.apple.com/documentation/usd/creating-usd-files-for-apple-devices).
 
 MMD rigid bodies, cloth simulation, collision rules, and authoring hair physics must not be assumed to transfer through USDZ.
-Start with stable skinned geometry or baked secondary motion; assess runtime secondary motion later.
+The current character adds selected runtime hair motion to stable skinned geometry. Assess each additional accessory or garment separately; the hair result does not establish a complete cloth system.
 Check clothing during arms-up, turns, pointing, and close viewing before adding more animation.
 
 ## On-device validation and unresolved decisions

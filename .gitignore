@@ -65,6 +65,7 @@ fastlane/test_output
 LocalAssets/
 Bina/Resources/Characters/Columbina.usdz
 Bina/Resources/Characters/ColumbinaIdlePose.json
+Bina/Resources/Characters/ColumbinaPhysics.json
 
 # Local Python authoring caches.
 __pycache__/

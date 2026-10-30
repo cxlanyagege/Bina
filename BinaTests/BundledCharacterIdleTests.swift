@@ -104,6 +104,12 @@ final class BundledCharacterIdleTests: XCTestCase {
         XCTAssertEqual(motion.cycleTime, currentTime)
         let reopenedToken = prototype.beginMotionUpdates()
         prototype.advanceCharacterMotion(by: 0.05, token: reopenedToken)
+        XCTAssertEqual(motion.cycleTime, currentTime)
+        prototype.setSceneActive(true)
+        // The production view restores scene activity before valid tracking
+        // enables content. This fixture supplies visibility without live ARKit.
+        prototype.contentEntity.isEnabled = true
+        prototype.advanceCharacterMotion(by: 0.05, token: reopenedToken)
         XCTAssertGreaterThan(motion.cycleTime, currentTime)
         prototype.endMotionUpdates(token: reopenedToken)
         prototype.spaceDidDisappear()

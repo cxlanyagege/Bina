@@ -18,11 +18,14 @@ final class BundledCuffClearanceTests: XCTestCase {
         XCTAssertLessThan(geometry.referenceBindingError, 0.0001)
         let pose = try await CharacterIdlePose.load(modelURL: modelURL, poseURL: poseURL)
         let motion = try CharacterIdleMotion(character: character, pose: pose)
+        let profileURL = try XCTUnwrap(CharacterAsset.resourceURL("ColumbinaPhysics", extension: "json", in: .main))
+        let profile = try await CharacterPhysicsProfile.load(modelURL: modelURL, profileURL: profileURL)
+        try motion.configureHairPhysics(profile, pose: pose)
         var elapsed: TimeInterval = 0
         for time: TimeInterval in [0, 2.75, 6, 11] {
             while elapsed < time - 0.000001 {
                 let step = min(1.0 / 60, time - elapsed)
-                motion.advance(by: step, isVisible: true)
+                motion.advance(by: step, isVisible: true, attentionTarget: [1.2, 1.7, -2])
                 elapsed += step
             }
             for (side, wrist) in [("left", "Joint_0181"), ("right", "Joint_0324")] {
@@ -44,13 +47,7 @@ final class BundledCuffClearanceTests: XCTestCase {
 @MainActor
 private struct CuffClearanceGeometry {
     enum GeometryError: Error { case invalid(String) }
-    struct Triangle {
-        let a: SIMD3<Float>
-        let b: SIMD3<Float>
-        let c: SIMD3<Float>
-        var minimum: SIMD3<Float> { simd_min(a, simd_min(b, c)) }
-        var maximum: SIMD3<Float> { simd_max(a, simd_max(b, c)) }
-    }
+    typealias Triangle = TestTriangleGeometry.Triangle
     struct Part {
         let material: String
         let positions: [SIMD3<Float>]
@@ -152,7 +149,7 @@ private struct CuffClearanceGeometry {
         for skin in hand {
             for cloth in cuff {
                 guard !any(skin.maximum .< cloth.minimum), !any(cloth.maximum .< skin.minimum) else { continue }
-                if Self.crosses(skin, cloth) { pairs += 1 }
+                if TestTriangleGeometry.crosses(skin, cloth) { pairs += 1 }
             }
         }
         return CrossingCount(handTriangles: hand.count, cuffTriangles: cuff.count, crossingPairs: pairs)
@@ -167,33 +164,6 @@ private struct CuffClearanceGeometry {
             } else { globals.append(transforms[index].matrix) }
         }
         return globals
-    }
-
-    private static func crosses(_ left: Triangle, _ right: Triangle) -> Bool {
-        let a = [left.a, left.b, left.c]
-        let b = [right.a, right.b, right.c]
-        return (0..<3).contains { segmentCrosses(a[$0], a[($0 + 1) % 3], right) }
-            || (0..<3).contains { segmentCrosses(b[$0], b[($0 + 1) % 3], left) }
-    }
-
-    private static func segmentCrosses(_ start: SIMD3<Float>, _ end: SIMD3<Float>, _ triangle: Triangle) -> Bool {
-        let edge = end - start
-        let length = simd_length(edge)
-        guard length > 0.00000001 else { return false }
-        let direction = edge / length
-        let first = triangle.b - triangle.a
-        let second = triangle.c - triangle.a
-        let cross = simd_cross(direction, second)
-        let determinant = simd_dot(first, cross)
-        guard abs(determinant) > 0.000000000001 else { return false }
-        let origin = start - triangle.a
-        let u = simd_dot(origin, cross) / determinant
-        guard u >= 0, u <= 1 else { return false }
-        let other = simd_cross(origin, first)
-        let v = simd_dot(direction, other) / determinant
-        guard v >= 0, u + v <= 1 else { return false }
-        let distance = simd_dot(second, other) / determinant
-        return distance > 0.000001 && distance < length - 0.000001
     }
 
     private static func matrixError(_ left: simd_float4x4, _ right: simd_float4x4) -> Float {

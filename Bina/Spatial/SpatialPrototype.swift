@@ -164,12 +164,23 @@ final class SpatialPrototype {
     }
 
     func endMotionUpdates(token: UUID?) {
-        if motionUpdateToken == token { motionUpdateToken = nil }
+        if motionUpdateToken == token {
+            motionUpdateToken = nil
+            characterIdle?.invalidateAttentionTarget()
+        }
     }
 
     func advanceCharacterMotion(by deltaTime: TimeInterval, token: UUID) {
         guard motionUpdateToken == token else { return }
-        characterIdle?.advance(by: deltaTime, isVisible: spaceState == .open && contentEntity.isEnabled)
+        let isVisible = spaceState == .open && isSceneActive && contentEntity.isEnabled
+        var target: SIMD3<Float>?
+        if isVisible, characterIdle?.isAttentionEnabled == true, characterIdle?.mode == .playing,
+           trackingState == .running, let provider, provider.state == .running,
+           let device = provider.queryDeviceAnchor(atTimestamp: CACurrentMediaTime()), device.isTracked {
+            let position = device.originFromAnchorTransform.columns.3
+            target = SIMD3(position.x, position.y, position.z)
+        }
+        characterIdle?.advance(by: deltaTime, isVisible: isVisible, attentionTarget: target)
     }
 
     var trackingDescription: String {
@@ -397,6 +408,7 @@ final class SpatialPrototype {
         trackingState = .idle
         lastAnchorRefresh = 0
         contentEntity.isEnabled = false
+        characterIdle?.invalidateAttentionTarget()
     }
 
     private func receive(_ update: AnchorUpdate<WorldAnchor>) {
@@ -530,6 +542,7 @@ final class SpatialPrototype {
     private func updateVisibility() {
         contentEntity.isEnabled = spaceState == .open && isSceneActive
             && trackingState == .running && deviceIsTracked && anchorIsTracked
+        if !contentEntity.isEnabled { characterIdle?.invalidateAttentionTarget() }
     }
 
     private func updateAppearance() {

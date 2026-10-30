@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: basic D1 spatial checks and preliminary static appearance have user-reported passes. Natural stance, restrained idle, and preview controls are implemented. The user found posture and motion generally acceptable on visionOS 27.2 and confirmed the cuff correction resolved the reported issue. Bounded head attention is the proposed next increment; measured performance and remaining M1 behavior are open. Last updated: 2026-10-30.
+Status: basic D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 90 tests pass. The hair/collar correction awaits headset quality/performance acceptance; remaining M1 behavior is open. Last updated: 2026-10-30.
 
 ## Planning rules
 
@@ -26,7 +26,7 @@ Exit evidence: each immediate implementation dependency is either resolved or is
 
 The first placement/restoration experiment now has an implementation. It includes mixed-space entry and exit, a generated placeholder, manual heading-based placement, live scale/yaw controls, anchor-association persistence, recovery status, and explicit forgetting. Device and Simulator SDK builds pass, and 27 automated tests pass on visionOS Simulator 27.0. On 2026-10-29 the user reported that the four delivered feature groups worked on a physical headset. Detailed stress checks and measurements are not yet recorded. See the [spatial prototype guide](spatial-prototype.md#initial-device-feedback) for the scope of that feedback.
 
-The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved; current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). This remains partial M1 progress: attention behavior, automatic floor placement, environmental occlusion, and broader companion behavior are separate work.
+The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved. Bounded head attention is now implemented with separate headset acceptance pending; current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). This remains partial M1 progress: automatic floor placement, environmental occlusion, measured performance, and broader companion behavior are separate work.
 
 Current priority, following the user's 2026-10-29 request: see Columbina in the real room before adding conversation. On 2026-10-30 the user requested implementation of natural stance, minimal idle, and comparison controls. Text conversation and the confirmed-preference lifecycle remain planned; they no longer precede this visual increment.
 
@@ -46,7 +46,7 @@ Exit evidence: results identify a workable path for the first experience and doc
 
 Integrate a mixed immersive scene, explicit placement, a validated character asset, basic idle behavior, and attention toward the user based on available input. Include anchor restoration and a placement recovery path.
 
-Current partial result: [local Columbina model intake and conversion](characters/columbina-model.md), a relaxed stance and restrained idle implementation, and a loader that retains the placeholder until the character succeeds. The user found posture and motion generally acceptable and confirmed that pose calibration resolved the reported cuff issue. Facial control, attention toward the user, expressive motion, broader costume validation, and measured performance remain open for device validation or implementation as applicable.
+Current partial result: [local Columbina model intake and conversion](characters/columbina-model.md), relaxed stance and idle, bounded head attention, and a loader that retains the placeholder until the character succeeds. The user found posture and motion generally acceptable and confirmed the cuff correction. Attention's headset acceptance, facial control, expressive motion, broader costume validation, and measured performance remain open for validation or implementation as applicable.
 
 Acceptance checks:
 
@@ -74,13 +74,13 @@ Acceptance checks:
 
 The existing local source supplied the model and pose data; no external motion pack or service is required. Preserve the cuff regressions and recheck affected costume regions when extending motion. Record the installed app revision and full system build with future headset checks. Blinking, walking, sitting, cloth simulation, and conversation are separate tasks.
 
-### Proposed next increment: bounded head attention
+### Bounded head attention
 
-Status: recommended after the user-reported cuff-fix pass; not implemented or device-validated.
+Status: implemented after the user-reported cuff-fix pass; automated and native rendering evidence are recorded in [Head attention](head-attention.md). Subsequent headset feedback reports hair/collar penetration, so dynamic costume acceptance is not achieved.
 
 Use the active world-tracking session's current, valid device pose as a target for the character's head and neck. Apple documents [DeviceAnchor](https://developer.apple.com/documentation/arkit/deviceanchor) as the position and orientation of Apple Vision Pro, obtained through `WorldTrackingProvider.queryDeviceAnchor(atTimestamp:)`. The current placement code already uses that provider. Device position supplies an approximate user head target, not eye-gaze or emotion evidence.
 
-The proposed experience is a gentle, bounded turn as the user moves nearby, with a small dead zone and smooth settling. Targets outside the supported forward range, extremely close targets, and unavailable tracking should blend toward a neutral orientation. Keep feet, root placement, and the accepted arm/thumb stance fixed. Compose attention and existing idle through one joint-presentation owner so independent controllers cannot overwrite each other's transforms. Provide an explicit preview toggle and retain deterministic pause/reference behavior.
+The implemented experience is a gentle, bounded turn as the user moves nearby, with a small dead zone and smooth settling. Targets outside the supported forward range, extremely close targets, and unavailable tracking lead toward a neutral orientation. Feet, root placement, and the accepted arm/thumb stance remain fixed. Attention and existing idle compose through one joint-presentation owner. A preview toggle is available; pause freezes the complete pose, and reference selection clears attention and restores the imported source pose.
 
 Acceptance checks:
 
@@ -90,7 +90,13 @@ Acceptance checks:
 - Pause/reference controls have clear behavior, and existing idle, fixed-foot, and cuff regressions continue to pass.
 - Close-up headset checks inspect hair, face, neck, and collar deformation at the permitted limits.
 
-After this increment, validate a small set of facial channels, then prioritize the M2 text-personality and confirmed-memory loop before expanding voice and coordinated mouth motion. This is a proposed sequence, not authorization or evidence that those capabilities exist.
+### Selected hair secondary motion and collision
+
+The source audit found 607 rigid bodies, 956 spring joints, and mappings for all 593 physics-linked source bones. This increment does not replay that full graph: four hair chains/22 bones now use calibrated springs and eight body/collar capsules. It retains the native app, unchanged model/stance resources, and one final joint writer. The installed SDK's native cloth API probe remains separate from this custom spring integration.
+
+The [secondary-motion contract](secondary-motion.md) records the implemented solver, profile, controls, debug geometry, CPU timing snapshot, 90-test pass, and native mesh comparisons. Selected collar-region checks pass on desktop; the next gate is headset confirmation of hair volume, natural lag/settling, pause/re-entry/scale behavior, and measured device cost. After that gate, expand selected accessories or evaluate a native cloth panel. Authored clearance, weights, and fitted collar deformation remain part of the broader solution.
+
+After that gate, validate a small set of facial channels, then prioritize the M2 text-personality and confirmed-memory loop before expanding voice and coordinated mouth motion. This is a proposed sequence, not evidence that those capabilities exist.
 
 ## M2: Conversation, personality, and minimum continuity
 
@@ -150,7 +156,7 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 ## Open inputs
 
 - Review feedback on the source-derived Columbina profile and which lore details need independent verification.
-- Head-attention naturalness and affected hair/collar deformation once implemented, broader transition quality, and measured performance. The reported cuff issue has a user-reported pass.
+- Head-attention naturalness and affected hair/collar deformation on the headset, broader transition quality, and measured performance. The reported cuff issue has a user-reported pass.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
 - Full device system build and near-term distribution intent; the user-reported system version is 27.2.

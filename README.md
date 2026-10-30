@@ -8,9 +8,9 @@ The first character is **Columbina from Genshin Impact**, retaining her characte
 
 The spatial prototype supports mixed immersive entry, manual character placement, saved-world-anchor restoration, recovery, and explicit forgetting. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character integration. Build and automated-test evidence are recorded in the [verification record](docs/spatial-prototype.md#automated-verification), alongside the [device feedback](docs/spatial-prototype.md#initial-device-feedback).
 
-The current increment implements a relaxed stance, restrained procedural idle, pause/resume, and reference-pose comparison. Unique exported joint names restore runtime skeletal control; pose data is verified against the exact model hash. After reporting severe cuff penetration even while paused, the user confirmed on 2026-10-30 that the calibrated pose resolved the issue on their visionOS 27.2 headset. An asset-specific geometry regression checks both cuffs. This is a user-reported cuff-fix pass; sustained performance and broader costume checks remain open. The proposed next increment is bounded head attention toward the user. See the [model intake](docs/characters/columbina-model.md) and [milestones](docs/milestones.md#proposed-next-increment-bounded-head-attention).
+The current preview implements relaxed stance, procedural idle, bounded head attention, selected hair physics, and pause/reference controls. After the user's hair/collar defect report, four hair chains now have damped spring motion and body/collar collision proxies. Physics and debug toggles support comparison, and a timing button records recent CPU costs. All 90 simulator tests pass, including actual skinned hair/collar and cuff regressions. This is a selected-region correction awaiting headset quality/performance acceptance, not full-garment cloth simulation. The original model and pose data remain unchanged. See [Secondary motion](docs/secondary-motion.md), [head attention](docs/head-attention.md), and the [model intake](docs/characters/columbina-model.md).
 
-Automatic ground detection, environment occlusion, attention toward the user, facial animation, voice, conversation, personal memory, and emotional behavior remain unimplemented. M1 is partially implemented, not complete.
+Automatic ground detection, environment occlusion, facial animation, voice, conversation, personal memory, and emotional behavior remain unimplemented. M1 is partially implemented, not complete.
 
 The current Xcode project has a visionOS 27.0 minimum deployment target.
 
@@ -19,6 +19,7 @@ The current Xcode project has a visionOS 27.0 minimum deployment target.
 Start with the [documentation guide](docs/README.md). The main documents are:
 
 - [Spatial prototype](docs/spatial-prototype.md): run instructions, controls, persistence behavior, and device checklist.
+- [Head attention](docs/head-attention.md): bounded head/neck turns, target validity, preview controls, and verification.
 - [Product vision](docs/product-vision.md): confirmed goals, first experience, and scope.
 - [Columbina character profile](docs/characters/columbina.md): source-derived personality, relationship premise, and adaptation boundaries.
 - [Platform capabilities](docs/platform-capabilities.md): verified Apple API boundaries and research options.
@@ -32,6 +33,6 @@ The supplied OpenClaw identity and personality files have been reviewed and adap
 
 ## Local character preview
 
-The runtime asset must exist at `Bina/Resources/Characters/Columbina.usdz` before building a character-enabled preview. Natural stance and idle also require `ColumbinaIdlePose.json` from the same export in that directory. Both are intentionally ignored by Git. A fresh clone without the model keeps the placeholder, reports the missing model, and offers a retry. Missing or mismatched pose data retains the loaded static model and reports why idle is unavailable. See the [model intake and conversion instructions](docs/characters/columbina-model.md) for local preparation. The repository's software license does not cover the character assets; do not redistribute them.
+The runtime asset must exist at `Bina/Resources/Characters/Columbina.usdz` before building a character-enabled preview. Natural stance/idle require `ColumbinaIdlePose.json`; selected hair physics also requires the asset-paired `ColumbinaPhysics.json`. All three generated character resources are intentionally ignored by Git. A clone without the model keeps the placeholder and offers a retry. Invalid pose data retains the static model; invalid physics data retains primary stance/idle/attention and reports physics as unavailable. See the [model intake](docs/characters/columbina-model.md) and [physics preparation instructions](docs/secondary-motion.md#reproduce-the-local-profile). The repository's software license does not cover these character assets; do not redistribute them.
 
 Development proceeds through focused device experiments. The first complete product milestone combines spatial presence, interruptible conversation, one prepared physical object, and a confirmed memory restored across sessions.

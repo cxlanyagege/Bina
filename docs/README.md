@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: relaxed stance, restrained idle, and pause/reference controls are implemented. The user found posture and motion generally acceptable and confirmed that the cuff correction resolved the reported issue on visionOS 27.2. Bounded head attention is the proposed next increment; detailed device measurements remain open. See the spatial prototype and model intake for verification evidence. Last updated: 2026-10-30.
+Status: relaxed stance, idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 90 simulator tests pass. The user confirmed the earlier cuff correction on visionOS 27.2; the new hair correction awaits headset quality/performance acceptance. See the spatial prototype, secondary-motion contract, and model intake for verification evidence. Last updated: 2026-10-30.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -10,6 +10,8 @@ These documents distinguish long-term design from the limited implementation alr
 | --- | --- |
 | [Product vision](product-vision.md) | Understand the companion, confirmed character direction, and first complete experience. |
 | [Spatial prototype](spatial-prototype.md) | Run the first D1 experiment and record actual device results. |
+| [Head attention](head-attention.md) | Understand bounded neck/head motion, controls, lifecycle, and validation limits. |
+| [Secondary motion](secondary-motion.md) | Reproduce selected hair physics and review collision scope, controls, native cloth options, and verification. |
 | [Columbina character profile](characters/columbina.md) | Review the adaptation of the supplied identity and personality files. |
 | [Columbina evaluations](characters/columbina-evaluation.md) | Assess personality fidelity through observable scenarios. |
 | [Platform capabilities](platform-capabilities.md) | Distinguish available sensing from approval-dependent or unsupported assumptions. |

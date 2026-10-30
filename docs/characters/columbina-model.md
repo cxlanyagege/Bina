@@ -1,6 +1,6 @@
 # Columbina Model Intake
 
-Status: the user found posture and motion generally acceptable and confirmed that the calibrated pose resolved the reported cuff penetration on visionOS 27.2. It passes all 57 simulator tests, visionOS SDK builds, USD validation, and actual macOS RealityKit close-up checks. Broader costume validation and measured performance remain open. Reviewed: 2026-10-30.
+Status: selected hair physics/collision now addresses the user's head-attention hair/collar report. All 90 simulator tests and SDK builds pass, including actual skinned hair/collar and cuff regressions. The original USDZ and stance data remain unchanged. Headset quality/performance acceptance and broader costume validation remain open. Reviewed: 2026-10-30.
 
 ## Source and identity
 
@@ -93,7 +93,7 @@ The paired JSON records schema version 1, four column-major joint-delta matrices
 
 `CharacterIdleMotion` derives every frame from the imported reference joint transforms. It composes the four natural-stance deltas with that baseline, then adds restrained spine, chest, neck, and head rotations. `CharacterIdlePlayback` uses an 11-second periodic cycle containing a 5.5-second breathing wave, with a smooth 0.9-second return from the reference pose. The pelvis, leg joints, model pivot, and world anchor are not animated by this controller.
 
-The preview supports pausing in the current pose, resuming from the same phase, showing the exact imported reference pose, and returning smoothly to the natural stance. Hidden or inactive characters retain their phase; delayed frames are clamped rather than fast-forwarding the pose. Walking, automatic user-directed attention, blinking, lip sync, and hair/clothing physics are not implemented by this increment.
+The preview supports pausing in the current pose, resuming from the same phase, showing the exact imported reference pose, and returning smoothly to the natural stance. Hidden or inactive characters retain their phase; delayed frames are clamped rather than fast-forwarding primary motion. Attention and selected hair dynamics were added separately after this original idle increment. Walking, blinking, lip sync, and broad garment cloth remain unimplemented.
 
 The preceding idle implementation passed all 56 simulator tests with no failures or skips; its historical result bundle is `Bina-Idle-Tests-2.xcresult` in the local temporary directory. The generic visionOS device build also passed. That run predates the cuff calibration and geometric regression.
 
@@ -109,9 +109,25 @@ The user subsequently found posture and motion generally acceptable but reported
 
 The source reference pose intentionally remains exact and retains its tiny original thumb intersection. During the short return from reference, that source detail can remain briefly visible; the settled natural pose removes it. Wrist-relative desktop captures in `LocalAssets/Columbina/sleeve-diagnostics/` compare the old stance, candidate calibrations, paused idle peak, and intermediate return poses from six directions for each hand. The six-degree thumb candidate also removes the small white sliver beside the crescent cuff decoration in the reviewed front views.
 
-The final generated pair passes `usdchecker --arkit`, all 57 visionOS Simulator 27.0 tests with zero failures or skips, and the generic visionOS device build. The result bundle is `/private/tmp/Bina-Cuff-Fix-Tests.xcresult`. Both built app bundles contain the exact current USDZ and paired JSON with the hashes recorded above. Eighty-four final-resource RealityRenderer close-ups in `sleeve-diagnostics/production-final/` are byte-identical to the reviewed six-degree-thumb candidate captures: seven stages, two wrists, and six angles. These are desktop renderer and automated checks.
+At the cuff-correction stage, the final generated pair passed `usdchecker --arkit`, all 57 visionOS Simulator 27.0 tests with zero failures or skips, and the generic visionOS device build. The result bundle is `/private/tmp/Bina-Cuff-Fix-Tests.xcresult`. Both built app bundles contained the exact current USDZ and paired JSON with the hashes recorded above. Eighty-four final-resource RealityRenderer close-ups in `sleeve-diagnostics/production-final/` are byte-identical to the reviewed six-degree-thumb candidate captures: seven stages, two wrists, and six angles. These are desktop renderer and automated checks.
 
 On 2026-10-30, the user tested the corrected build and reported that the cuff issue was resolved. Record this as a user-reported cuff-fix pass on the previously reported visionOS 27.2 headset. No detailed angle checklist, installed revision, full system build, or performance measurements accompanied that feedback. Broader costume behavior, scene comfort, and sustained performance remain open; this result does not validate head attention or other future motion.
+
+### Bounded head attention
+
+The attention increment adds restrained neck/head turns toward fresh device positions without changing or re-exporting either local resource. Character-frame rotations are converted into the imported parent-local axes; feet, root placement, and accepted arm/thumb deltas stay fixed. Pause freezes the whole displayed pose, and reference selection restores the imported pose exactly. The preview has an attention toggle enabled by default.
+
+All 73 simulator tests and both SDK builds pass, including imported-rig attention checks and the cuff geometry regression with an active target. Fifty-two actual native RealityKit captures under `LocalAssets/Columbina/attention-diagnostics/captures/` cover 13 target/control stages from four views. Reviewed face, neck, hair, and collar views show no obvious new gross intersections; pause and reference restoration errors are zero. These results do not replace a fresh headset attention review. Limits, lifecycle rules, result bundle, and reproduction evidence are recorded in [Head attention](../head-attention.md).
+
+Subsequent headset testing found hair/collar penetration and rigid accessory behavior. Dynamic costume acceptance has not passed. A read-only audit found 607 rigid bodies and 956 spring joints in the original PMX. All 593 physics-linked source bone names map to the exported rig inventory, including 83 dynamically linked bones influencing the source hair layers. The current conversion excludes the importer's separate physics category and the application does not simulate those constraints. The original data is retained locally; [Secondary motion](../secondary-motion.md) records the inventory, coordinate-conversion requirements, native cloth API probe, and proposed hair/collar validation task.
+
+### Selected hair physics and collision
+
+Four selected chains now use spring dynamics: side locks `Joint_0054...0056` and `Joint_0057...0059`, and upper rear locks `Joint_0070...0077` and `Joint_0107...0114`. The solver changes only those 22 local rotations, sharing one skeletal driver between both hair layers. Eight capsule proxies follow the primary neck/chest pose. The model, skin weights, textures, material policy, and accepted arm/thumb deltas are unchanged; this is not a full replay of the original MMD physics graph.
+
+The generated local `ColumbinaPhysics.json` is 4,096 bytes, SHA-256 `29d7edc4d0b929738285c0391a65a3f294543d7663f0972465b7098a05cd4b1e`, and embeds the current USDZ hash. Bundle all three paired resources. A missing/invalid physics profile leaves primary motion usable and reports the unavailable feature. The [secondary-motion contract](../secondary-motion.md#reproduce-the-local-profile) provides generation commands, settings, controls, reset policy, verification coverage, and remaining device checks.
+
+The final suite passes all 90 tests with zero failures/skips at `/private/tmp/Bina-Hair-Physics-Final-Tests-2.xcresult`. Actual imported-mesh tests cover both hair layers against selected collar surfaces at seven settled targets. A continuous sweep also samples intermediate mesh configurations. These tests protect the selected contact region, not all costume surfaces or arbitrary movements. The earlier cuff-fix headset pass remains separate from this correction's pending headset acceptance.
 
 ## Reproduce locally
 

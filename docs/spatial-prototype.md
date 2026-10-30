@@ -1,18 +1,18 @@
 # Spatial Prototype
 
-Status: the user found posture and motion generally acceptable and confirmed that the calibrated pose resolved the reported cuff penetration on visionOS 27.2. SDK builds, all 57 simulator tests, USD validation, and desktop close-up checks pass. Detailed device measurements and broader costume validation remain open. Updated: 2026-10-30.
+Status: relaxed stance, idle, bounded head attention, and selected hair physics/collision are implemented. All 90 simulator tests and both SDK builds pass. The hair/collar correction awaits headset quality/performance acceptance on visionOS 27.2. Updated: 2026-10-30.
 
 ## Scope
 
 The app opens a mixed `ImmersiveSpace`, places a character using ARKit world tracking, and attempts to restore the selected anchor across sessions. It asynchronously loads the locally converted Columbina USDZ, retaining the generated humanoid placeholder while loading or on failure. Both use a 1.6-meter reference height before the user changes scale.
 
-This does not complete M1. There is no automatic floor detection, surface snapping, occlusion, collision avoidance, attention toward the user, facial animation, conversation, or personal memory. The real room remains visible through passthrough.
+This does not complete M1. There is no automatic floor detection, surface snapping, occlusion, collision avoidance, facial animation, conversation, or personal memory. The real room remains visible through passthrough.
 
 ## Local Columbina preview
 
-The current preview adds a relaxed stance and restrained procedural idle to the locally converted character. Unique ASCII joint names repair the earlier export's name collisions. Pose metadata is paired to the exact USDZ hash and supplies relaxed joint deltas and upper-body motion roles. Current SDK builds, all 57 tests, USD validation, and macOS RealityKit close-up checks pass. Original toon and sphere effects, expression control, lip sync, voice, and hair/clothing physics are not implemented.
+The current preview adds relaxed stance, restrained idle, bounded neck/head attention, and spring/collision motion for selected hair chains. Unique ASCII joint names repair the earlier export's name collisions. Pose and physics metadata are paired to the exact USDZ. Attention reuses the existing world-tracking provider; hair collision proxies describe the character, not the real room. Original toon/sphere effects, expression control, lip sync, voice, and full garment cloth are not implemented.
 
-The files `Bina/Resources/Characters/Columbina.usdz` and `ColumbinaIdlePose.json` exist in this working checkout and are intentionally ignored by Git. A clone does not automatically contain them. The pose file must come from the same model export. Keep the original and generated assets local under the source notice; the [model intake record](characters/columbina-model.md) provides provenance, hashes, reproduction instructions, and current validation limits.
+The files `Bina/Resources/Characters/Columbina.usdz`, `ColumbinaIdlePose.json`, and `ColumbinaPhysics.json` exist in this working checkout and are intentionally ignored by Git. A clone does not contain them. Both metadata files must match the exact model. Keep generated assets local under the source notice; the [model intake record](characters/columbina-model.md) provides provenance, hashes, reproduction instructions, and validation limits.
 
 The control window distinguishes model loading, success, and failure. A missing or unreadable model leaves the spatial placeholder available, shows an explicit explanation, and offers a model-load retry. Missing, invalid, or mismatched idle data keeps the loaded static model and explains why stance/idle controls are unavailable. Do not interpret a visible placeholder as a successful Columbina preview.
 
@@ -25,12 +25,12 @@ The user identifies Device Hub as the current developer GUI entry point, with th
 1. Record the headset system build and Xcode versions. The user reports visionOS 27.2 as of 2026-10-30; the project still requires 27.0 or later.
 2. Open `Bina.xcodeproj` in Xcode and select the shared `Bina` scheme.
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
-4. For a character-enabled build with idle, confirm both local resources from the same export exist at the paths above. Build and run while wearing the headset.
+4. For a character-enabled build with idle and hair physics, confirm all three matching local resources exist at the paths above. Build and run while wearing the headset.
 5. Check model status in the control window. Wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
 6. Use the enter-space button and wait for world tracking to become available. An unsupported environment shows a message; it does not perform fake placement.
 7. Look approximately horizontally toward the desired location. Set the horizontal distance and the distance from the headset down to the character's feet, then choose place-and-save.
 8. Adjust scale and yaw. These appearance changes are live; placement-distance and foot-offset changes apply when the next placement is requested. Natural stance is selected by default, and idle advances only while the character is visible.
-9. Pause/resume idle and compare the reference pose with the natural stance. Inspect feet, shoulders, wrists, sleeves, skirt/cloak clearance, eyes, and transparency from several views. Record posture or clothing differences and any motion jump.
+9. With attention enabled, move sideways, sit/stand, approach, and pass behind the character. Compare with attention disabled. Pause/resume and compare the reference pose with the natural stance. Inspect neck, hair, collar, feet, shoulders, sleeves, skirt/cloak, eyes, and transparency. Record deformation differences and any motion jump.
 10. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns and idle updates restart while preserving the selected in-process pause/reference mode. If the anchor is unavailable, wait at the original location or explicitly place again.
 
 The interface is in Simplified Chinese. The control names below describe their meaning in English.
@@ -46,8 +46,12 @@ The interface is in Simplified Chinese. The control names below describe their m
 | Place/re-place and save | Uses current valid device pose, projected horizontal heading, and the chosen offsets. The character initially faces back toward the user. |
 | Height | 0.4–1.9 meters; initially 1.6. Changes visible character scale without moving its anchor. |
 | Heading adjustment | Local yaw from -180 to 180 degrees. It does not make the character continuously turn toward the user. |
-| Pause/resume idle | Freezes the current joint sample and cycle phase, then continues from that phase. Unavailable in reference mode or when idle preparation fails. |
-| Reference/natural comparison | Restores the original source pose for comparison; returning to natural idle blends over 0.9 seconds. The placement anchor is unchanged. |
+| Pause/resume idle | Freezes the complete current pose, including attention and cycle phase, then continues from that pose. Toggle changes take effect on resume. Unavailable in reference mode or when idle preparation fails. |
+| Look toward me | Enabled by default; gently turns neck/head toward a fresh tracked device position. Rear, near, invalid, or missing targets return toward neutral. Disabling blends toward neutral during playback. |
+| Hair physics | Enabled by default when its profile is valid. Four selected chains bend/settle and avoid body/collar proxies. On/off comparison blends over 0.25 seconds; a paused action change waits for resume. |
+| Show physics debug | Hidden by default. Green chain segments/cyan tips and orange collision capsules help inspect contact; changing debug visibility does not advance the pose. Hidden in reference mode. |
+| Record physics CPU time | Captures recent average/peak costs from at most 600 physics updates. This includes solver/binding and optional debug updates, not GPU rendering or total app frame time. |
+| Reference/natural comparison | Restores the original source pose and clears attention; returning blends the natural stance over 0.9 seconds and reacquires attention smoothly. The placement anchor is unchanged. |
 | Retry tracking | Available after tracking failure; creates a fresh session/provider while retaining placement metadata. |
 | Forget saved position | Requires confirmation, clears only the prototype's placement association, and hides the placeholder. Placement can then start again. |
 
@@ -56,6 +60,10 @@ The geometry helper ignores head pitch and roll so the placeholder stays upright
 Appearance and placement controls survive leaving and reentering the immersive space within the same process. They reset to defaults after application restart. Only the saved anchor association persists; the prior scale and yaw are not restored.
 
 Idle repeats on an 11-second cycle with 5.5-second breathing, using small upper-body joint rotations. The pelvis, legs, feet, character pivot, and world anchor remain fixed. User pause preserves phase; tracking loss, scene inactivity, or hidden content also freezes time without changing playback intent. Exiting the immersive view cancels its render-update subscription and invalidates the callback token. Playback mode and phase are in-memory preview state and are not persisted across process restarts.
+
+Attention uses approximate device position, not eye gaze. It adds bounded neck/head rotation through the same joint controller and respects current placement rotation and scale. Inactive content clears target hysteresis while retaining its displayed pose; visibility recovery supplies a new target and interpolates from the retained orientation. Attention preference is also in-memory state. See the [head-attention contract](head-attention.md) for limits and coordinate handling.
+
+Hair physics is an independent preparation/failure boundary within that presentation controller. Invalid physics data retains primary motion. Hidden scenes, reference transitions, significant placement/scale changes, and frame gaps over 0.05 seconds reset stored kinetic history. Pause freezes the displayed hair pose. Physics preferences and velocity are not persisted. See [Secondary motion](secondary-motion.md) for its normalized coordinates, selected-region coverage, and local profile generation.
 
 ## Persistence and recovery
 
@@ -88,6 +96,8 @@ Record each case as pass, fail, or unassessed, with reproduction steps for failu
 | Character visual review | Check the static pose, face, hair, eye covering, clothing, feet, texture completeness, and transparency from several angles. Inspect both sides of front and rear cloth panels. Record material differences and performance. |
 | Natural stance and idle | Arms and shoulders look relaxed; subtle motion loops without a jump, fixed feet remain planted, and sleeves/skirt/cloak do not show new intersections. |
 | Pause/resume and reference comparison | Pause freezes the current pose; resume continues its phase. Reference restores the source pose, then natural idle returns smoothly without moving placement. |
+| Head attention | Lateral and vertical movement produces restrained neck/head turns. Small movements remain stable; rear and close targets lead toward neutral. Toggle, pause, reference, and re-entry preserve clear behavior. Inspect hair and collar at the permitted limits. |
+| Selected hair physics | Compare on/off while turning, looking down/up, and changing direction. Hair shows restrained lag/settling and avoids the selected collar region. Check pause/reference, re-entry, re-placement, and scale changes; record CPU timing with debug off and separately inspect debug proxies. |
 | Movement and head tilt | The placeholder remains at its world anchor rather than following head movement; its upright orientation is maintained. |
 | Scale and yaw | Changes are visible immediately while the anchor stays fixed. Next-placement settings do not move the current anchor. |
 | Repeated entry/exit | Scene, tracking, and render-update subscription restart without duplicate content or stale callbacks. Natural idle resumes when visible; a user pause or reference selection stays selected within the same process. |
@@ -186,6 +196,31 @@ Current cuff-correction verification, recorded on 2026-10-30:
 | Corrected-build headset feedback | User-reported cuff-fix pass on 2026-10-30, using the previously reported visionOS 27.2 headset. No detailed checklist was supplied; scene comfort and sustained performance remain unmeasured. |
 
 The close-ups and transition captures are retained in `LocalAssets/Columbina/sleeve-diagnostics/production-final/`. Exact fingerprints, regression scope, and source-reference limitations are recorded in the [model intake](characters/columbina-model.md#cuff-penetration-correction).
+
+Head-attention verification before the hair correction, recorded on 2026-10-30:
+
+| Check | Recorded result |
+| --- | --- |
+| visionOS Simulator 27.0 tests | 73 passed, zero failures, zero skips: the preceding 57 cases plus 11 pure attention cases and five bundled attention cases. Result bundle: `/private/tmp/Bina-Head-Attention-Tests-4.xcresult`. |
+| SDK builds and resources | Simulator test build and generic visionOS device build passed; both retain the exact cuff-fix USDZ and paired JSON. No asset re-export was required. |
+| Native head/neck comparison | 52 captures cover 13 target/control stages from four views, including hair/collar close-ups, combined turns, rear/near targets, pause, and target loss. Reviewed views show no obvious new gross head/collar defects. |
+| Motion invariants | Zero ankle world-position component change, zero paused-pose error, byte-identical paused captures despite a changed target, and exact reference restoration. Actual-rig tests cover rotated/scaled placement and unchanged arm/thumb poses. |
+| Headset attention feedback | The user reports hair/collar penetration and rigid accessory behavior. Dynamic costume acceptance has not passed. The cuff-fix pass remains scoped to the earlier hand/cuff issue; comfort and sustained performance remain unmeasured. |
+
+The [head-attention contract](head-attention.md) records calibration, ownership, lifecycle behavior, and native evidence paths.
+
+Current selected-hair verification, recorded on 2026-10-30:
+
+| Check | Recorded result |
+| --- | --- |
+| Simulator tests | 90 passed, zero failures/skips: the preceding 73 plus eight pure spring/geometry/clock tests, four profile tests, and five actual-asset physics tests. Result: `/private/tmp/Bina-Hair-Physics-Final-Tests-2.xcresult`. |
+| SDK builds/resources | Simulator test build and generic visionOS device build passed with the unchanged model/stance resources and generated physics profile. |
+| Actual skinned-mesh regression | Both hair layers show zero strict crossings against selected body/collar surfaces at seven settled target poses. The cuff regression now has attention and hair physics enabled. |
+| Lifecycle/failure behavior | Tests pass for protected primary joints, full-pose pause, exact reference restore, hidden/re-entry history, placement/scale changes, frame gaps, invalid replacement, and primary-motion fallback. |
+| Native sweep and visual review | Off/on captures and 24 intermediate snapshots cover an 11-second target sweep. The selected collar region has zero crossings in corrected samples; full costume and arbitrary motions are outside this result. |
+| Headset acceptance | Pending on the user's visionOS 27.2 headset, including physical appearance, naturalness, total CPU/GPU/frame cost, and sustained thermal behavior. |
+
+The [secondary-motion contract](secondary-motion.md) records calibration, evidence paths, CPU snapshot scope, and remaining garment work. The native cloth API probe is still compile-only; no complete cloth system is claimed.
 
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 

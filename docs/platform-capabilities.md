@@ -4,7 +4,7 @@ Status: platform baseline with a limited D1 implementation. Platform sources rev
 
 ## Local project baseline
 
-The current project targets visionOS 27.0 and implements a mixed immersive scene, explicit world-tracking session, local anchor-association storage, character loading, and a relaxed-stance/idle preview. Build and test evidence are recorded in the [spatial prototype guide](spatial-prototype.md#automated-verification). On 2026-10-30 the user reported visionOS 27.2, found posture and motion generally acceptable, and later confirmed that the calibrated pose resolved the reported cuff penetration. Detailed device measurements remain open. This does not change the 27.0 deployment target. The earlier four spatial feature groups and preliminary static appearance have user-reported passes. Head attention, conversation, and personal memory remain unimplemented.
+The current project targets visionOS 27.0 and implements a mixed immersive scene, explicit world-tracking session, local anchor-association storage, character loading, relaxed stance/idle, and bounded head attention. Build and test evidence are recorded in the [spatial prototype guide](spatial-prototype.md#automated-verification). On 2026-10-30 the user reported visionOS 27.2, found posture and motion generally acceptable, and later confirmed that the calibrated pose resolved the reported cuff penetration. Attention acceptance and detailed device measurements remain open. This does not change the 27.0 deployment target. The earlier four spatial feature groups and preliminary static appearance have user-reported passes. Conversation and personal memory remain unimplemented.
 
 Do not infer device support or permission from the deployment target. Check provider support, current authorization, and session state at runtime.
 
@@ -29,6 +29,10 @@ Bina's implemented initial sensing experience uses a mixed `ImmersiveSpace`: the
 This prototype starts only `WorldTrackingProvider`; it does not request scene reconstruction, plane, hand, or camera data. Manual height is measured below the current headset pose and is not evidence of ground detection. The runtime checks support and tracks provider state; unsupported environments show an explanation rather than substituting simulated tracking. See [current behavior and device checks](spatial-prototype.md).
 
 The stance/idle preview uses local model data and rendering updates. It adds no sensing provider or permission. Motion pauses while the character is hidden or the scene is inactive, and update subscriptions are removed when the immersive view disappears.
+
+Selected hair physics uses a local fixed-step spring solver with body/collar capsule proxies and existing skeletal transforms. It adds no ARKit provider or real-environment collision sensing. Native cloth APIs are present in the installed visionOS 27.0 SDK and pass a compile probe, but broad garment simulation is not integrated. See [Secondary motion](secondary-motion.md) for verified scope and the pending headset performance check.
+
+Bounded head attention queries the same active `WorldTrackingProvider` on scene updates. The device position is an approximate head target, not the center-of-head visual anchor or eye-gaze input. No new sensing provider, authorization, or camera input is added. Missing/rear/near targets return toward neutral; inactive content retains its pose and discards the held target. See the [head-attention contract](head-attention.md).
 
 Avoid the blanket claim that every ARKit provider only works in Full Space. Approved enterprise main-camera access can operate in Shared Space as well as Immersive Space starting with visionOS 26. This exception does not grant ordinary shared-space content equivalent environment sensing. [10]
 
