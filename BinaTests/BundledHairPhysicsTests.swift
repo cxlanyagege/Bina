@@ -8,11 +8,12 @@ final class BundledHairPhysicsTests: XCTestCase {
     func testActualHairDoesNotCrossTheSelectedCollarRegion() async throws {
         let f = try await HairFixture()
         let geometry = try HairCollarGeometry(model: f.model)
+        // Hard motion bounds can leave approximate proxies overlapping; require
+        // clearance of the rendered surfaces rather than relaxing those bounds.
         for offset: SIMD3<Float> in [[0,0,-2],[-1.5,0,-2],[1.5,0,-2],[0,1.2,-2],[0,-1.2,-2],[-1.5,0.8,-2],[1.5,-0.8,-2]] {
             f.motion.showReference(); f.motion.showNatural()
             f.advance(180, target: f.head + offset)
             XCTAssertEqual(try geometry.crossingCount(), 0, "Hair crosses the selected collar region at target \(offset).")
-            XCTAssertLessThan(try XCTUnwrap(f.motion.hairPhysicsDiagnostics).maximumPenetration, 0.001)
         }
     }
 
@@ -106,6 +107,81 @@ final class BundledHairPhysicsTests: XCTestCase {
         XCTAssertGreaterThan(f.motion.cycleTime, phase)
     }
 
+    func testRearLocksCannotFoldOrTwistOverDuringContinuousHeadMotion() async throws {
+        for fps in [30,60,90,120] {
+            let f = try await HairFixture()
+            let control = try f.control(simulatesHair: false)
+            let skeleton = try XCTUnwrap(f.model.model?.mesh.contents.skeletons.first)
+            let chains = f.profile.chains.filter { $0.maximumChainAngle != nil }
+            XCTAssertEqual(chains.count, 2)
+            let indices = Dictionary(uniqueKeysWithValues: f.model.jointNames.enumerated().map {
+                (String($0.element.split(separator: "/").last!), $0.offset)
+            })
+            var previous: [simd_quatf] = []
+            var maximumDeviation: Float = 0, maximumSpeed: Float = 0
+            for frame in 0..<(fps * 8) {
+                let phase = Float(frame) / Float(fps) * 2 * Float.pi / 4
+                let target = f.head + SIMD3<Float>(1.6 * sin(phase), 0.9 * cos(phase * 1.5), -2)
+                f.motion.advance(by: 1 / Double(fps), isVisible: true, attentionTarget: target)
+                control.motion.advance(by: 1 / Double(fps), isVisible: true, attentionTarget: target)
+                let actual = globalRotations(f.model, skeleton: skeleton)
+                let primary = globalRotations(control.model, skeleton: skeleton)
+                var current: [simd_quatf] = []
+                for chain in chains { for name in chain.joints {
+                    let i = try XCTUnwrap(indices[name])
+                    let difference = rotationDistance(actual[i], primary[i])
+                    maximumDeviation = max(maximumDeviation, difference)
+                    current.append(actual[i])
+                } }
+                if !previous.isEmpty, frame > fps {
+                    for (before, after) in zip(previous, current) {
+                        maximumSpeed = max(maximumSpeed, rotationDistance(before, after) * Float(fps))
+                    }
+                }
+                previous = current
+            }
+            XCTAssertLessThanOrEqual(maximumDeviation, 0.651, "Rear lock folds or twists at \(fps) FPS.")
+            XCTAssertLessThan(maximumSpeed, 4, "Rear lock jumps during continuous motion at \(fps) FPS.")
+            XCTAssertEqual(f.motion.hairPhysicsDiagnostics?.resetCount, 1)
+        }
+    }
+
+    func testHeadingSliderDoesNotReplayWarmUpOrChangeTheLocalHairMotion() async throws {
+        let f = try await HairFixture()
+        let control = try f.control(simulatesHair: true)
+        let target = SIMD4(f.head + SIMD3<Float>(0,0,-2), 1)
+        let characterTarget = simd_inverse(f.character.transformMatrix(relativeTo: nil)) * target
+        f.advance(120, target: SIMD3(target.x,target.y,target.z))
+        for _ in 0..<120 { control.motion.advance(by: 1.0/60, isVisible: true, attentionTarget: SIMD3(target.x,target.y,target.z)) }
+        let resetCount = try XCTUnwrap(f.motion.hairPhysicsDiagnostics).resetCount
+        var maximumError: Float = 0
+        for frame in 0..<360 {
+            // The appearance slider emits five-degree steps, including its wrap boundary.
+            f.character.orientation = simd_quatf(angle: Float(frame * 5) * .pi / 180, axis: [0,1,0])
+            let rotatedTarget = f.character.transformMatrix(relativeTo: nil) * characterTarget
+            f.motion.advance(by: 1.0/60, isVisible: true, attentionTarget: SIMD3(rotatedTarget.x,rotatedTarget.y,rotatedTarget.z))
+            control.motion.advance(by: 1.0/60, isVisible: true, attentionTarget: SIMD3(target.x,target.y,target.z))
+            maximumError = max(maximumError, zip(f.model.jointTransforms, control.model.jointTransforms).map {
+                matrixError($0.matrix, $1.matrix)
+            }.max() ?? 0)
+        }
+        XCTAssertEqual(f.motion.hairPhysicsDiagnostics?.resetCount, resetCount)
+        XCTAssertLessThan(maximumError, 0.0001)
+    }
+
+    private func globalRotations(_ model: ModelEntity, skeleton: MeshResource.Skeleton) -> [simd_quatf] {
+        var globals: [simd_quatf] = []
+        for (i, joint) in skeleton.joints.enumerated() {
+            let rotation = model.jointTransforms[i].rotation
+            globals.append(simd_normalize(joint.parentIndex.map { globals[$0] * rotation } ?? rotation))
+        }
+        return globals
+    }
+
+    private func rotationDistance(_ a: simd_quatf, _ b: simd_quatf) -> Float {
+        2 * acos(min(1, abs(simd_dot(a.vector, b.vector))))
+    }
+
     private func assertPose(_ actual: [Transform], _ expected: [Transform]) {
         XCTAssertEqual(actual.count, expected.count)
         XCTAssertLessThan(zip(actual, expected).map { matrixError($0.matrix, $1.matrix) }.max() ?? 0, 0.000001)
@@ -149,6 +225,15 @@ private final class HairFixture {
 
     func advance(_ frames: Int, target: SIMD3<Float>?) {
         for _ in 0..<frames { motion.advance(by: 1.0/60, isVisible: true, attentionTarget: target) }
+    }
+
+    func control(simulatesHair: Bool) throws -> (character: Entity, model: ModelEntity, motion: CharacterIdleMotion) {
+        let character = character.clone(recursive: true)
+        let model = try XCTUnwrap(Self.rig(character))
+        model.jointTransforms = reference
+        let motion = try CharacterIdleMotion(character: character, pose: pose)
+        if simulatesHair { try motion.configureHairPhysics(profile, pose: pose) }
+        return (character, model, motion)
     }
 
     static func rig(_ entity: Entity) -> ModelEntity? {

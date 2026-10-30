@@ -82,6 +82,42 @@ struct SpringBonePhysicsTests {
         #expect(spring.tail == rest)
     }
 
+    @Test func unsatisfiableContactsRespectTheBendLimitWithoutAddingAnImpulse() {
+        let rest = SIMD3<Float>(0,-0.12,0)
+        let collider = SpringCapsule(start: [0.005,-0.06,0], end: [0.005,-0.06,0], radius: 0.06)
+        var spring = SpringBoneState(tail: rest)
+        let advanced = spring.advance(root: .zero, restTail: rest, step: 1.0/120, settings: settings(), colliders: [collider])
+        #expect(advanced)
+        let angle = acos(max(-1, min(1, simd_dot(simd_normalize(spring.tail), simd_normalize(rest)))))
+        #expect(angle <= settings().maximumAngle + 0.00001)
+        #expect(abs(simd_length(spring.tail) - simd_length(rest)) < 0.000001)
+
+        let separated = spring.tail
+        let released = spring.advance(root: .zero, restTail: rest, step: 1.0/120, settings: settings(), colliders: [])
+        #expect(released)
+        #expect(simd_distance(spring.tail, separated) < 0.002)
+    }
+
+    @Test func contactCorrectionsRespectTheConfiguredAngularSpeed() {
+        let rest = SIMD3<Float>(0,-0.12,0)
+        let collider = SpringCapsule(start: [0.005,-0.06,0], end: [0.005,-0.06,0], radius: 0.06)
+        var configuration = settings()
+        configuration.maximumChainAngle = 0.65
+        configuration.maximumAngularSpeed = 2
+        var spring = SpringBoneState(tail: rest)
+        let initialized = spring.advance(root: .zero, restTail: rest, step: 1.0/120, settings: configuration, colliders: [])
+        #expect(initialized)
+        for frame in 0..<360 {
+            let previous = simd_normalize(spring.tail)
+            let advanced = spring.advance(root: .zero, restTail: rest, step: 1.0/120, settings: configuration,
+                colliders: frame < 180 ? [collider] : [])
+            #expect(advanced)
+            let angle = acos(max(-1, min(1, simd_dot(previous, simd_normalize(spring.tail)))))
+            #expect(angle <= 2.0/120 + 0.0001)
+        }
+        #expect(simd_distance(spring.tail, rest) < 0.001)
+    }
+
     @Test func fixedClockProducesTheSameStepsAtDifferentRenderRates() {
         for fps in [30,60,90,120] {
             var clock = SpringSimulationClock(), count = 0

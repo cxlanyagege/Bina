@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: relaxed stance, idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 90 simulator tests pass. The user confirmed the earlier cuff correction on visionOS 27.2; the new hair correction awaits headset quality/performance acceptance. See the spatial prototype, secondary-motion contract, and model intake for verification evidence. Last updated: 2026-10-30.
+Status: relaxed stance, idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 95 simulator tests pass after the rear-lock stability correction. The user confirmed the earlier cuff correction and improved cheek locks on visionOS 27.2; rear-hair quality/performance acceptance remains open. See the spatial prototype, secondary-motion contract, and model intake for verification evidence. Last updated: 2026-10-30.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 

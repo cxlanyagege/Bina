@@ -1,6 +1,6 @@
 # Spatial Prototype
 
-Status: relaxed stance, idle, bounded head attention, and selected hair physics/collision are implemented. All 90 simulator tests and both SDK builds pass. The hair/collar correction awaits headset quality/performance acceptance on visionOS 27.2. Updated: 2026-10-30.
+Status: relaxed stance, idle, bounded head attention, and selected hair physics/collision are implemented. All 95 simulator tests and both SDK builds pass after the rear-lock stability correction. Headset quality/performance acceptance on visionOS 27.2 remains pending. Updated: 2026-10-30.
 
 ## Scope
 
@@ -63,7 +63,7 @@ Idle repeats on an 11-second cycle with 5.5-second breathing, using small upper-
 
 Attention uses approximate device position, not eye gaze. It adds bounded neck/head rotation through the same joint controller and respects current placement rotation and scale. Inactive content clears target hysteresis while retaining its displayed pose; visibility recovery supplies a new target and interpolates from the retained orientation. Attention preference is also in-memory state. See the [head-attention contract](head-attention.md) for limits and coordinate handling.
 
-Hair physics is an independent preparation/failure boundary within that presentation controller. Invalid physics data retains primary motion. Hidden scenes, reference transitions, significant placement/scale changes, and frame gaps over 0.05 seconds reset stored kinetic history. Pause freezes the displayed hair pose. Physics preferences and velocity are not persisted. See [Secondary motion](secondary-motion.md) for its normalized coordinates, selected-region coverage, and local profile generation.
+Hair physics is an independent preparation/failure boundary within that presentation controller. Invalid physics data retains primary motion. Hidden scenes, reference transitions, significant translation/scale changes, and frame gaps over 0.05 seconds reset stored kinetic history; the heading slider preserves it. Rear locks have primary-pose bend/twist and angular-speed bounds. Pause freezes the displayed hair pose. Physics preferences and velocity are not persisted. See [Secondary motion](secondary-motion.md) for its normalized coordinates, constraint priorities, selected-region coverage, and local profile generation.
 
 ## Persistence and recovery
 
@@ -213,11 +213,12 @@ Current selected-hair verification, recorded on 2026-10-30:
 
 | Check | Recorded result |
 | --- | --- |
-| Simulator tests | 90 passed, zero failures/skips: the preceding 73 plus eight pure spring/geometry/clock tests, four profile tests, and five actual-asset physics tests. Result: `/private/tmp/Bina-Hair-Physics-Final-Tests-2.xcresult`. |
+| Simulator tests | 95 passed, zero failures/skips: the preceding 73 plus ten pure spring/geometry/clock tests, five profile tests, and seven actual-asset physics tests. Result: `/private/tmp/Bina-Rear-Hair-Regression-Tests-3.xcresult`. |
 | SDK builds/resources | Simulator test build and generic visionOS device build passed with the unchanged model/stance resources and generated physics profile. |
 | Actual skinned-mesh regression | Both hair layers show zero strict crossings against selected body/collar surfaces at seven settled target poses. The cuff regression now has attention and hair physics enabled. |
 | Lifecycle/failure behavior | Tests pass for protected primary joints, full-pose pause, exact reference restore, hidden/re-entry history, placement/scale changes, frame gaps, invalid replacement, and primary-motion fallback. |
-| Native sweep and visual review | Off/on captures and 24 intermediate snapshots cover an 11-second target sweep. The selected collar region has zero crossings in corrected samples; full costume and arbitrary motions are outside this result. |
+| Native sweep and visual review | Corrected captures include full rear/side views; 24 bounds-normalized mesh snapshots cover an 11-second sweep. The selected collar region has zero crossings. Motion tests cover 30/60/90/120 FPS and repeated five-degree heading changes; full costume and arbitrary motions are outside this result. |
+| Subsequent headset feedback | Cheek locks improved, but rear hair jerked upward during head turns and model rotation. The correction adds primary-pose chain guides, valid quaternion limits, non-impulsive contact correction, angular-speed bounds, and yaw-preserving history. This correction needs a new device check. |
 | Headset acceptance | Pending on the user's visionOS 27.2 headset, including physical appearance, naturalness, total CPU/GPU/frame cost, and sustained thermal behavior. |
 
 The [secondary-motion contract](secondary-motion.md) records calibration, evidence paths, CPU snapshot scope, and remaining garment work. The native cloth API probe is still compile-only; no complete cloth system is claimed.

@@ -40,7 +40,7 @@ struct PrepareColumbinaPhysics {
             SIMD3(matrix.columns.3.x, matrix.columns.3.y, matrix.columns.3.z)
         }
         func array(_ point: SIMD3<Float>) -> [Float] { [point.x, point.y, point.z] }
-        func chain(_ name: String, joints: [String], tipJoint: String?, radius: Float, stiffness: Float) throws -> CharacterPhysicsProfile.Chain {
+        func chain(_ name: String, joints: [String], tipJoint: String?, radius: Float, stiffness: Float, maximumChainAngle: Float? = nil) throws -> CharacterPhysicsProfile.Chain {
             let last = try frame(joints.last!)
             let tail: SIMD3<Float>
             if let tipJoint { tail = point(try frame(tipJoint)) }
@@ -48,13 +48,14 @@ struct PrepareColumbinaPhysics {
             let localTail = simd_inverse(last) * SIMD4(tail, 1)
             return .init(name: name, joints: joints, tipOffset: [localTail.x, localTail.y, localTail.z],
                          radius: radius, stiffness: stiffness, damping: 14,
-                         gravity: [0, -0.6, 0], maximumAngle: 0.65)
+                         gravity: [0, -0.6, 0], maximumAngle: 0.65, maximumChainAngle: maximumChainAngle,
+                         maximumAngularSpeed: maximumChainAngle == nil ? nil : 2)
         }
         let chains = try [
             chain("Left side lock", joints: ["Joint_0054", "Joint_0055", "Joint_0056"], tipJoint: nil, radius: 0.035, stiffness: 180),
             chain("Right side lock", joints: ["Joint_0057", "Joint_0058", "Joint_0059"], tipJoint: nil, radius: 0.035, stiffness: 180),
-            chain("Right rear upper lock", joints: (70...77).map { String(format: "Joint_%04d", $0) }, tipJoint: "Joint_0078", radius: 0.05, stiffness: 140),
-            chain("Left rear upper lock", joints: (107...114).map { String(format: "Joint_%04d", $0) }, tipJoint: "Joint_0115", radius: 0.05, stiffness: 140)
+            chain("Right rear upper lock", joints: (70...77).map { String(format: "Joint_%04d", $0) }, tipJoint: "Joint_0078", radius: 0.05, stiffness: 140, maximumChainAngle: 0.65),
+            chain("Left rear upper lock", joints: (107...114).map { String(format: "Joint_%04d", $0) }, tipJoint: "Joint_0115", radius: 0.05, stiffness: 140, maximumChainAngle: 0.65)
         ]
         let neck = point(try frame("Joint_0040"))
         func collider(_ name: String, joint: String, a: SIMD3<Float>, b: SIMD3<Float>, radius: Float) throws -> CharacterPhysicsProfile.Collider {

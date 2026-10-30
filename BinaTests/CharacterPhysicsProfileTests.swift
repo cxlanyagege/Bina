@@ -11,6 +11,32 @@ struct CharacterPhysicsProfileTests {
         let copy = try JSONDecoder().decode(CharacterPhysicsProfile.self, from: JSONEncoder().encode(profile))
         #expect(copy.chains[0].joints == ["Joint_0054"])
         #expect(copy.colliders[0].joint == "Joint_0040")
+        #expect(copy.chains[0].maximumChainAngle == nil)
+        #expect(copy.chains[0].maximumAngularSpeed == nil)
+    }
+
+    @Test func optionalChainMotionLimitsAreValidated() throws {
+        let profile = try decoded { object in
+            var chains = object["chains"] as! [[String: Any]]
+            chains[0]["maximumChainAngle"] = 0.5
+            object["chains"] = chains
+        }
+        try profile.validate()
+        #expect(profile.chains[0].maximumChainAngle == 0.5)
+        for limit in [-0.1, 0, 1.3] {
+            var invalid = profile.chains[0]
+            invalid.maximumChainAngle = Float(limit)
+            let rejected = CharacterPhysicsProfile(schemaVersion: 1, modelSHA256: profile.modelSHA256,
+                chains: [invalid], colliders: profile.colliders)
+            #expect(throws: CharacterPhysicsError.self) { try rejected.validate() }
+        }
+        for speed: Float in [-1,0,11,.nan,.infinity] {
+            var invalid = profile.chains[0]
+            invalid.maximumAngularSpeed = speed
+            let rejected = CharacterPhysicsProfile(schemaVersion: 1, modelSHA256: profile.modelSHA256,
+                chains: [invalid], colliders: profile.colliders)
+            #expect(throws: CharacterPhysicsError.self) { try rejected.validate() }
+        }
     }
 
     @Test func rejectsMalformedVectorsBoundsAndAmbiguousJoints() throws {

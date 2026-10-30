@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: basic D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 90 tests pass. The hair/collar correction awaits headset quality/performance acceptance; remaining M1 behavior is open. Last updated: 2026-10-30.
+Status: basic D1 spatial checks and preliminary appearance have user-reported passes. Stance/idle, bounded head attention, selected hair physics/collision, and preview controls are implemented. All 95 tests pass after the rear-lock stability correction. The correction awaits a new headset quality/performance check; remaining M1 behavior is open. Last updated: 2026-10-30.
 
 ## Planning rules
 
@@ -94,7 +94,7 @@ Acceptance checks:
 
 The source audit found 607 rigid bodies, 956 spring joints, and mappings for all 593 physics-linked source bones. This increment does not replay that full graph: four hair chains/22 bones now use calibrated springs and eight body/collar capsules. It retains the native app, unchanged model/stance resources, and one final joint writer. The installed SDK's native cloth API probe remains separate from this custom spring integration.
 
-The [secondary-motion contract](secondary-motion.md) records the implemented solver, profile, controls, debug geometry, CPU timing snapshot, 90-test pass, and native mesh comparisons. Selected collar-region checks pass on desktop; the next gate is headset confirmation of hair volume, natural lag/settling, pause/re-entry/scale behavior, and measured device cost. After that gate, expand selected accessories or evaluate a native cloth panel. Authored clearance, weights, and fitted collar deformation remain part of the broader solution.
+The user confirmed improved cheek locks but found rear hair twitching during head turns and model rotation. The subsequent correction adds primary-pose chain guides, valid hard quaternion limits, non-impulsive contact correction, angular-speed bounds, and yaw-preserving history. The [secondary-motion contract](secondary-motion.md) records the solver, profile, controls, debug geometry, CPU timing snapshot, 95-test pass, and native mesh/motion comparisons. Selected collar-region and continuity checks pass on desktop; the next gate is a new headset check of rear-hair stability, natural lag/settling, pause/re-entry/scale behavior, and measured device cost. After that gate, expand selected accessories or evaluate a native cloth panel. Authored clearance, weights, and fitted collar deformation remain part of the broader solution.
 
 After that gate, validate a small set of facial channels, then prioritize the M2 text-personality and confirmed-memory loop before expanding voice and coordinated mouth motion. This is a proposed sequence, not evidence that those capabilities exist.
 

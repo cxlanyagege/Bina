@@ -43,6 +43,7 @@ nonisolated struct SpringCapsule {
 nonisolated struct SpringBoneState {
     private(set) var tail: SIMD3<Float>
     private var previousTail: SIMD3<Float>
+    private var previousRoot: SIMD3<Float>?
 
     init(tail: SIMD3<Float>) {
         self.tail = tail
@@ -57,16 +58,17 @@ nonisolated struct SpringBoneState {
         let length = simd_length(rest)
         guard length.isFinite, length > 0.001, step.isFinite, step > 0 else { return false }
         let oldTail = tail
-        var next = tail + (tail - previousTail) * exp(-settings.damping * step)
+        let predicted = tail + (tail - previousTail) * exp(-settings.damping * step)
             + ((restTail - tail) * settings.stiffness + SIMD3(settings.gravity)) * step * step
+        var next = predicted
         let restDirection = rest / length
+        let maximumAngle = settings.maximumChainAngle ?? settings.maximumAngle
+        func constrained(_ point: SIMD3<Float>) -> SIMD3<Float> {
+            let direction = Self.direction(point - root, fallback: restDirection)
+            return root + Self.turn(restDirection, toward: direction, maximumAngle: maximumAngle) * length
+        }
         for _ in 0..<8 {
-            let direction = Self.direction(next - root, fallback: restDirection)
-            let angle = acos(max(-1, min(1, simd_dot(direction, restDirection))))
-            if angle > settings.maximumAngle {
-                let turn = simd_quatf(from: restDirection, to: direction)
-                next = root + simd_slerp(simd_quatf(), turn, settings.maximumAngle / angle).act(rest)
-            } else { next = root + direction * length }
+            next = constrained(next)
             for collider in colliders {
                 let contact = SpringCapsule.closestPair(root, next, collider.start, collider.end)
                 let separation = contact.first - contact.second
@@ -83,11 +85,34 @@ nonisolated struct SpringBoneState {
                 next += normal * min(0.025, (clearance - distance) / max(contact.amount, 0.2))
             }
         }
-        next = root + Self.direction(next - root, fallback: restDirection) * length
+        // Conflicting contacts must not override the bend envelope on the last iteration.
+        next = constrained(next)
+        if let speed = settings.maximumAngularSpeed, let previousRoot {
+            let before = Self.direction(tail - previousRoot, fallback: restDirection)
+            let after = Self.direction(next - root, fallback: restDirection)
+            next = constrained(root + Self.turn(before, toward: after, maximumAngle: speed * step) * length)
+        }
         guard (0..<3).allSatisfy({ next[$0].isFinite }) else { return false }
-        previousTail = oldTail
+        // Position projection resolves overlap; it is not an external impulse. Retain
+        // only the predicted tangential motion so contacts cannot pump spring energy.
+        let direction = (next - root) / length
+        let velocity = predicted - oldTail
+        var tangent = velocity - direction * simd_dot(velocity, direction)
+        if let speed = settings.maximumAngularSpeed {
+            let magnitude = simd_length(tangent), maximum = length * speed * step
+            if magnitude > maximum { tangent *= maximum / magnitude }
+        }
+        previousTail = next - tangent
+        previousRoot = root
         tail = next
         return true
+    }
+
+    private static func turn(_ from: SIMD3<Float>, toward to: SIMD3<Float>, maximumAngle: Float) -> SIMD3<Float> {
+        let angle = acos(max(-1, min(1, simd_dot(from, to))))
+        guard angle > maximumAngle else { return to }
+        let rotation = simd_quatf(from: from, to: to)
+        return simd_slerp(simd_quatf(real: 1, imag: .zero), rotation, maximumAngle / angle).act(from)
     }
 
     private static func direction(_ value: SIMD3<Float>, fallback: SIMD3<Float>) -> SIMD3<Float> {

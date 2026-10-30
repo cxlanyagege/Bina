@@ -131,7 +131,7 @@ final class CharacterHairPhysics {
 
     func apply(to transforms: inout [Transform], deltaTime: TimeInterval, enabled: Bool, poseWeight: Float, showsDebug: Bool) throws {
         let placement = character.transformMatrix(relativeTo: nil)
-        if let lastPlacement, Self.matrixDifference(placement, lastPlacement) > 0.02 { needsReset = true }
+        if let lastPlacement, Self.placementRequiresReset(placement, lastPlacement) { needsReset = true }
         lastPlacement = placement
         let tick = clock.advance(deltaTime)
         needsReset = needsReset || tick.needsReset
@@ -186,7 +186,13 @@ final class CharacterHairPhysics {
             for (b, bone) in chain.bones.enumerated() {
                 let parent = global(bone.parents, transforms: result)
                 let frame = parent * primary[bone.index].matrix
-                let root = Self.point(frame, .zero), restTail = Self.point(frame, bone.tail)
+                let root = Self.point(frame, .zero)
+                // Long locks use the complete primary frame. Following simulated
+                // ancestors here compounds bends and preserves unwanted twist.
+                let restFrame = chain.settings.maximumChainAngle == nil ? frame
+                    : global(bone.parents + [bone.index], transforms: primary)
+                let rest = Self.point(restFrame, bone.tail) - Self.point(restFrame, .zero)
+                let restTail = root + rest
                 if advancesTime {
                     guard states[c][b].advance(root: root, restTail: restTail, step: Float(SpringSimulationClock.step), settings: chain.settings, colliders: capsules) else {
                         throw CharacterPhysicsError.unstableSimulation
@@ -194,9 +200,9 @@ final class CharacterHairPhysics {
                 }
                 let desired = states[c][b].tail - root
                 guard simd_length_squared(desired) > 0.00000001 else { throw CharacterPhysicsError.unstableSimulation }
-                let rotation = simd_quatf(from: simd_normalize(restTail - root), to: simd_normalize(desired))
+                let rotation = simd_quatf(from: simd_normalize(rest), to: simd_normalize(desired))
                 let parentRotation = Transform(matrix: parent).rotation
-                let local = simd_normalize(parentRotation.inverse * rotation * parentRotation * primary[bone.index].rotation)
+                let local = simd_normalize(parentRotation.inverse * rotation * Transform(matrix: restFrame).rotation)
                 guard (0..<4).allSatisfy({ local.vector[$0].isFinite }) else { throw CharacterPhysicsError.unstableSimulation }
                 result[bone.index].rotation = local
             }
@@ -221,7 +227,15 @@ final class CharacterHairPhysics {
         return SIMD3(result.x, result.y, result.z)
     }
 
-    private static func matrixDifference(_ a: simd_float4x4, _ b: simd_float4x4) -> Float {
-        (0..<4).flatMap { c in (0..<4).map { r in abs(a[c][r] - b[c][r]) } }.max() ?? 0
+    private static func placementRequiresReset(_ a: simd_float4x4, _ b: simd_float4x4) -> Bool {
+        func xyz(_ value: SIMD4<Float>) -> SIMD3<Float> { SIMD3(value.x, value.y, value.z) }
+        if simd_distance(xyz(a.columns.3), xyz(b.columns.3)) > 0.02 { return true }
+        for column in 0..<3 {
+            let previousScale = simd_length(xyz(b[column]))
+            if abs(simd_length(xyz(a[column])) - previousScale) > max(previousScale, 0.001) * 0.02 { return true }
+        }
+        // Stored particles and gravity are character-local; yawing that frame does
+        // not invalidate history. Slider rotations must not replay contact warm-up.
+        return false
     }
 }

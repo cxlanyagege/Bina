@@ -32,6 +32,10 @@ nonisolated struct CharacterPhysicsProfile: Codable, Sendable {
         let damping: Float
         let gravity: [Float]
         let maximumAngle: Float
+        /// Optional bound relative to the complete primary pose, preventing long-chain foldover.
+        var maximumChainAngle: Float? = nil
+        /// Optional character-frame angular speed limit in radians per second.
+        var maximumAngularSpeed: Float? = nil
     }
 
     struct Collider: Codable, Sendable {
@@ -73,7 +77,9 @@ nonisolated struct CharacterPhysicsProfile: Codable, Sendable {
                   chain.stiffness.isFinite, (1...1000).contains(chain.stiffness),
                   chain.damping.isFinite, (1...60).contains(chain.damping),
                   vector(chain.gravity, limit: 5), chain.maximumAngle.isFinite,
-                  (0.05...1.2).contains(chain.maximumAngle) else {
+                  (0.05...1.2).contains(chain.maximumAngle),
+                  chain.maximumChainAngle.map({ $0.isFinite && (0.05...1.2).contains($0) }) ?? true,
+                  chain.maximumAngularSpeed.map({ $0.isFinite && (0.1...10).contains($0) }) ?? true else {
                 throw CharacterPhysicsError.invalidProfile("Invalid spring-chain settings.")
             }
         }

@@ -1,6 +1,6 @@
 # Columbina Model Intake
 
-Status: selected hair physics/collision now addresses the user's head-attention hair/collar report. All 90 simulator tests and SDK builds pass, including actual skinned hair/collar and cuff regressions. The original USDZ and stance data remain unchanged. Headset quality/performance acceptance and broader costume validation remain open. Reviewed: 2026-10-30.
+Status: selected hair physics/collision and a rear-lock stability correction are implemented. All 95 simulator tests and SDK builds pass, including actual skinned hair/collar, motion continuity, and cuff regressions. The original USDZ and stance data remain unchanged. Headset quality/performance acceptance and broader costume validation remain open. Reviewed: 2026-10-30.
 
 ## Source and identity
 
@@ -125,9 +125,11 @@ Subsequent headset testing found hair/collar penetration and rigid accessory beh
 
 Four selected chains now use spring dynamics: side locks `Joint_0054...0056` and `Joint_0057...0059`, and upper rear locks `Joint_0070...0077` and `Joint_0107...0114`. The solver changes only those 22 local rotations, sharing one skeletal driver between both hair layers. Eight capsule proxies follow the primary neck/chest pose. The model, skin weights, textures, material policy, and accepted arm/thumb deltas are unchanged; this is not a full replay of the original MMD physics graph.
 
-The generated local `ColumbinaPhysics.json` is 4,096 bytes, SHA-256 `29d7edc4d0b929738285c0391a65a3f294543d7663f0972465b7098a05cd4b1e`, and embeds the current USDZ hash. Bundle all three paired resources. A missing/invalid physics profile leaves primary motion usable and reports the unavailable feature. The [secondary-motion contract](../secondary-motion.md#reproduce-the-local-profile) provides generation commands, settings, controls, reset policy, verification coverage, and remaining device checks.
+The generated local `ColumbinaPhysics.json` is 4,230 bytes, SHA-256 `289b0d2e69e8813bb33d1934e27fa7d626bea0c971fd05a38b5c29db236ef8e4`, and embeds the current USDZ hash. Bundle all three paired resources. Regenerate older local profiles to include rear-chain angle and speed limits. A missing/invalid physics profile leaves primary motion usable and reports the unavailable feature. The [secondary-motion contract](../secondary-motion.md#reproduce-the-local-profile) provides generation commands, settings, controls, reset policy, verification coverage, and remaining device checks.
 
-The final suite passes all 90 tests with zero failures/skips at `/private/tmp/Bina-Hair-Physics-Final-Tests-2.xcresult`. Actual imported-mesh tests cover both hair layers against selected collar surfaces at seven settled targets. A continuous sweep also samples intermediate mesh configurations. These tests protect the selected contact region, not all costume surfaces or arbitrary movements. The earlier cuff-fix headset pass remains separate from this correction's pending headset acceptance.
+The user subsequently confirmed improved cheek locks but reported rear-hair twitching during head turns and model rotation. Rear locks now evaluate rest direction/twist against the complete primary pose, with 0.65-radian shape and 2-radian/second motion limits. The solver uses explicit quaternion identity, avoids converting contact correction into velocity, and preserves history through ordinary yaw.
+
+The corrected suite passes all 95 tests with zero failures/skips at `/private/tmp/Bina-Rear-Hair-Regression-Tests-3.xcresult`. Actual imported-mesh tests cover both hair layers against selected collar surfaces at seven settled targets; continuous tests cover 30/60/90/120 FPS and heading-slider changes. A normalized 11-second sweep has zero selected-region crossings across 24 mesh samples. These checks protect the selected contact region and tested motion paths, not all costume surfaces or arbitrary movements. The earlier cuff-fix headset pass remains separate from this correction's pending headset acceptance.
 
 ## Reproduce locally
 
