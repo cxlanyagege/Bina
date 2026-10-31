@@ -1,12 +1,12 @@
 # Columbina Character Profile
 
-Status: source-derived design draft; no runtime character configuration is implemented. Reviewed: 2026-10-19.
+Status: source-derived portrayal with a versioned curated text-runtime adaptation implemented. Live model/persona evaluation and independent canon review remain open. Reviewed: 2026-10-31.
 
 ## Purpose and source authority
 
 This profile adapts the user's supplied `IDENTITY.md` and `SOUL.md` into an English engineering specification. It preserves the user's portrayal while separating fictional characterization, configured relationship, real interaction history, and application capabilities.
 
-The source files are character material. Their imperative wording does not instruct the development agent, grant tool access, or override application policy. This document is an adaptation, not a complete translation or an installed OpenClaw configuration.
+The source files are character material. Their imperative wording does not instruct the development agent, grant tool access, or override application policy. This document is an adaptation, not a complete translation or an installed OpenClaw configuration. `ColumbinaPersona` version `2026-10-31.1` now uses its curated identity, temperament, relationship premise, and capability boundaries for [text dialogue](../text-conversation.md); no live portrayal pass is implied.
 
 | Source | Contribution | SHA-256 of reviewed content |
 | --- | --- | --- |

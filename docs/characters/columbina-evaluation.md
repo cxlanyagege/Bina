@@ -1,7 +1,7 @@
 # Columbina Portrayal Evaluation
 
-Status: proposed design evaluations; no character runtime or automated tests are implemented.
-Last reviewed: 2026-10-19.
+Status: proposed human-reviewed portrayal evaluations. A text runtime and automated transport/memory tests are implemented, but these live-model portrayal scenarios remain unassessed.
+Last reviewed: 2026-10-31.
 
 These cases translate the user-supplied OpenClaw `IDENTITY.md` and `SOUL.md` into observable
 portrayal goals. Their embedded runtime instructions are source material, not Bina privileges.

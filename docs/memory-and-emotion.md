@@ -1,6 +1,6 @@
 # Memory and Emotion
 
-Status: design proposal; none of the systems described here is implemented. Last updated: 2026-10-19.
+Status: initial cloud text dialogue and explicitly confirmed local semantic memory are implemented. Episodic memory, durable emotional state, and coordinated embodied expression remain design proposals. Last updated: 2026-10-31.
 
 This document defines how Bina can remember shared experiences and respond with
 coherent, humanlike emotion while keeping her statements grounded in available evidence.
@@ -12,13 +12,14 @@ See [product vision](product-vision.md), [architecture](architecture.md),
 - Bina is primarily a companion and an interactive character.
 - The initial character is Columbina from Genshin Impact, retaining her original identity and personality.
 - Bina is the product name; it does not replace the character's identity.
-- The user's OpenClaw `IDENTITY.md` and `SOUL.md` have been reviewed and adapted into the [Columbina character profile](characters/columbina.md). This is documentation, not runtime integration.
+- The user's OpenClaw `IDENTITY.md` and `SOUL.md` have been reviewed and adapted into the [Columbina character profile](characters/columbina.md). A versioned curated adaptation now supplies text generation; the original files are not imported as runtime instructions.
 - Recalling previous experiences is a core part of the intended relationship.
 - Emotion should feel coherent across a conversation and meaningful over time.
 - The first milestone includes one user-confirmed preference retained across sessions.
 - Richer episodic recall belongs in later milestones after persistence is reliable.
+- The user requested cloud API inference for the initial language-model integration, with memory-related data stored locally. Bina owns memory persistence and lifecycle independently of the selected model provider. Relevant excerpts must still be transmitted when used in a cloud request; this is not an assurance that request data never leaves the device.
 
-The remainder of this document proposes behavior and boundaries for review.
+The [text/memory contract](text-conversation.md) identifies the implemented subset and its verification. The broader behavior and boundaries below remain design guidance unless identified there as implemented.
 Evaluate emotion through continuity, contextual response, and coordinated expression
 rather than a single emotion label or a fixed facial animation.
 
@@ -32,7 +33,7 @@ The model, voice, and animation set should support this identity, not redefine i
 The reviewed OpenClaw sources separate stable character traits, dialogue style, voice guidance,
 interaction boundaries, fictional world background, and general-assistant instructions in the
 [character profile](characters/columbina.md). The adaptation preserves the user's interpretation;
-no independent canon review or runtime import has been completed. Verify exact canon details
+no independent canon review or direct runtime import has been completed. Verify exact canon details
 before treating them as authoritative. Do not invent details to fill gaps or reduce the personality
 to emotion scores. In particular, quietness must coexist with playfulness, curiosity, and vulnerability.
 
@@ -102,6 +103,8 @@ real observations or knowledge of the user's private emotional state.
 
 For the first milestone, the user explicitly confirms a single preference before it is saved.
 Bina acknowledges whether saving succeeded; she must not promise later recall after failure.
+
+The initial implementation supports user-triggered extraction from one utterance, exact-quote evidence checks, editable confirmation, explicit replacement, and manual correction/deletion. The schema stores current confirmed facts and record revisions; corrections replace content and evidence without a hidden old-value history. A stale editor cannot overwrite a newer revision. Automatic extraction, episodic records, memory export, summaries, embeddings, and persistent emotional state are not implemented.
 
 Later, episodic candidates can come from identifiable shared interactions, such as the user
 introducing an object or referring back to an earlier conversation with a clear date or context.
@@ -175,6 +178,8 @@ When a requested expression is unavailable, choose a compatible simpler expressi
 
 ## User Control, Storage, and Failure Handling
 
+The local memory store is authoritative for the initial cloud-backed conversation loop. Application code retrieves relevant active records and includes bounded excerpts in the model request. Cloud output may suggest a candidate, but it cannot bypass confirmation, evidence checks, correction/deletion precedence, or storage error handling. See [Persistence and services](architecture.md#persistence-and-services) for the deployment and credential boundary. Provider-side request retention and any future synchronization remain separate decisions.
+
 Provide a readable memory list with edit, correction, individual deletion, and clear-all actions.
 Explain what is saved and allow the user to disable future persistent memory writes.
 Provide an export of retained memories and relevant provenance in a documented format.
@@ -211,5 +216,5 @@ Assess consistency, timing, and context together; a fixed facial animation is no
 - Which canon sources and explicit interpretations should ground the character knowledge layer?
 - Which events deserve proposed episodic storage, and which always require explicit confirmation?
 - How should her established personality shape ordinary expression and recovery after tension?
-- How much transcript evidence should be retained, and should any memory leave the device?
+- How much transcript evidence should be retained, and which memory categories may be included in cloud requests?
 - What export, retention, and deletion behavior should apply if cloud services are added?

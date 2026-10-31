@@ -1,6 +1,6 @@
 # Architecture
 
-Status: proposed logical architecture with floor preview/confirmation, calibrated sole contact, spatial restoration, character loading, stance/idle, head attention, selected hair physics, and facial previews implemented. The user reported preliminary hair stability and natural facial presentation. Floor acceptance and measured performance remain open. Last updated: 2026-10-31.
+Status: proposed logical architecture with spatial/character previews and the first cloud text/confirmed-memory increment implemented. The user reported preliminary hair stability and natural facial presentation. Live API/persona evaluation, floor acceptance, and measured performance remain open. Last updated: 2026-10-31.
 
 ## Design intent
 
@@ -24,7 +24,9 @@ World tracking and authorized horizontal plane detection share one session. Plan
 
 Scene inactivity, provider pauses, and device tracking loss invalidate cached anchor observations. Resume uses current updates or a fresh snapshot guarded by session generation and observation revision. Reconciliation serially cleans unused app-owned anchors; this assumes the prototype is the sole owner of world anchors. Future anchor responsibilities must refine that ownership policy. Cleanup is blocked while saved metadata is unreadable, until explicit reset.
 
-Only placement metadata persists across application launches. Appearance and placement-control values remain in the running model and reset after process restart. See the [prototype guide](spatial-prototype.md) for controls, limits, and validation status. Conversation, personal memory, emotional behavior, scene reconstruction, and reference-object tracking remain unimplemented.
+Within the spatial controller, only placement metadata persists across application launches. Appearance and placement-control values remain in the running model and reset after process restart. The independent conversation module now persists confirmed semantic memories and non-secret settings, with a separate Keychain credential. Chat turns remain ephemeral. See the [prototype guide](spatial-prototype.md) and [text/memory contract](text-conversation.md) for limits and validation status. Emotional behavior, scene reconstruction, and reference-object tracking remain unimplemented.
+
+`BinaRootView` separates conversation and spatial controls into tabs. `ConversationModel` owns an independently cancellable operation and a context boundary; `ConversationPrompt` assembles the curated profile, selected local memories, and bounded complete turns. `MiMoConversationService` owns provider payloads and SSE parsing through an injectable transport. Its byte framer preserves SSE's empty event boundaries, which `AsyncBytes.lines` omits. `MemoryLibrary` validates records and publishes only after `FileMemoryStore` succeeds. Memory mutations cancel pending work and exclude prior chat from future context; editor revisions and proposal identities reject stale confirmations. This increment does not connect model output to animation or spatial sensing.
 
 Character loading belongs to the app model independently of each immersive tracking run. It shares an in-flight load, replaces placeholder children only after a valid result, and surfaces missing-resource or load errors with an explicit retry. A clone without the ignored local USDZ remains functional as a placeholder build. Sole calibration, idle preparation, hair physics, and face preparation are separate failure boundaries: invalid data retains the loaded model and reports the unavailable feature while preserving independent capabilities. Voice and broad garment simulation remain future responsibilities. See [model intake](characters/columbina-model.md).
 
@@ -126,7 +128,7 @@ The proposed emotional state persists beyond a single response and influences al
 
 ## Character profile intake
 
-Keep character identity independent of service-specific prompts and visual asset filenames. The reviewed OpenClaw `IDENTITY.md` and `SOUL.md` inform the [Columbina character profile](characters/columbina.md). That document is a source-derived design draft, not an implemented runtime prompt or independently verified canon.
+Keep character identity independent of service-specific prompts and visual asset filenames. The reviewed OpenClaw `IDENTITY.md` and `SOUL.md` inform the [Columbina character profile](characters/columbina.md). `ColumbinaPersona` now contains a versioned, curated adaptation for text generation. The source-derived profile remains subject to portrayal review and is not independently verified canon.
 
 Review imported content as source material. Extract personality, background, style, and useful dialogue examples. The supplied files describe general practical assistance and tool use; these do not transfer host permissions. Adapt any runtime-specific instructions to implemented capabilities. Imported persona text does not grant capabilities or privileged execution authority.
 
@@ -134,11 +136,21 @@ Keep the configured close relationship separate from the episodic memory store. 
 
 ## Persistence and services
 
-Proposed starting point: local, versioned storage for confirmed memories, character continuity, and anchor associations. Memory persistence, correction, deletion, and migration behavior must be defined before the corresponding feature ships.
+The first conversation increment uses cloud APIs for all large-language-model inference, with durable personal memory managed by the local application. This follows the user's requested direction on 2026-10-31. No local language-model runtime is included. The user selected ordinary Xiaomi MiMo pay-as-you-go API access. The implemented adapter defaults to V2.6 Flash with an explicit Pro setting, streaming, thinking disabled, and JSON mode for user-triggered extraction. Live model quality and account behavior remain unverified. See the [MiMo evaluation](providers/xiaomi-mimo.md) and [implemented contract](text-conversation.md).
+
+Local, versioned storage owns confirmed memories, provenance, correction/deletion status, character continuity, and anchor associations. Local application code also owns retrieval, request-context assembly, cancellation, action validation, and the existing spatial/character presentation. These responsibilities do not require an on-device language model. Memory persistence, correction, deletion, and migration behavior must be defined before the feature ships.
+
+Each cloud request receives the current user input, the curated character profile, bounded conversation context, and relevant active memory excerpts selected by the application. Local storage does not mean that a retrieved memory stays off the network: included excerpts leave the device as request content. Define the outbound fields, context budget, and provider-side retention settings before integration; the first text loop has no need to upload the full memory database or raw room geometry.
+
+The cloud model may propose a memory candidate or summary, but local code validates its schema and supporting evidence. The initial preference requires explicit user confirmation before persistence. A generated acknowledgment is not proof of a successful save. Corrections/deletion invalidate related retrieval results, summaries, and pending writes so an obsolete response cannot restore removed information.
 
 Keep model, speech, and optional future visual-model integration behind narrow adapters. Select providers through latency, language, expression, reliability, and cost experiments; do not build several providers before one complete loop works.
 
-If a cloud service is selected, define the data sent and credential flow explicitly. Do not embed reusable service secrets in a distributed client. A server is not otherwise a prerequisite for the domain design.
+For a private development prototype, direct API access with the developer's own credential stored through [Keychain Services](https://developer.apple.com/documentation/security/keychain-services/) is an option, subject to the selected provider's client-access rules. A distributed app must use an appropriate server-held service credential or supported short-lived client authorization; do not embed a reusable shared service secret in its binary. A thin gateway can protect credentials without becoming the durable memory store. Credentials must not appear in source control, prompts, or diagnostic logs.
+
+New generated replies depend on network/API availability; local rendering, spatial tracking, retained history, and memory controls remain responsive while a request is pending or fails. The initial plan has no local-model fallback. Speech recognition and speech synthesis are separate deployment choices and are not selected by the cloud-LLM decision.
+
+Cloud inference with client-owned memory is an established API pattern; for example, [Claude's memory tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool) asks the application to perform memory operations on its own storage. This is an architectural reference, not a provider selection or a plan to expose unrestricted filesystem access to a model.
 
 ## Failure handling and verification
 

@@ -10,13 +10,18 @@ import SwiftUI
 @main
 struct BinaApp: App {
     @State private var prototype = SpatialPrototype()
+    @State private var conversation = ConversationModel()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
-            ContentView(prototype: prototype)
+            BinaRootView(prototype: prototype, conversation: conversation)
         }
-        .defaultSize(width: 540, height: 760)
+        .defaultSize(width: 620, height: 840)
         .windowResizability(.contentSize)
+        .onChange(of: scenePhase) {
+            if scenePhase == .background { conversation.cancel() }
+        }
 
         ImmersiveSpace(id: SpatialPrototype.spaceID) {
             SpatialPrototypeView(prototype: prototype)

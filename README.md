@@ -10,9 +10,11 @@ The spatial prototype supports mixed immersive entry, classified-floor placement
 
 The current preview implements relaxed stance, procedural idle, bounded head attention, selected hair physics, two eye states, natural blinking, restrained expressions, mouth previews, and pause/reference controls. Covered eyes remain closed; uncovered eyes blink naturally. Facial targets were repaired without re-exporting base geometry, skinning, materials, or textures. The user reported no major issue in the latest hair check and found the facial preview natural. These are preliminary passes; measured performance and broader costume checks remain open. See [Floor placement](docs/floor-placement.md), [Facial presentation](docs/facial-presentation.md), [Secondary motion](docs/secondary-motion.md), [head attention](docs/head-attention.md), and the [model intake](docs/characters/columbina-model.md).
 
-The latest foot-form/contact presentation has a preliminary user-reported headset pass. Detailed floor detection/recovery, measured accuracy, and sustained performance remain open. Environment occlusion, walking, foot IK, speech synchronization, voice, conversation, personal memory, and emotional behavior remain unimplemented. Facial labels are manual previews. M1 is partially implemented, not complete.
+The latest foot-form/contact presentation has a preliminary user-reported headset pass. Detailed floor detection/recovery, measured accuracy, and sustained performance remain open. Environment occlusion, walking, foot IK, speech synchronization, voice, and coordinated emotional behavior remain unimplemented. Facial labels are manual previews. M1 is partially implemented, not complete.
 
-The current full suite passes 151 tests on visionOS Simulator 27.2, and the device SDK build passes. Water-heel/barefoot selection uses fixed stances and separate contact measurements; see [Footwear and sole contact](docs/footwear.md) and the [verification record](docs/spatial-prototype.md#footwear-verification). Simulator results do not establish real-room floor accuracy.
+The first text conversation and confirmed local-memory loop is implemented with ordinary Xiaomi MiMo pay-as-you-go API access. The default conversation tab streams Columbina's replies, supports cancellation, and provides explicit memory extraction, review, confirmation, correction, and deletion. A separate tab preserves the spatial controls. Configure the developer's own key through the settings sheet; it stays in this device's Keychain. Chat turns are ephemeral; confirmed records persist locally and relevant excerpts are sent for recall. Live API/persona quality and headset UI acceptance remain unverified. See [Text conversation and local memory](docs/text-conversation.md).
+
+The spatial baseline previously passed 151 tests on visionOS Simulator 27.2. The current 60 new conversation/memory tests pass, along with Simulator and generic device SDK builds. Full regression attempts now encounter 14 bundled-character cases interrupted by a Simulator graphics-process crash; an unchanged spatial baseline reproduces the same failure. See the [current verification record](docs/text-conversation.md#results-on-2026-10-31). Water-heel/barefoot selection uses fixed stances and separate contact measurements; see [Footwear and sole contact](docs/footwear.md) and the [spatial verification record](docs/spatial-prototype.md#footwear-verification). Simulator results do not establish real-room floor accuracy.
 
 The current toolchain is Xcode 27.2 with SDK and Simulator 27.2, matching the user-reported headset version. The Xcode project keeps its visionOS 27.0 minimum deployment target.
 
@@ -30,10 +32,11 @@ Start with the [documentation guide](docs/README.md). The main documents are:
 - [Character assets](docs/character-assets.md): model intake, rigging, expressions, materials, and validation.
 - [Columbina model intake](docs/characters/columbina-model.md): local source, conversion, attribution, and asset-use boundaries.
 - [Memory and emotion](docs/memory-and-emotion.md): character continuity, shared memories, and emotional behavior.
+- [Text conversation and local memory](docs/text-conversation.md): API setup, streaming, confirmed facts, privacy, failure behavior, and verification.
 - [Architecture](docs/architecture.md): responsibilities, data flow, and execution contracts.
 - [Milestones](docs/milestones.md): experiments, acceptance criteria, and open decisions.
 
-The supplied OpenClaw identity and personality files have been reviewed and adapted into character documentation. The adaptation is a design draft; it is not a runtime import or an independent verification of game lore.
+The supplied OpenClaw identity and personality files have been reviewed and adapted into character documentation and a versioned text-runtime persona. The original files are not imported as executable instructions, and their game lore has not been independently verified.
 
 ## Local character preview
 

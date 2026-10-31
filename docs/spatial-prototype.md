@@ -6,7 +6,7 @@ Status: classified-floor preview/confirmation, water-heel/barefoot forms with ca
 
 The app opens a mixed `ImmersiveSpace`, places a character using ARKit world tracking, and attempts to restore the selected anchor across sessions. It asynchronously loads the locally converted Columbina USDZ, retaining the generated humanoid placeholder while loading or on failure. Both use a 1.6-meter reference height before the user changes scale.
 
-This does not complete M1. The [floor workflow](floor-placement.md) requires stable, classified floor coverage and explicit confirmation, then uses the existing world-anchor path. Environment occlusion/collision avoidance, walking, foot IK, conversational behavior, and personal memory remain unimplemented. Facial controls are manual previews. The real room remains visible through passthrough.
+This does not complete M1. The [floor workflow](floor-placement.md) requires stable, classified floor coverage and explicit confirmation, then uses the existing world-anchor path. Environment occlusion/collision avoidance, walking, foot IK, and embodied conversational behavior remain unimplemented. [Text conversation and confirmed local memory](text-conversation.md) now run independently in another tab. Facial controls are manual previews. The real room remains visible through passthrough.
 
 ## Local Columbina preview
 
@@ -28,7 +28,7 @@ On 2026-10-31 the user updated Xcode and Simulator. Current local verification c
 2. Open `Bina.xcodeproj` in Xcode and select the shared `Bina` scheme.
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
 4. For a character-enabled build with motion and facial controls, confirm all four matching local resources exist at the paths above. Build and run while wearing the headset.
-5. Check model status in the control window. Wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
+5. Select the character-and-space tab in the control window; the app initially shows conversation. Check model status and wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
 6. Use the enter-space button, allow the system world-sensing request for floor detection, and wait for tracking. Denied or unsupported plane sensing leaves manual-height placement available; no simulated floor is substituted.
 7. Select stand-on-floor, slowly inspect the real floor, and wait for stable-floor status. Face the desired direction, choose the horizontal distance, then preview. Inspect the green foot-range disk and confirm placement/save. If no suitable floor is found, adjust distance/direction or switch to manual height and choose the headset-to-feet offset before place-and-save.
 8. Adjust scale/yaw and compare water heels with barefoot in the appearance group. Grounded placements retain the same sole point; legacy/manual origins remain unchanged in the default form and use the contact difference when explicitly switching forms. Appearance changes cancel an unconfirmed floor preview. Natural stance is selected by default; footwear selection is disabled during pause/reference comparison.

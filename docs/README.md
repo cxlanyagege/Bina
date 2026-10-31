@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: classified-floor preview/confirmation, water-heel and barefoot forms with calibrated contact, manual-height fallback, relaxed stance, idle, head attention, selected hair physics, two eye states, blinking, expression/mouth previews, and comparison controls are implemented. The toolchain and Simulator now use 27.2, matching the user-reported headset version. Floor/footwear acceptance and measured performance require physical-headset checks. Last updated: 2026-10-31.
+Status: classified-floor preview/confirmation, calibrated foot forms, spatial restoration, stance/idle, attention, selected hair physics, facial previews, and initial MiMo text dialogue with confirmed local memory are implemented. The toolchain and Simulator use 27.2, matching the user-reported headset version. Live API/persona evaluation, headset acceptance, and measured performance remain open. Last updated: 2026-10-31.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -21,7 +21,9 @@ These documents distinguish long-term design from the limited implementation alr
 | [Character assets](character-assets.md) | Evaluate a Columbina model and prepare a usable character asset. |
 | [Columbina model intake](characters/columbina-model.md) | Reproduce local model/pose preparation and understand source and redistribution boundaries. |
 | [Memory and emotion](memory-and-emotion.md) | Define what the character remembers and how personality and emotion remain coherent. |
+| [Text conversation and local memory](text-conversation.md) | Configure MiMo, run the first text/memory loop, and understand cancellation, data handling, and verification. |
 | [Architecture](architecture.md) | Follow information from observation through behavior to visible and audible results. |
+| [Xiaomi MiMo evaluation](providers/xiaomi-mimo.md) | Review the intended cloud provider, model candidates, API constraints, cost, data handling, and validation plan. |
 | [Milestones](milestones.md) | Choose the next experiment and determine whether its result is sufficient. |
 
 ## Decision language

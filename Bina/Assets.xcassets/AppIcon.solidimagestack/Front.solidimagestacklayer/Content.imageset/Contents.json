@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "Headpiece.png",
       "idiom" : "vision",
       "scale" : "2x"
     }

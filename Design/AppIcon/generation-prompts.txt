@@ -1,0 +1,31 @@
+Mode: Built-in image_gen tool; no CLI fallback.
+
+INITIAL CONCEPT
+Use case: logo-brand
+Asset type: Bina app icon for visionOS, one finished square icon artwork.
+Primary request: An elegant white feathered head ornament based on Columbina from Genshin Impact, centered on a smooth dark-to-light purple gradient inspired by her violet eyes.
+Input images: Image 1 is a reference only for the exact head ornament silhouette at the back of the character's head. Image 2 is a reference only for her violet eye color. Do not include the character, hair, face, clothing, or a human head in the output.
+Subject: Isolate and faithfully simplify the distinctive symmetric head ornament in reference 1: two large pointed feather wings rising diagonally upward, a smaller pair of wings stretching sideways below them, and a pair of long slender tapered feather/ribbon tails falling downward and outward from the center. Preserve this compact butterfly-like six-part silhouette and the small delicate central teardrop/crescent clasp. It must clearly read as this specific feathered hair ornament, not a bird, butterfly, ordinary pair of angel wings, or winged letter.
+Style/medium: Refined minimal Apple-platform app icon artwork, sculpted pearly white feathers with restrained shallow relief and gentle lavender shading. Crisp graceful edges, broad readable feather divisions, quiet premium finish, no busy fine engraving.
+Scene/backdrop: Full-bleed perfectly smooth purple gradient, darkest muted deep violet at the top, transitioning through iris purple to soft light lavender at the bottom. Approximate palette #38234F, #78549D, #C2A2DC, informed by the eye-color reference. Background stays simple and clean.
+Composition/framing: Square 1:1, straight-on symmetrical ornament, optically centered. White ornament occupies about 68 percent of canvas width and 62 percent of canvas height. Keep every feather tip within a centered circle of diameter 82 percent of the canvas so visionOS circular cropping is safe. The gradient extends to all four square edges. No visible circular container, no rounded square mask, no border, no device mockup.
+Lighting/mood: Soft diffuse light, tranquil and ethereal, subtle depth but strong small-size readability. The white ornament contrasts clearly with the violet background.
+Text: None.
+Constraints: One single finished icon, not a contact sheet or presentation board. No letters, no title, no additional moons or stars, no glitter, no landscape, no bird body, no face, no black hair, no ornamental outer frame, no watermark. The only foreground subject is the white feather head ornament.
+
+FOREGROUND EXTRACTION
+Use case: background-extraction
+Asset type: Transparent foreground layer for a visionOS app icon.
+Input image: The input is the edit target. Preserve exactly its existing white feather ornament design, materials, feather shapes, central clasp, and symmetrical proportions.
+Primary request: Remove the purple background entirely and deliver ONLY the same white feathered head ornament on a genuinely transparent alpha background. Also scale the whole ornament down uniformly to 78 percent of its current size relative to the square canvas, keeping it centered at the same optical center. This extra empty margin is essential for the system's circular crop.
+Composition: One square 1024x1024 transparent PNG. The complete ornament should occupy approximately 64 percent of canvas width and 64 percent of canvas height, with large transparent margins on every side. All original feather tips must remain intact. Do not crop any part.
+Constraints: Preserve the exact source ornament, including its two ascending wings, two horizontal side wings, two long downward feather tails, and small central clasp. Remove the background and nothing else. Do not add a purple rectangle, checkerboard, circle, drop shadow, glow, text, face, body, hair, objects, or new ornament details. Truly transparent background, no solid-color matte.
+
+FOREGROUND REFINEMENT
+Use case: precise-object-edit
+Asset type: Clean transparent foreground layer for a production app icon.
+Input image is the edit target.
+Keep exactly the same white feather headpiece, with the same six-wing silhouette, central teardrop clasp, colors, shading, and proportions.
+Clean up the transparent extraction: remove all the stray white flecks, noisy fringe, disconnected opaque pixels and background remnants around and between the feathers. The silhouette must have smooth, crisp antialiased edges and absolutely clean transparent negative space.
+Layout: square canvas. Reduce the entire headpiece as a single unit by a further 15 percent, centered, with plenty of transparent margin. The headpiece including every feather tip should be no more than two thirds of the square canvas width or height. Keep all feather tips.
+Deliver actual transparent alpha; no backdrop, no checkerboard, no shadow, no text, no new details. Do not repaint the headpiece design.
