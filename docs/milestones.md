@@ -46,7 +46,7 @@ Exit evidence: results identify a workable path for the first experience and doc
 
 Integrate a mixed immersive scene, explicit placement, a validated character asset, basic idle behavior, and attention toward the user based on available input. Include anchor restoration and a placement recovery path.
 
-Current partial result: [local model intake](characters/columbina-model.md), [floor preview/confirmation](floor-placement.md), calibrated sole contact, stance/idle, head attention, selected hair physics, two eye states, blinking, manual facial previews, and a loader retaining the placeholder until success. The user found stance/idle acceptable, confirmed the cuff correction, reported no major issue in the latest rear-hair check, and found the facial preview natural. Floor acceptance, conversational expressive behavior, broader costume validation, and measured performance remain open.
+Current partial result: [local model intake](characters/columbina-model.md), [floor preview/confirmation](floor-placement.md), [water-heel/barefoot forms](footwear.md) with calibrated sole contact, stance/idle, head attention, selected hair physics, two eye states, blinking, manual facial previews, and a loader retaining the placeholder until success. The user found stance/idle acceptable, confirmed the cuff correction, reported no major issue in the latest rear-hair check, and found the facial preview natural. Floor/footwear acceptance, conversational expressive behavior, broader costume validation, and measured performance remain open.
 
 Acceptance checks:
 
@@ -120,6 +120,10 @@ Acceptance checks:
 - Idle, attention, hair, facial, and cuff regressions remain coherent after placement and recovery.
 
 Walking, navigation, room collision, foot IK, and environment occlusion remain later increments. Device evidence for ground contact should precede motion that moves the feet.
+
+The user subsequently clarified water heels versus barefoot. A separate [footwear binding](footwear.md) now removes heel geometry, supplies fixed barefoot ankle/forefoot calibration, and measures each form's visible contact. The shared pose owner, existing saved anchor, and four original resources remain intact. Reference comparison restores original heels/pose; natural playback restores the preference. Validate both forms on the user's headset before extending foot motion. Local development and Simulator now use 27.2, matching the reported headset version; the deployment minimum remains 27.0.
+
+Following that delivery, the user reported no major issues in the headset check. Record a preliminary foot-form/contact presentation pass. No detailed checklist, drift/contact measurements, recovery results, or sustained-performance data accompanied it; broader spatial acceptance remains open.
 
 ## M2: Conversation, personality, and minimum continuity
 

@@ -21,6 +21,9 @@ final class CharacterIdleMotion {
     private(set) var physicsTimingDescription: String?
     private(set) var face: CharacterFaceMotion?
     private(set) var faceMessage: String? = CharacterFaceError.missingProfile.errorDescription
+    private(set) var footwearMode = CharacterFootwearMode.waterHeels
+    private(set) var footwearMessage: String?
+    private(set) var footwear: CharacterFootwear?
     @ObservationIgnored private var playback = CharacterIdlePlayback()
     @ObservationIgnored private var attention = CharacterHeadAttention()
     @ObservationIgnored private let character: Entity
@@ -31,9 +34,38 @@ final class CharacterIdleMotion {
     @ObservationIgnored private var timingCursor = 0
     @ObservationIgnored private let logger = Logger(subsystem: "Bina", category: "CharacterPhysics")
     @ObservationIgnored private let faceLogger = Logger(subsystem: "Bina", category: "CharacterFace")
+    @ObservationIgnored private let footwearLogger = Logger(subsystem: "Bina", category: "CharacterFootwear")
 
     var cycleTime: TimeInterval { playback.cycleTime }
     var hairPhysicsDiagnostics: CharacterHairPhysics.Diagnostics? { hairPhysics?.diagnostics }
+    var canChangeFootwear: Bool { footwear != nil && mode == .playing }
+    var footwearGroundContact: CharacterGroundContact? {
+        footwear?.contact(for: mode == .reference ? .waterHeels : footwearMode)
+    }
+
+    func configureFootwear() throws {
+        guard rigs.count == 1, footwear == nil else {
+            throw CharacterFootwearError.invalidBinding("Footwear requires one unconfigured rig.")
+        }
+        let rig = rigs[0]
+        footwear = try CharacterFootwear(character: character, model: rig.model, reference: rig.reference)
+        footwearMessage = nil
+    }
+
+    func setFootwearMode(_ value: CharacterFootwearMode) {
+        guard canChangeFootwear, footwearMode != value else { return }
+        footwearMode = value
+        applyPose()
+    }
+
+    func reportFootwearUnavailable(_ error: Error) {
+        footwear?.restore()
+        footwear = nil
+        footwearMode = .waterHeels
+        footwearMessage = (error as? LocalizedError)?.errorDescription
+            ?? CharacterFootwearError.invalidBinding("Footwear preparation failed.").errorDescription
+        footwearLogger.error("Footwear unavailable: \(String(describing: error), privacy: .private)")
+    }
 
     func configureFace(_ profile: CharacterFaceProfile) throws {
         guard rigs.count == 1, profile.modelSHA256 == modelSHA256 else { throw CharacterFaceError.mismatchedAsset }
@@ -130,7 +162,12 @@ final class CharacterIdleMotion {
         hairPhysics?.invalidate()
         hairPhysics?.showDebug(false)
         mode = playback.mode
-        for rig in rigs { rig.model.jointTransforms = rig.reference }
+        for rig in rigs {
+            var transforms = rig.reference
+            do { try footwear?.apply(.waterHeels, to: &transforms) }
+            catch { reportFootwearUnavailable(error) }
+            rig.model.jointTransforms = transforms
+        }
         face?.restoreReference()
     }
 
@@ -159,8 +196,10 @@ final class CharacterIdleMotion {
                     )
                 }
             }
-            // Only upper-body joints move. The pelvis, legs, feet, model pivot,
-            // and world anchor retain their reference transforms.
+            // Each footwear mode supplies a fixed foot pose. Idle and attention
+            // still affect only the upper body; world placement has a separate owner.
+            do { try footwear?.apply(footwearMode, to: &transforms) }
+            catch { reportFootwearUnavailable(error) }
             Self.rotate(&transforms[rig.spine], degrees: -0.12 * breath, axis: [1, 0, 0])
             Self.rotate(&transforms[rig.spine], degrees: 0.16 * sway, axis: [0, 0, 1])
             Self.rotate(&transforms[rig.chest], degrees: 0.45 * breath, axis: [1, 0, 0])

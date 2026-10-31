@@ -84,6 +84,8 @@ enum CharacterAsset {
         }
         let pose = try await CharacterIdlePose.load(modelURL: modelURL, poseURL: poseURL)
         let motion = try CharacterIdleMotion(character: character, pose: pose)
+        do { try motion.configureFootwear() }
+        catch { motion.reportFootwearUnavailable(error) }
         do {
             guard let profileURL = resourceURL("ColumbinaPhysics", extension: "json", in: bundle) else {
                 throw CharacterPhysicsError.missingProfile

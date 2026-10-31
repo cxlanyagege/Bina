@@ -1,6 +1,6 @@
 # Spatial Prototype
 
-Status: classified-floor preview/confirmation, calibrated sole contact, manual-height fallback, stance/idle, head attention, selected hair physics, and facial previews are implemented. The user reported preliminary hair stability and natural facial presentation. Floor contact, sensing/recovery behavior, and sustained performance require headset checks on visionOS 27.2. Updated: 2026-10-31.
+Status: classified-floor preview/confirmation, water-heel/barefoot forms with calibrated contact, manual-height fallback, stance/idle, head attention, selected hair physics, and facial previews are implemented. Xcode, SDK, and Simulator now use 27.2. Floor/footwear appearance, sensing/recovery behavior, and sustained performance require headset checks. Updated: 2026-10-31.
 
 ## Scope
 
@@ -20,6 +20,8 @@ The control window distinguishes model loading, success, and failure. A missing 
 
 The user identifies Device Hub as the current developer GUI entry point, with the reported path `/Applications/Xcode.app/Contents/Developer/Applications/Device Hub.app`. Device Hub was resolved through bundle identifier `com.apple.dt.Devices`; opening it, starting the simulator, and reading its GUI succeeded. Prefer desktop app discovery instead of assuming `Simulator.app`. Clicking visionOS app content failed through the current UI tool, so no completed interactive visual walkthrough is claimed. This environment note does not change the `xcodebuild` test commands below.
 
+On 2026-10-31 the user updated Xcode and Simulator. Current local verification confirms Xcode 27.2 (27B52), XROS SDK 27.2, and visionOS Simulator 27.2 (24N120), UUID `1BEDF9CF-615D-4096-9C28-33AF40FEEFB4`. Earlier 27.0/27.1 evidence below remains historical. The previously reported `Developer/Applications/Device Hub.app` path is absent in this installation; discover the current developer GUI instead of reusing that path. The user-reported headset is also visionOS 27.2; its exact build remains unrecorded.
+
 ## Run on Apple Vision Pro
 
 1. Record the headset system build and Xcode versions. The user reports visionOS 27.2 as of 2026-10-30; the project still requires 27.0 or later.
@@ -29,7 +31,7 @@ The user identifies Device Hub as the current developer GUI entry point, with th
 5. Check model status in the control window. Wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
 6. Use the enter-space button, allow the system world-sensing request for floor detection, and wait for tracking. Denied or unsupported plane sensing leaves manual-height placement available; no simulated floor is substituted.
 7. Select stand-on-floor, slowly inspect the real floor, and wait for stable-floor status. Face the desired direction, choose the horizontal distance, then preview. Inspect the green foot-range disk and confirm placement/save. If no suitable floor is found, adjust distance/direction or switch to manual height and choose the headset-to-feet offset before place-and-save.
-8. Adjust scale and yaw. Grounded placements retain the same sole contact point; legacy/manual placements retain their original pivot. Placement-distance and manual foot-offset changes apply to the next request. Appearance changes cancel an unconfirmed floor preview. Natural stance is selected by default, and idle advances only while the character is visible.
+8. Adjust scale/yaw and compare water heels with barefoot in the appearance group. Grounded placements retain the same sole point; legacy/manual origins remain unchanged in the default form and use the contact difference when explicitly switching forms. Appearance changes cancel an unconfirmed floor preview. Natural stance is selected by default; footwear selection is disabled during pause/reference comparison.
 9. With attention enabled, move sideways, sit/stand, approach, and pass behind the character. Compare with attention disabled. Pause/resume and compare the reference pose with the natural stance. Inspect neck, hair, collar, feet, shoulders, sleeves, skirt/cloak, eyes, and transparency. Record deformation differences and any motion jump.
 10. In the facial group, compare covered/closed with uncovered/open. Inspect automatic and manual blinks, reverse an eye-state transition, preview neutral/smile/curiosity and mouth shapes, then check pause/reference/re-entry. Review both close facial views and conversational distance.
 11. Exit and reenter, then relaunch in the same room. Observe whether the saved anchor returns and idle updates restart while preserving the selected in-process pause/reference mode. If the anchor is unavailable, wait at the original location or explicitly place again.
@@ -51,6 +53,7 @@ The interface is in Simplified Chinese. The control names below describe their m
 | Manual place/re-place and save | Uses current valid device pose, projected horizontal heading, and the chosen offsets. The character initially faces back toward the user. |
 | Height | 0.4–1.9 meters; initially 1.6. Changes visible character scale without moving its anchor; grounded records retain the sole pivot. |
 | Heading adjustment | Local yaw from -180 to 180 degrees. It does not make the character continuously turn toward the user. |
+| Foot form | Water heels by default; barefoot removes the complete heel geometry and supplies a fixed calibrated foot pose. Switching retains contact and cancels a pending floor preview. Pause disables switching; reference displays original heels/pose, then natural playback restores the selected form. |
 | Pause/resume idle | Freezes the complete current pose, including attention and cycle phase, then continues from that pose. Toggle changes take effect on resume. Unavailable in reference mode or when idle preparation fails. |
 | Look toward me | Enabled by default; gently turns neck/head toward a fresh tracked device position. Rear, near, invalid, or missing targets return toward neutral. Disabling blends toward neutral during playback. |
 | Hair physics | Enabled by default when its profile is valid. Four selected chains bend/settle and avoid body/collar proxies. On/off comparison blends over 0.25 seconds; a paused action change waits for resume. |
@@ -66,7 +69,7 @@ The heading helper ignores head pitch and roll so the character stays upright. L
 
 Appearance and placement controls survive leaving and reentering the immersive space within the same process. They reset to defaults after application restart. Only the saved anchor association persists; the prior scale and yaw are not restored.
 
-Idle repeats on an 11-second cycle with 5.5-second breathing, using small upper-body joint rotations. The pelvis, legs, feet, character pivot, and world anchor remain fixed. User pause preserves phase; tracking loss, scene inactivity, or hidden content also freezes time without changing playback intent. Exiting the immersive view cancels its render-update subscription and invalidates the callback token. Playback mode and phase are in-memory preview state and are not persisted across process restarts.
+Idle repeats on an 11-second cycle with 5.5-second breathing, using small upper-body joint rotations. Each foot form supplies a fixed stance; idle does not animate the pelvis, legs, feet, presentation pivot, or world anchor. Explicit form changes compose through the same joint owner and apply the matching contact correction. User pause preserves phase; tracking loss, inactivity, or hidden content freezes time without changing intent. Exiting cancels the render subscription and invalidates its token. Mode, phase, and footwear are in-memory preview state. See [Footwear and sole contact](footwear.md) for ownership, preparation, and reference behavior.
 
 Attention uses approximate device position, not eye gaze. It adds bounded neck/head rotation through the same joint controller and respects current placement rotation and scale. Inactive content clears target hysteresis while retaining its displayed pose; visibility recovery supplies a new target and interpolates from the retained orientation. Attention preference is also in-memory state. See the [head-attention contract](head-attention.md) for limits and coordinate handling.
 
@@ -113,6 +116,7 @@ Record each case as pass, fail, or unassessed, with reproduction steps for failu
 | Eye states and facial previews | Covered eyes remain closed; uncovered eyes blink without the cover reappearing. Reversals keep the cover/lid ordering. Check expressions, mouth previews, pause/reference, tracking interruption, and preserved eye materials from above/level/below. |
 | Movement and head tilt | The placeholder remains at its world anchor rather than following head movement; its upright orientation is maintained. |
 | Scale and yaw | Changes are visible immediately while the anchor stays fixed. Next-placement settings do not move the current anchor. |
+| Water heels and barefoot | Compare both forms at several heights/headings. Barefoot has no water-heel geometry or residual shadow, and both heel/forefoot meet the floor. Inspect ankle decoration and face/hair behavior. Pause/reference and re-entry retain documented state. |
 | Repeated entry/exit | Scene, tracking, and render-update subscription restart without duplicate content or stale callbacks. Natural idle resumes when visible; a user pause or reference selection stays selected within the same process. |
 | App restart in the same room | Restoration is attempted through the saved UUID. Record actual success and time rather than assuming it. |
 | Missing location or different room | No guessed placement appears. Waiting beyond eight seconds retains the saved association and offers re-placement. |
@@ -265,6 +269,24 @@ Verification recorded on 2026-10-31:
 
 The [floor contract](floor-placement.md) owns the physical-headset checklist. Local evidence is retained in `LocalAssets/Columbina/floor-diagnostics/`; no character resource is rewritten by this increment.
 
+### Footwear verification
+
+The user clarified water heels and barefoot after the initial floor implementation and updated Xcode/Simulator to 27.2. The [footwear contract](footwear.md) records fixed stance calibration, named mesh/face preservation, contact correction, and runtime ownership.
+
+Verification recorded on 2026-10-31:
+
+| Check | Recorded result |
+| --- | --- |
+| Full visionOS Simulator 27.2 suite | 151 passed, zero failures/skips and no reported runtime warnings: the preceding 145 plus six bundled footwear cases. Contact tests now cover both forms, three heights, three headings, sole-aligned and legacy/manual records. Result: `/private/tmp/Bina-Footwear-Full-27_2.xcresult`. |
+| Device SDK and resources | Generic visionOS device build passed with Xcode 27.2 (27B52), signing disabled. Both app bundles use SDK 27.2, retain minimum OS 27.0, and contain the four exact original resources and world-sensing purpose string. |
+| Geometry and presentation | Complete heel geometry is absent in barefoot mode. Retained attributes, named facial targets, current materials/weights, and the skeleton pass regression checks. Only four calibrated rotations change; playback phase is unchanged by selection. |
+| Contact and lifecycle | Actual skinned heel/forefoot contact, scale/yaw, pause/reference/hidden state, preview cancellation, independent fallback, and no extra placement save pass. |
+| Native comparison | Sixteen production-controller captures cover two foot forms from four foot and four facial views. Reviewed front/side foot and frontal facial comparisons preserve intended appearance; no headset render or complete costume/performance acceptance is claimed. |
+| visionOS 27.2 compatibility correction | Reusing imported triangle-index views caused the simulator renderer's index validation to exit. Re-encoding validated retained indices into independent buffers resolves the reproduced failure. |
+| Physical headset | Subsequent user feedback found no major issues in the latest foot-form/contact check, a preliminary presentation pass on the reported visionOS 27.2 headset. Detailed ankle/transition checks, room accuracy, interruption/recovery, and sustained device cost remain unmeasured. |
+
+Local evidence and resource/source fingerprints are retained in `LocalAssets/Columbina/footwear-diagnostics/verification-manifest.json`. No character-resource rewrite or additional bundled model is required.
+
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 
 ```sh
@@ -281,7 +303,7 @@ Date / app revision:
 Xcode version / build:
 Device model / visionOS version:
 Room and lighting conditions:
-Placement mode / distance / manual foot offset / height / yaw:
+Placement mode / footwear / distance / manual foot offset / height / yaw:
 Floor authorization / detection delay / visible sole error:
 Build result:
 Automated test result / result bundle:

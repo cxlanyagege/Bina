@@ -80,6 +80,30 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         valueSlider("身高", value: $prototype.characterHeight, range: 0.4...1.9, unit: "米")
                         valueSlider("朝向调整", value: $prototype.headingDegrees, range: -180...180, unit: "度", step: 5)
+                        if let motion = prototype.characterIdle {
+                            Picker("足部形态", selection: Binding(
+                                get: { motion.footwearMode },
+                                set: { prototype.setFootwearMode($0) }
+                            )) {
+                                Text("水球高跟").tag(CharacterFootwearMode.waterHeels)
+                                Text("裸足").tag(CharacterFootwearMode.barefoot)
+                            }
+                            .pickerStyle(.segmented)
+                            .disabled(!prototype.canChangeFootwear)
+                            .accessibilityIdentifier("character.footwear")
+                            if let message = motion.footwearMessage {
+                                Text(message).font(.callout).foregroundStyle(.orange)
+                            } else if motion.mode == .reference {
+                                Text("参考姿势显示原始水球高跟；恢复自然待机后继续使用所选形态。")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            } else if motion.mode == .paused {
+                                Text("继续待机后可切换足部形态。")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            } else {
+                                Text("地板放置时，切换形态会保持落点并重新贴合脚底。")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 .disabled(prototype.isBusy)

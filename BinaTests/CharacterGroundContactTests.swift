@@ -9,31 +9,35 @@ import simd
 final class CharacterGroundContactTests: XCTestCase {
     func testActualFeetTouchTheGroundAndFitTheFootprintAcrossScaleAndHeadingChanges() async throws {
         let character = try await loadCharacter()
-        let contact = try CharacterGroundContact.measure(in: character)
-        let geometry = try FootGeometry(character)
+        let motion = try await CharacterAsset.loadIdleMotion(for: character)
         let presentation = Entity()
         let floor = Entity()
         presentation.addChild(character)
         floor.addChild(presentation)
         floor.position = [2, 0.3, -1]
-        for height: Float in [0.4, 1.6, 1.9] {
-            for heading: Float in [0, .pi / 2, -.pi] {
-                let scale = height / 1.6
-                presentation.scale = SIMD3(repeating: scale)
-                presentation.orientation = simd_quatf(angle: heading, axis: [0, 1, 0])
-                presentation.position = contact.correction(scale: scale, heading: heading)
-                let points = geometry.worldPoints()
-                let lowest = try XCTUnwrap(points.map(\.y).min())
-                XCTAssertEqual(lowest, 0.3, accuracy: 0.0001)
-                XCTAssertTrue(points.allSatisfy { $0.y >= 0.3 - 0.0001 })
-                let feet = points.filter { $0.y <= 0.3 + 0.08 * scale }
-                XCTAssertFalse(feet.isEmpty)
-                for point in feet {
-                    XCTAssertLessThanOrEqual(
-                        simd_length(SIMD2(point.x - 2, point.z + 1)), contact.radius * scale + 0.0001)
+        for mode in CharacterFootwearMode.allCases {
+            motion.setFootwearMode(mode)
+            let contact = try XCTUnwrap(motion.footwearGroundContact)
+            let geometry = try FootGeometry(character)
+            for height: Float in [0.4, 1.6, 1.9] {
+                for heading: Float in [0, .pi / 2, -.pi] {
+                    let scale = height / 1.6
+                    presentation.scale = SIMD3(repeating: scale)
+                    presentation.orientation = simd_quatf(angle: heading, axis: [0, 1, 0])
+                    presentation.position = contact.correction(scale: scale, heading: heading)
+                    let points = geometry.worldPoints()
+                    let lowest = try XCTUnwrap(points.map(\.y).min())
+                    XCTAssertEqual(lowest, 0.3, accuracy: 0.0001)
+                    XCTAssertTrue(points.allSatisfy { $0.y >= 0.3 - 0.0001 })
+                    let feet = points.filter { $0.y <= 0.3 + 0.08 * scale }
+                    XCTAssertFalse(feet.isEmpty)
+                    for point in feet {
+                        XCTAssertLessThanOrEqual(
+                            simd_length(SIMD2(point.x - 2, point.z + 1)), contact.radius * scale + 0.0001)
+                    }
+                    let center = presentation.transform.matrix * SIMD4(contact.center, 1)
+                    XCTAssertLessThan(simd_length(SIMD3(center.x, center.y, center.z)), 0.00001)
                 }
-                let center = presentation.transform.matrix * SIMD4(contact.center, 1)
-                XCTAssertLessThan(simd_length(SIMD3(center.x, center.y, center.z)), 0.00001)
             }
         }
         XCTAssertThrowsError(try CharacterGroundContact.measure(in: character))
@@ -51,12 +55,19 @@ final class CharacterGroundContactTests: XCTestCase {
                 prototype.headingDegrees = 90
                 prototype.characterHeight = 0.8
                 XCTAssertEqual(presentation.position, .zero)
+                prototype.setFootwearMode(.barefoot)
+                XCTAssertEqual(try XCTUnwrap(FootGeometry(presentation).worldPoints().map(\.y).min()), 0, accuracy: 0.0001)
+                prototype.setFootwearMode(.waterHeels)
+                XCTAssertEqual(presentation.position, .zero)
             } else {
-                let geometry = try FootGeometry(presentation)
-                for height: Double in [0.4, 1.6, 1.9] {
-                    prototype.characterHeight = height
-                    prototype.headingDegrees = 90
-                    XCTAssertEqual(try XCTUnwrap(geometry.worldPoints().map(\.y).min()), 0, accuracy: 0.0001)
+                for mode in CharacterFootwearMode.allCases {
+                    prototype.setFootwearMode(mode)
+                    let geometry = try FootGeometry(presentation)
+                    for height: Double in [0.4, 1.6, 1.9] {
+                        prototype.characterHeight = height
+                        prototype.headingDegrees = 90
+                        XCTAssertEqual(try XCTUnwrap(geometry.worldPoints().map(\.y).min()), 0, accuracy: 0.0001)
+                    }
                 }
             }
             XCTAssertEqual(store.saveCount, 0)
@@ -81,7 +92,7 @@ final class CharacterGroundContactTests: XCTestCase {
 
 /// Independent CPU skinning checks exposed feet and shoes, including toes beyond the shoe ornaments.
 @MainActor
-private struct FootGeometry {
+struct FootGeometry {
     struct Part {
         let positions: [SIMD3<Float>]
         let weights: [MeshJointInfluence]
@@ -102,7 +113,7 @@ private struct FootGeometry {
         var parts: [Part] = []
         for mesh in component.mesh.contents.models {
             for part in mesh.parts {
-                if ["CharacterMaterial_19", "CharacterMaterial_00"].contains(
+                if ["CharacterMaterial_19", "CharacterMaterial_00", "CharacterMaterial_14"].contains(
                     component.materials[part.materialIndex].name)
                 {
                     let positions = part.positions.elements

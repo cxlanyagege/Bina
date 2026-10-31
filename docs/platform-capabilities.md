@@ -1,12 +1,14 @@
 # Platform Capabilities
 
-Status: platform baseline with a limited D1 implementation. General platform sources reviewed: 2026-10-19; plane APIs and implementation status updated: 2026-10-31. Sources include visionOS 27 documentation and the installed XROS 27.0 Swift interfaces.
+Status: platform baseline with a limited D1 implementation. General platform sources reviewed: 2026-10-19; plane APIs and implementation status updated: 2026-10-31. Sources include visionOS 27 documentation and installed XROS 27.0/27.2 interfaces.
 
 ## Local project baseline
 
 The current project targets visionOS 27.0 and implements a mixed immersive scene, world tracking, floor preview/confirmation, calibrated sole contact, local anchor-association storage, character loading, stance/idle, head attention, selected hair physics, and facial previews. Build and test evidence are recorded in the [spatial prototype guide](spatial-prototype.md#automated-verification). The user reports visionOS 27.2, acceptable posture/motion, a resolved cuff defect, preliminary rear-hair stability, and natural facial presentation. Floor acceptance and detailed device measurements remain open. This does not change the 27.0 deployment target. Conversation and personal memory remain unimplemented.
 
 Do not infer device support or permission from the deployment target. Check provider support, current authorization, and session state at runtime.
+
+The user updated Xcode and Simulator on 2026-10-31. Local verification confirms Xcode 27.2 (27B52), XROS SDK 27.2, and the booted visionOS Simulator 27.2 (24N120). These now match the user-reported headset's major/minor version; the actual headset build remains unrecorded. The application's minimum deployment target remains 27.0.
 
 ## Capabilities and boundaries
 

@@ -53,6 +53,8 @@ The initial conversion passed `usdchecker --arkit`, device and Simulator SDK bui
 
 The application loads the asset asynchronously and normalizes its reference pose to 1.6 meters through parent entities, preserving authored rig transforms. The placeholder is replaced only after a valid model loads. Calibrated joint deltas and small upper-body motion are independent of saved world placement. [Floor placement](../floor-placement.md) additionally measures shoe ornaments (material 19) and exposed foot skin (material 00) before attachment/idle, then corrects the presentation parent around their sole contact point. It does not rewrite the four asset files. Older manual placements retain their original pivot.
 
+The user clarified two foot forms: visible water heels and barefoot with the heel geometry absent. [Footwear and sole contact](../footwear.md) records the cached heel-free mesh, fixed ankle/forefoot calibration, separate contact values, retained named facial mapping, and 27.2 mesh-index normalization. The same four original resources remain byte-for-byte unchanged. Barefoot retains body textures and ankle decoration. New physical-headset acceptance remains required for contact and ankle deformation.
+
 ### Eye material correction
 
 Physical headset testing found that eyes appeared correctly from above, became white at eye level, and exposed internal star-shaped geometry from below. The converter had connected texture alpha whenever Blender reported four image channels, including RGB images with no transparency. RealityKit consequently imported the six eye and face materials (`09`, `10`, `11`, `13`, `20`, and `21`) as transparent, allowing their overlapping surfaces to sort incorrectly.

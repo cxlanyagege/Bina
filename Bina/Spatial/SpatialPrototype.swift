@@ -39,7 +39,10 @@ final class SpatialPrototype {
     @ObservationIgnored let floorMarker = FloorPlacementMarker()
     @ObservationIgnored private let character = Entity()
     @ObservationIgnored private lazy var floorDetection = FloorDetection(placement: floorPlacement)
-    private var groundContact: CharacterGroundContact? = .placeholder
+    private var fallbackGroundContact: CharacterGroundContact? = .placeholder
+    private var groundContact: CharacterGroundContact? {
+        characterIdle?.footwearGroundContact ?? fallbackGroundContact
+    }
     @ObservationIgnored private let store: any PlacementPersisting
     @ObservationIgnored private let logger = Logger(subsystem: "Bina", category: "SpatialPrototype")
     @ObservationIgnored private var session: ARKitSession?
@@ -100,6 +103,7 @@ final class SpatialPrototype {
         spaceState == .open && isSceneActive && trackingState == .running && deviceIsTracked
             && floorPlacement.trackingAvailable
     }
+    var canChangeFootwear: Bool { !isBusy && characterIdle?.canChangeFootwear == true }
     private var floorSettings: FloorPlacementSettings? {
         guard let groundContact else { return nil }
         return FloorPlacementSettings(distance: Float(placementDistance), characterScale: Float(characterHeight)/CharacterAsset.referenceHeight,
@@ -156,13 +160,13 @@ final class SpatialPrototype {
                 }
                 guard self.characterLoadToken == token else { return }
                 self.floorPlacement.cancelPreview()
-                self.groundContact = contact
+                self.fallbackGroundContact = contact
                 self.character.children.removeAll()
                 self.character.addChild(model)
+                self.characterIdle = idle
                 self.updateAppearance()
                 self.characterState = .loaded
                 self.characterMessage = groundMessage
-                self.characterIdle = idle
                 self.characterIdleMessage = idleMessage
             } catch {
                 guard self.characterLoadToken == token else { return }
@@ -196,6 +200,15 @@ final class SpatialPrototype {
         guard let characterIdle else { return }
         if characterIdle.mode == .reference { characterIdle.showNatural() }
         else { characterIdle.showReference() }
+        floorPlacement.cancelPreview()
+        updateAppearance()
+    }
+
+    func setFootwearMode(_ value: CharacterFootwearMode) {
+        guard canChangeFootwear, characterIdle?.footwearMode != value else { return }
+        characterIdle?.setFootwearMode(value)
+        floorPlacement.cancelPreview()
+        updateAppearance()
     }
 
     func beginMotionUpdates() -> UUID {
@@ -221,7 +234,12 @@ final class SpatialPrototype {
             let position = device.originFromAnchorTransform.columns.3
             target = SIMD3(position.x, position.y, position.z)
         }
+        let previousContact = groundContact
         characterIdle?.advance(by: deltaTime, isVisible: isVisible, attentionTarget: target)
+        if previousContact != groundContact {
+            floorPlacement.cancelPreview()
+            updateAppearance()
+        }
     }
 
     var trackingDescription: String {
@@ -670,6 +688,13 @@ final class SpatialPrototype {
         if savedPlacement?.alignment == .soleContact, let groundContact {
             character.position = groundContact.correction(scale: Float(characterHeight)/CharacterAsset.referenceHeight,
                                                          heading: Float(headingDegrees * .pi/180))
+        } else if let groundContact, let original = characterIdle?.footwear?.contact(for: .waterHeels) {
+            // Preserve the legacy water-heel origin while keeping its contact point through
+            // an explicit footwear change. Loading the default appearance still yields zero.
+            let scale = Float(characterHeight)/CharacterAsset.referenceHeight
+            let heading = Float(headingDegrees * .pi/180)
+            character.position = groundContact.correction(scale: scale, heading: heading)
+                - original.correction(scale: scale, heading: heading)
         } else { character.position = .zero }
     }
 

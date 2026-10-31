@@ -18,7 +18,9 @@ nonisolated struct CharacterGroundContact: Equatable {
     }
 
     /// Measure before attachment and before motion changes the imported pose.
-    @MainActor static func measure(in character: Entity) throws -> CharacterGroundContact {
+    @MainActor static func measure(
+        in character: Entity, footwear: CharacterFootwearMode = .waterHeels
+    ) throws -> CharacterGroundContact {
         guard character.parent == nil else { throw CharacterGroundContactError.invalidGeometry }
         var models: [ModelEntity] = []
         func collect(_ entity: Entity) {
@@ -84,7 +86,7 @@ nonisolated struct CharacterGroundContact: Equatable {
         // Include the lowest eight centimeters of skin to cover both complete feet.
         let footSkin = skinPoints.filter { $0.y <= shoeBase + 0.08 }
         guard !footSkin.isEmpty else { throw CharacterGroundContactError.invalidGeometry }
-        let points = shoePoints + footSkin
+        let points = footwear == .waterHeels ? shoePoints + footSkin : footSkin
         let lower = points.reduce(SIMD3<Float>(repeating: .greatestFiniteMagnitude), simd_min)
         let upper = points.reduce(SIMD3<Float>(repeating: -.greatestFiniteMagnitude), simd_max)
         let radius = simd_length(SIMD2(upper.x - lower.x, upper.z - lower.z)) / 2

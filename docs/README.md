@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: classified-floor preview/confirmation, calibrated sole contact, manual-height fallback, relaxed stance, idle, head attention, selected hair physics, two eye states, blinking, expression/mouth previews, and comparison controls are implemented. The user reported preliminary hair stability and natural facial presentation. Floor placement and measured performance require physical-headset checks on visionOS 27.2. See the spatial prototype and feature contracts for verification evidence. Last updated: 2026-10-31.
+Status: classified-floor preview/confirmation, water-heel and barefoot forms with calibrated contact, manual-height fallback, relaxed stance, idle, head attention, selected hair physics, two eye states, blinking, expression/mouth previews, and comparison controls are implemented. The toolchain and Simulator now use 27.2, matching the user-reported headset version. Floor/footwear acceptance and measured performance require physical-headset checks. Last updated: 2026-10-31.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -11,6 +11,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Product vision](product-vision.md) | Understand the companion, confirmed character direction, and first complete experience. |
 | [Spatial prototype](spatial-prototype.md) | Run the first D1 experiment and record actual device results. |
 | [Floor placement](floor-placement.md) | Understand live classified floors, preview/confirmation, sole contact, fallback, persistence compatibility, and headset checks. |
+| [Footwear and sole contact](footwear.md) | Review water-heel/barefoot selection, fixed foot calibration, mesh ownership, and matching contact correction. |
 | [Head attention](head-attention.md) | Understand bounded neck/head motion, controls, lifecycle, and validation limits. |
 | [Secondary motion](secondary-motion.md) | Reproduce selected hair physics and review collision scope, controls, native cloth options, and verification. |
 | [Facial presentation](facial-presentation.md) | Reproduce facial target repair, covered/closed and uncovered/open states, blinking, previews, and lifecycle checks. |

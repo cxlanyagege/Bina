@@ -11,6 +11,8 @@ Status: the first floor-placement workflow is implemented. Live classified floor
 5. Select **Confirm placement and save**. The character moves only after a valid world anchor has been added and the replacement association has been saved.
 6. Adjust height or heading. Grounded placements pivot around the same sole contact point. Exit/reenter or relaunch to exercise the existing world-anchor restoration path.
 
+The appearance group also selects water heels or barefoot during natural playback. Each form uses its own fixed stance and visible-foot contact value. Switching forms cancels an unconfirmed preview and preserves the confirmed contact point. Pause/reference behavior and source-specific preparation are defined in [Footwear and sole contact](footwear.md).
+
 A preview remains at its captured world location while the user looks around. **Preview again** captures a new target; **Cancel preview** leaves the saved placement untouched. Changing distance, character height, heading, or placement mode cancels the pending preview. Loading a replacement character also cancels it.
 
 If permission is denied, the provider is unsupported, or no suitable floor covers the target, select **Manual height**. The existing headset-relative height controls remain available when world tracking is valid. **Retry floor detection** creates fresh providers after a denial or failure; permission must first be allowed in system settings when required.
@@ -48,7 +50,7 @@ When multiple eligible floor meshes overlap, the highest valid floor is selected
 
 ## Sole calibration and persistence
 
-The current Columbina export separates shoe ornaments (`CharacterMaterial_19`) from exposed feet (`CharacterMaterial_00`). Before attachment or idle preparation, CPU skinning measures the imported shoe geometry and the skin within 8 centimeters of its base in the normalized 1.6-meter character frame. Their combined horizontal bounds define a conservative disk; their minimum height defines contact. Missing or invalid geometry explicitly disables calibrated floor placement for that model and leaves manual height available.
+The current Columbina export separates water-heel geometry (`CharacterMaterial_19`) from exposed feet (`CharacterMaterial_00`). Before attachment, CPU skinning measures the imported heels and the skin within 8 centimeters of their base in the normalized 1.6-meter character frame. Their combined bounds define the water-heel contact disk. The [footwear binding](footwear.md) separately measures a calibrated barefoot pose using visible foot skin and excludes the hidden heels. Missing or invalid geometry explicitly disables calibrated floor placement for that model and leaves manual height available.
 
 The contact correction on the presentation parent is:
 
@@ -58,7 +60,7 @@ translation = -yawRotation(contactCenter * characterScale)
 
 This keeps the same contact point under height and heading changes without moving the world anchor or editing authored joint transforms. Idle, attention, hair physics, and facial ownership are unchanged. Walking, broad cloth simulation, environment collision avoidance, and shadows are outside this increment.
 
-Confirmed floor placements add optional `alignment: "soleContact"` to the existing schema-1 anchor record. Older records with no alignment retain their original presentation-origin semantics. Manual placements continue using that legacy origin. No automatic migration or rewrite occurs merely because a saved record is loaded. Scale and heading remain in-process preferences and still reset after app restart.
+Confirmed floor placements add optional `alignment: "soleContact"` to the existing schema-1 anchor record. Older records with no alignment retain their original water-heel presentation-origin semantics. Manual placements continue using that legacy origin; an explicit barefoot selection applies the difference between contact corrections to preserve its existing contact point. No automatic migration or rewrite occurs merely because a saved record is loaded. Footwear, scale, and heading remain in-process preferences and reset after app restart.
 
 Plane identifiers, room meshes, preview transforms, and raw world coordinates are not persisted. The saved world anchor remains restoration authority. Once confirmed, a placement is not continually snapped to refinements or removed floor meshes; later plane evidence is used for the next placement. Ordinary ARKit updates to the selected world anchor still apply.
 
@@ -75,7 +77,7 @@ Plane identifiers, room meshes, preview transforms, and raw world coordinates ar
 
 Automated tests cover actual mesh containment, internal triangle edges, concavities, holes, transformed and sloped planes, malformed data, stable evidence, negative world-floor height, sitting/standing head heights, cumulative drift, frame corrections, tracking recovery, provider routing, obsolete runs/previews, settings changes, and legacy/new persistence. Imported-foot tests independently skin actual exposed feet and shoes, verify ground contact and complete disk coverage across three heights and three headings, and preserve legacy placement semantics.
 
-All 145 tests pass on visionOS Simulator 27.0 with zero failures/skips and no reported runtime warnings. The generic visionOS device SDK build also passes with signing disabled. Both app bundles retain the four exact character resources and the world-sensing purpose string. Detailed results are recorded in the [spatial verification record](spatial-prototype.md#floor-placement-verification); local diagnostics are retained under `LocalAssets/Columbina/floor-diagnostics/`.
+The initial floor increment passed 145 tests on visionOS Simulator 27.0 with zero failures/skips and no reported runtime warnings, plus the generic visionOS device SDK build. Both app bundles retained the four exact character resources and the world-sensing purpose string. That historical evidence remains in the [floor verification record](spatial-prototype.md#floor-placement-verification). The subsequent [footwear verification](spatial-prototype.md#footwear-verification) uses Xcode, SDK, and Simulator 27.2. Local diagnostics are retained under `LocalAssets/Columbina/floor-diagnostics/` and `footwear-diagnostics/`.
 
 On the physical headset, record pass/fail/unassessed for:
 
@@ -100,4 +102,4 @@ Record actual visible contact error, detection delay, anchor restoration, drift,
 - [Apple: PlaneAnchor](https://developer.apple.com/documentation/arkit/planeanchor).
 - [Apple: Tracking specific points in world space](https://developer.apple.com/documentation/visionos/tracking-points-in-world-space).
 
-The used signatures and availability were also checked against the installed XROS 27.0 ARKit Swift interface.
+The floor APIs were originally checked against the installed XROS 27.0 ARKit Swift interface; subsequent builds use the installed XROS 27.2 SDK. The minimum deployment target remains 27.0.
