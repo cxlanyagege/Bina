@@ -43,12 +43,12 @@ final class CharacterIdleMotion {
         footwear?.contact(for: mode == .reference ? .waterHeels : footwearMode)
     }
 
-    func configureFootwear() throws {
+    func configureFootwear(_ asset: CharacterFootwearAsset) throws {
         guard rigs.count == 1, footwear == nil else {
             throw CharacterFootwearError.invalidBinding("Footwear requires one unconfigured rig.")
         }
         let rig = rigs[0]
-        footwear = try CharacterFootwear(character: character, model: rig.model, reference: rig.reference)
+        footwear = try CharacterFootwear(character: character, model: rig.model, reference: rig.reference, asset: asset)
         footwearMessage = nil
     }
 

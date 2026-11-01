@@ -1,6 +1,6 @@
 # Text Conversation and Local Memory
 
-Status: first text conversation and confirmed local-memory implementation complete; authenticated API/persona evaluation and headset acceptance remain unverified. Ordinary Xiaomi MiMo pay-as-you-go API access is used. Last updated: 2026-10-31.
+Status: first text conversation and confirmed local-memory implementation complete; the 2026-11-01 native-footwear correction restores the full 217-test Simulator pass. Authenticated API/persona evaluation and headset acceptance remain unverified. Ordinary Xiaomi MiMo pay-as-you-go API access is used. Last updated: 2026-11-01.
 
 ## Scope and ownership
 
@@ -72,6 +72,10 @@ Toolchain: Xcode 27.2 (27B52), SDK 27.2. Tests use synthetic utterances and isol
 | Full Simulator 27.0 comparison | 211 tests: 197 passed, 14 bundled-character tests ended with signal kill, zero skips. `/private/tmp/Bina-Conversation-Full-27_0.xcresult`. All 60 new tests passed. |
 | Unmodified spatial baseline | An isolated archive of commit `2c4cf3f`, with the same existing local assets, reproduced the failing facial case on 27.2. `/private/tmp/Bina-Conversation-Baseline-Smoke.xcresult`. A fresh 27.2 Simulator also reproduced it while passing all then-current 58 new tests. |
 
-The failing character cases coincide with `backboardd` terminating in `IndexValidation._validate_neon`, `DRValidateIndices`, and `REMultiBufferMeshPayload` decoding. This establishes a reproducible Simulator graphics failure in the unmodified baseline, not its root cause or a headset failure. The original character resources and geometry code were not changed in this increment. Preserve the issue for a separate investigation rather than treating the earlier 151-test spatial baseline as a current full pass.
+Those failing character cases coincided with `backboardd` terminating in `IndexValidation._validate_neon`, `DRValidateIndices`, and `REMultiBufferMeshPayload` decoding. The [2026-11-01 investigation](footwear-mesh-investigation.md) verifies the original 151-test pass, reproduces failures with its preserved binaries, and isolates a trigger to barefoot-mesh generation in `CharacterFootwear`. The original character resources and geometry code were not changed by conversation integration, but the new tab structure can change character-loading timing. Its causal role in the transition remains unproved; neither user environment changes nor an Apple-only cause have been established.
 
 Unsigned Simulator builds initially failed Keychain access. A normal signed build passed the real isolated Keychain test; use normal Xcode signing for interactive setup. Live MiMo account/model availability, API response behavior, Chinese portrayal, latency, and headset UI/recall remain unverified until the user runs the acceptance steps above.
+
+### Full regression restored on 2026-11-01
+
+The footwear correction replaces runtime imported-mesh reconstruction with native loading of a paired, locally authored USD layer. The full visionOS Simulator 27.2 suite passes all 217 tests, with zero failures/skips or reported runtime warnings, at `/private/tmp/Bina-Footwear-Native-Fix-Full.xcresult`. This includes all 60 conversation/memory tests, the previously interrupted character cases, and six new footwear/profile regressions. Focused tests and the generic device SDK build also pass; see the [complete verification](footwear-mesh-investigation.md#correction-verification-on-2026-11-01). No authenticated API call was required. Headset and live-provider acceptance remain open.

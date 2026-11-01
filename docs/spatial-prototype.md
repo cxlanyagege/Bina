@@ -1,6 +1,6 @@
 # Spatial Prototype
 
-Status: classified-floor preview/confirmation, water-heel/barefoot forms with calibrated contact, manual-height fallback, stance/idle, head attention, selected hair physics, and facial previews are implemented. Xcode, SDK, and Simulator now use 27.2. Floor/footwear appearance, sensing/recovery behavior, and sustained performance require headset checks. Updated: 2026-10-31.
+Status: classified-floor preview/confirmation, water-heel/barefoot forms with calibrated contact, manual-height fallback, stance/idle, head attention, selected hair physics, and facial previews are implemented. The native-footwear correction passes the full 217-test Simulator suite. Xcode, SDK, and Simulator use 27.2. Floor/footwear appearance, sensing/recovery behavior, and sustained performance require headset checks. Updated: 2026-11-01.
 
 ## Scope
 
@@ -12,7 +12,7 @@ This does not complete M1. The [floor workflow](floor-placement.md) requires sta
 
 The current preview adds relaxed stance, idle, neck/head attention, selected hair dynamics, and manually selected eye/expression/mouth states. Unique ASCII joint and facial names repair the original export's identifier collisions. Pose, physics, and face metadata are paired to the exact USDZ. Attention reuses the existing tracking provider; hair proxies describe the character rather than the room. Original toon/sphere effects, lip sync, voice, and full garment cloth remain unimplemented.
 
-The files `Columbina.usdz`, `ColumbinaIdlePose.json`, `ColumbinaPhysics.json`, and `ColumbinaFace.json` under `Bina/Resources/Characters/` exist locally and are ignored by Git. A clone does not contain them. All metadata must match the exact model. Keep generated assets local under the source notice; the [model intake](characters/columbina-model.md) records provenance, hashes, reproduction, and limits.
+The files `Columbina.usdz`, `ColumbinaIdlePose.json`, `ColumbinaPhysics.json`, and `ColumbinaFace.json` under `Bina/Resources/Characters/` exist locally and are ignored by Git. Footwear selection additionally requires `ColumbinaBarefoot.usdc` and `ColumbinaFootwear.json`; the [footwear preparation](footwear.md#reproduce-the-native-variant) generates them without altering the base resources. A clone does not contain these assets. All metadata must match the exact model. Keep generated assets local under the source notice; the [model intake](characters/columbina-model.md) records provenance, hashes, reproduction, and limits.
 
 The control window distinguishes model loading, success, and failure. A missing or unreadable model leaves the spatial placeholder available, shows an explicit explanation, and offers a model-load retry. Missing, invalid, or mismatched idle data keeps the loaded static model and explains why stance/idle controls are unavailable. Do not interpret a visible placeholder as a successful Columbina preview.
 
@@ -27,7 +27,7 @@ On 2026-10-31 the user updated Xcode and Simulator. Current local verification c
 1. Record the headset system build and Xcode versions. The user reports visionOS 27.2 as of 2026-10-30; the project still requires 27.0 or later.
 2. Open `Bina.xcodeproj` in Xcode and select the shared `Bina` scheme.
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
-4. For a character-enabled build with motion and facial controls, confirm all four matching local resources exist at the paths above. Build and run while wearing the headset.
+4. Confirm the matching local resources listed above exist, including the two derived footwear files for foot-form selection. Build and run while wearing the headset.
 5. Select the character-and-space tab in the control window; the app initially shows conversation. Check model status and wait for successful loading; a failure offers retry and leaves the placeholder available for spatial checks.
 6. Use the enter-space button, allow the system world-sensing request for floor detection, and wait for tracking. Denied or unsupported plane sensing leaves manual-height placement available; no simulated floor is substituted.
 7. Select stand-on-floor, slowly inspect the real floor, and wait for stable-floor status. Face the desired direction, choose the horizontal distance, then preview. Inspect the green foot-range disk and confirm placement/save. If no suitable floor is found, adjust distance/direction or switch to manual height and choose the headset-to-feet offset before place-and-save.
@@ -282,10 +282,10 @@ Verification recorded on 2026-10-31:
 | Geometry and presentation | Complete heel geometry is absent in barefoot mode. Retained attributes, named facial targets, current materials/weights, and the skeleton pass regression checks. Only four calibrated rotations change; playback phase is unchanged by selection. |
 | Contact and lifecycle | Actual skinned heel/forefoot contact, scale/yaw, pause/reference/hidden state, preview cancellation, independent fallback, and no extra placement save pass. |
 | Native comparison | Sixteen production-controller captures cover two foot forms from four foot and four facial views. Reviewed front/side foot and frontal facial comparisons preserve intended appearance; no headset render or complete costume/performance acceptance is claimed. |
-| visionOS 27.2 compatibility correction | Reusing imported triangle-index views caused the simulator renderer's index validation to exit. Re-encoding validated retained indices into independent buffers resolves the reproduced failure. |
+| visionOS 27.2 compatibility attempt | Re-encoding validated retained indices preceded this passing run. Later replay of the preserved binaries and controlled experiments still fail; the earlier claim that re-encoding resolved the issue is withdrawn. See the [mesh regression investigation](footwear-mesh-investigation.md). |
 | Physical headset | Subsequent user feedback found no major issues in the latest foot-form/contact check, a preliminary presentation pass on the reported visionOS 27.2 headset. Detailed ankle/transition checks, room accuracy, interruption/recovery, and sustained device cost remain unmeasured. |
 
-Local evidence and resource/source fingerprints are retained in `LocalAssets/Columbina/footwear-diagnostics/verification-manifest.json`. No character-resource rewrite or additional bundled model is required.
+The original evidence and resource/source fingerprints are retained in `LocalAssets/Columbina/footwear-diagnostics/verification-manifest.json`. The 2026-11-01 [native-import correction](footwear-mesh-investigation.md) adds a derived USD layer and pairing metadata while preserving the four original resources. Its verification is separate from this historical delivery record.
 
 Select an available visionOS Simulator identifier with `xcrun simctl list devices available`, then run:
 

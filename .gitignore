@@ -67,6 +67,8 @@ Bina/Resources/Characters/Columbina.usdz
 Bina/Resources/Characters/ColumbinaIdlePose.json
 Bina/Resources/Characters/ColumbinaPhysics.json
 Bina/Resources/Characters/ColumbinaFace.json
+Bina/Resources/Characters/ColumbinaBarefoot.usdc
+Bina/Resources/Characters/ColumbinaFootwear.json
 
 # Local Python authoring caches.
 __pycache__/

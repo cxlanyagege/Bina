@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: classified-floor preview/confirmation, calibrated foot forms, spatial restoration, stance/idle, attention, selected hair physics, facial previews, and initial MiMo text dialogue with confirmed local memory are implemented. The toolchain and Simulator use 27.2, matching the user-reported headset version. Live API/persona evaluation, headset acceptance, and measured performance remain open. Last updated: 2026-10-31.
+Status: classified-floor preview/confirmation, calibrated foot forms, spatial restoration, stance/idle, attention, selected hair physics, facial previews, and initial MiMo text dialogue with confirmed local memory are implemented. Footwear now imports an authored native variant instead of reconstructing the imported mesh at runtime. The toolchain and Simulator use 27.2, matching the user-reported headset version. Live API/persona evaluation, headset acceptance, and measured performance remain open. Last updated: 2026-11-01.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -12,6 +12,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Spatial prototype](spatial-prototype.md) | Run the first D1 experiment and record actual device results. |
 | [Floor placement](floor-placement.md) | Understand live classified floors, preview/confirmation, sole contact, fallback, persistence compatibility, and headset checks. |
 | [Footwear and sole contact](footwear.md) | Review water-heel/barefoot selection, fixed foot calibration, mesh ownership, and matching contact correction. |
+| [Footwear mesh investigation](footwear-mesh-investigation.md) | Review the historical pass, renderer failure isolation, native-import correction, and verification evidence. |
 | [Head attention](head-attention.md) | Understand bounded neck/head motion, controls, lifecycle, and validation limits. |
 | [Secondary motion](secondary-motion.md) | Reproduce selected hair physics and review collision scope, controls, native cloth options, and verification. |
 | [Facial presentation](facial-presentation.md) | Reproduce facial target repair, covered/closed and uncovered/open states, blinking, previews, and lifecycle checks. |

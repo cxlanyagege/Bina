@@ -25,7 +25,7 @@ final class CharacterFootwear {
     private let waterHeelContact: CharacterGroundContact
     private let barefootContact: CharacterGroundContact
 
-    init(character: Entity, model: ModelEntity, reference: [Transform]) throws {
+    init(character: Entity, model: ModelEntity, reference: [Transform], asset: CharacterFootwearAsset) throws {
         guard character.parent == nil, let component = model.model,
             let skeleton = component.mesh.contents.skeletons.first,
             skeleton.joints.count == reference.count, skeleton.joints.map(\.name) == model.jointNames
@@ -76,28 +76,26 @@ final class CharacterFootwear {
             let rotation = simd_quatf(angle: sign * 28 * .pi / 180, axis: [1, 0, 0])
             rotations[joint] = simd_normalize(parent.inverse * rotation * parent * reference[joint].rotation)
         }
-        var contents = component.mesh.contents
-        var removedParts = 0
-        for var mesh in contents.models {
-            var retained: [MeshResource.Part] = []
-            for var part in mesh.parts where !heelIndices.contains(part.materialIndex) {
-                let vertexCount = part.positions.elements.count
-                guard let indices = part.triangleIndices?.elements, !indices.isEmpty,
-                    indices.count % 3 == 0, indices.allSatisfy({ Int($0) < vertexCount })
-                else {
-                    throw CharacterFootwearError.invalidBinding("Invalid retained mesh indices.")
-                }
-                // Re-encode imported index views before rebuilding. Their backing-buffer
-                // offsets are unsuitable for visionOS 27.2's cross-process mesh validation.
-                part.triangleIndices = MeshBuffers.TriangleIndices(indices)
-                retained.append(part)
-            }
-            removedParts += mesh.parts.count - retained.count
-            mesh.parts = MeshPartCollection(retained)
-            contents.models.update(mesh)
+        // Native import owns the private skinning/morph buffers. Reconstructing this
+        // imported mesh through public Contents can terminate the Simulator renderer.
+        let barefootMesh = asset.mesh
+        let originalParts = component.mesh.contents.models.flatMap { Array($0.parts) }
+        let expectedParts = originalParts.filter { !heelIndices.contains($0.materialIndex) }
+        let bareParts = barefootMesh.contents.models.flatMap { Array($0.parts) }
+        let expectedByID = Dictionary(grouping: expectedParts, by: \.id)
+        guard asset.materialNames == component.materials.map(\.name), asset.jointNames == model.jointNames,
+              expectedParts.count < originalParts.count, bareParts.count == expectedParts.count,
+              Set(bareParts.map(\.id)) == Set(expectedParts.map(\.id)),
+              bareParts.allSatisfy({ part in
+                  guard let matches = expectedByID[part.id], matches.count == 1, let original = matches.first else {
+                      return false
+                  }
+                  return part.materialIndex == original.materialIndex && part.positions.count == original.positions.count
+                      && part.triangleIndices?.count == original.triangleIndices?.count
+                      && Set(part.blendShapeNames) == Set(original.blendShapeNames)
+              }) else {
+            throw CharacterFootwearError.invalidBinding("The barefoot layer changed retained parts, materials, or joints.")
         }
-        guard removedParts > 0 else { throw CharacterFootwearError.invalidBinding("The water-heel mesh is missing.") }
-        let barefootMesh = try MeshResource.generate(from: contents)
         let originalWeights = BlendShapeWeightsComponent(
             weightsMapping: BlendShapeWeightsMapping(meshResource: component.mesh))
         let barefootWeights = BlendShapeWeightsComponent(

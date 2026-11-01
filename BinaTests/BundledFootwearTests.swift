@@ -159,14 +159,18 @@ final class BundledFootwearTests: XCTestCase {
         let model = try FootGeometry(character).model
         let reference = model.jointTransforms
         let mesh = model.model?.mesh
-        let binding = try CharacterFootwear(character: character, model: model, reference: reference)
+        let poseURL = try XCTUnwrap(CharacterAsset.resourceURL("ColumbinaIdlePose", extension: "json", in: .main))
+        let modelURL = try XCTUnwrap(CharacterAsset.resourceURL("Columbina", extension: "usdz", in: .main))
+        let pose = try await CharacterIdlePose.load(modelURL: modelURL, poseURL: poseURL)
+        let asset = try await CharacterFootwearAsset.load(modelSHA256: pose.modelSHA256)
+        let binding = try CharacterFootwear(character: character, model: model, reference: reference, asset: asset)
         for (a, b) in zip(model.jointTransforms, reference) { XCTAssertEqual(difference(a.matrix, b.matrix), 0) }
         var invalid = Array(reference.dropLast())
         XCTAssertThrowsError(try binding.apply(.barefoot, to: &invalid))
         XCTAssertTrue(model.model?.mesh === mesh)
         let parent = Entity()
         parent.addChild(character)
-        XCTAssertThrowsError(try CharacterFootwear(character: character, model: model, reference: reference))
+        XCTAssertThrowsError(try CharacterFootwear(character: character, model: model, reference: reference, asset: asset))
     }
 
     func testFootwearFailureRestoresWaterHeelsAndRetainsPrimaryHairAndFacialPlayback() async throws {
@@ -184,6 +188,51 @@ final class BundledFootwearTests: XCTestCase {
         XCTAssertGreaterThan(motion.cycleTime, phase)
         XCTAssertNotNil(motion.face)
         XCTAssertTrue(motion.isHairPhysicsAvailable)
+    }
+
+    func testRepeatedNativeVariantLoadsAndSwitchesKeepFacialPlaybackAndHairAvailable() async throws {
+        try requireAsset()
+        let profileURL = try XCTUnwrap(CharacterAsset.resourceURL("ColumbinaFace", extension: "json", in: .main))
+        let profile = try JSONDecoder().decode(CharacterFaceProfile.self, from: Data(contentsOf: profileURL))
+        for _ in 0..<3 {
+            let (character, motion) = try await loaded()
+            let model = try FootGeometry(character).model
+            let face = try XCTUnwrap(motion.face, motion.faceMessage ?? "")
+            face.automaticBlink = false
+            face.expression = .gentleSmile
+            for mode: CharacterFootwearMode in [.barefoot, .waterHeels, .barefoot] {
+                motion.setFootwearMode(mode)
+                face.eyeState = mode == .barefoot ? .uncoveredOpen : .coveredClosed
+                for _ in 0..<120 { motion.advance(by: 1.0 / 60, isVisible: true) }
+                XCTAssertEqual(motion.footwearMode, mode)
+                XCTAssertTrue(motion.isHairPhysicsAvailable)
+                XCTAssertNotNil(motion.face)
+                let component = try XCTUnwrap(model.components[BlendShapeWeightsComponent.self])
+                let weights = try XCTUnwrap(namedWeights(component).values.first)
+                XCTAssertEqual(weights.count, 60)
+                for (semantic, name) in profile.channels {
+                    XCTAssertEqual(try XCTUnwrap(weights[name]), try XCTUnwrap(face.sample.channels[semantic]), accuracy: 0.00001)
+                }
+                XCTAssertEqual(face.sample.channels["blink"], mode == .barefoot ? 0 : 1)
+                let visible = parts(try XCTUnwrap(model.model))
+                XCTAssertEqual(visible.count, mode == .barefoot ? 25 : 26)
+            }
+        }
+    }
+
+    func testUnfilteredNativeMeshIsRejectedWithoutChangingPresentation() async throws {
+        try requireAsset()
+        let character = try await CharacterAsset.load()
+        let model = try FootGeometry(character).model
+        let original = try XCTUnwrap(model.model)
+        let reference = model.jointTransforms
+        let invalid = CharacterFootwearAsset(mesh: original.mesh,
+            materialNames: original.materials.map(\.name), jointNames: model.jointNames)
+        XCTAssertThrowsError(try CharacterFootwear(character: character, model: model, reference: reference, asset: invalid))
+        XCTAssertTrue(model.model?.mesh === original.mesh)
+        for (actual, baseline) in zip(model.jointTransforms, reference) {
+            XCTAssertEqual(difference(actual.matrix, baseline.matrix), 0)
+        }
     }
 
     private func loaded() async throws -> (Entity, CharacterIdleMotion) {
