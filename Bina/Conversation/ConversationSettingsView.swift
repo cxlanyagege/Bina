@@ -44,7 +44,7 @@ struct ConversationSettingsView: View {
                 }
                 Section("数据使用") {
                     Text("发送消息会将角色设定、称呼、最近完整对话和相关记忆片段发送到 Xiaomi。提取记忆会额外发送所选的那句话，并产生一次 API 调用。")
-                    Text("聊天记录仅保留在本次运行期间；确认的记忆长期保存在本机。删除本地记忆不会自动删除服务方此前收到的数据。当前不发送音频、摄像头画面或房间网格。")
+                    Text("聊天记录仅保留在本次运行期间；确认的记忆长期保存在本机。主动录音会将该段声音发送到 Xiaomi 识别；播放回答和试听会发送待朗读文字并额外计费。录音仅临时保存，不发送摄像头画面或房间网格。删除本地记忆不会自动删除服务方此前收到的数据。")
                     Link("查看 Xiaomi MiMo 隐私政策", destination: URL(string: "https://privacy.mi.com/XiaomiMiMoPlatform/zh_CN/")!)
                 }
                 if let message = model.errorMessage {

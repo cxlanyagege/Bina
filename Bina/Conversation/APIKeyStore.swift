@@ -12,7 +12,7 @@ struct KeychainFailure: Error {
     let status: OSStatus
 }
 
-enum MiMoAPIKey {
+nonisolated enum MiMoAPIKey {
     static func validate(_ value: String) throws -> String {
         let key = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard key.hasPrefix("sk-"), (8...512).contains(key.utf8.count),

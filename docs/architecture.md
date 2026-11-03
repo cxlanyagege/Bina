@@ -52,7 +52,7 @@ Physics resets kinetic history after visibility interruption, significant transl
 
 The facial stage uses the same playing/visible lifecycle without adding a skeleton writer. `CharacterFacePlayback` owns framework-independent timing and bounded channels; `CharacterFaceMotion` exposes preview intent; `CharacterFaceBinding` owns imported blend weights and the eye-cover material. `CharacterFaceProfile` validates exact model pairing and semantic names. Imported weights/materials are captured before preview changes, allowing exact reference restoration, safe replacement, and independent fallback. The [facial contract](facial-presentation.md) records the repaired asset, two eye states, sequencing, and manual-preview scope. Facial labels do not infer emotional state or conversational activity.
 
-The [footwear stage](footwear.md) preserves current material slots and named facial mappings while switching between cached original and heel-free meshes. Retained indices are re-encoded before mesh generation for valid visionOS 27.2 transport. Foot calibration never advances playback time. Pause disables form changes; reference restores original heels/pose while retaining the selected preference for natural playback. Invalid preparation retains the independent primary, hair, and facial stages.
+The [footwear stage](footwear.md) preserves current material slots and named facial mappings while switching between cached native original and heel-free meshes. A paired USD layer is authored offline and imported through RealityKit; runtime reconstruction of imported contents is no longer used. Foot calibration never advances playback time. Pause disables form changes; reference restores original heels/pose while retaining the selected preference for natural playback. Invalid preparation retains the independent primary, hair, and facial stages.
 
 ## Four responsibilities
 
@@ -125,6 +125,10 @@ Associate streamed text, audio, animation cues, and action requests with their o
 
 Speech playback is the timing source for lip sync. Prefer speech timing or phoneme data when available; use an explicitly evaluated fallback when unavailable. Do not use unrelated text-generation timing as if it were actual audio timing.
 
+The first [voice increment](voice-conversation.md) has one app-owned `SpeechSession` observing the conversation lifecycle through a weak observer. Its operation identities coordinate microphone capture, reviewed ASR text, TTS, playback, and late-result rejection. Memory/context mutations and settings changes cancel that same interaction. Raw recordings are temporary; only explicitly confirmed user-text evidence enters durable memory. Completed spoken replies enter shared context after playback completion, while interrupted speech retains readable text without claiming it was heard.
+
+Microphone capture, MiMo ASR/TTS requests, and native playback live behind separate injectable protocols. RealityKit's emitter is parented near the character's head and follows existing scale/yaw/contact correction; a clearly labeled window route is used when spatial presentation is unavailable. The existing face writer composes bounded listening/thinking cues and playback-energy mouth opening with manual intent. Reference, pause, and existing eye-state behavior remain authoritative. The jaw fallback is approximate; phoneme synchronization and authenticated headset audio quality are not established by scripted tests.
+
 The proposed emotional state persists beyond a single response and influences allowed expression without independently starting conflicting actions. See [memory and emotion](memory-and-emotion.md).
 
 ## Character profile intake
@@ -137,7 +141,7 @@ Keep the configured close relationship separate from the episodic memory store. 
 
 ## Persistence and services
 
-The first conversation increment uses cloud APIs for all large-language-model inference, with durable personal memory managed by the local application. This follows the user's requested direction on 2026-10-31. No local language-model runtime is included. The user selected ordinary Xiaomi MiMo pay-as-you-go API access. The implemented adapter defaults to V2.6 Flash with an explicit Pro setting, streaming, thinking disabled, and JSON mode for user-triggered extraction. Live model quality and account behavior remain unverified. See the [MiMo evaluation](providers/xiaomi-mimo.md) and [implemented contract](text-conversation.md).
+The first conversation increment uses cloud APIs for all large-language-model inference, with durable personal memory managed by the local application. This follows the user's requested direction on 2026-10-31. No local language-model runtime is included. The user selected ordinary Xiaomi MiMo pay-as-you-go API access. The implemented adapter defaults to V2.6 Flash with an explicit Pro setting, streaming, thinking disabled, and JSON mode for user-triggered extraction. On 2026-11-02 the user reported that text/memory functions work on the headset; structured persona quality and latency evaluation remain open. The new ASR/TTS path requires independent account and headset validation. See the [MiMo evaluation](providers/xiaomi-mimo.md) and [implemented contract](text-conversation.md).
 
 Local, versioned storage owns confirmed memories, provenance, correction/deletion status, character continuity, and anchor associations. Local application code also owns retrieval, request-context assembly, cancellation, action validation, and the existing spatial/character presentation. These responsibilities do not require an on-device language model. Memory persistence, correction, deletion, and migration behavior must be defined before the feature ships.
 

@@ -47,7 +47,7 @@ final class URLSessionChatTransport: ChatLineTransport {
 
 @MainActor
 final class MiMoConversationService: ConversationServing {
-    static let endpoint = URL(string: "https://api.xiaomimimo.com/v1/chat/completions")!
+    nonisolated static let endpoint = URL(string: "https://api.xiaomimimo.com/v1/chat/completions")!
     private let transport: any ChatLineTransport
 
     init(transport: (any ChatLineTransport)? = nil) {

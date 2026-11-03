@@ -10,8 +10,24 @@ final class CharacterFaceMotion {
     var automaticBlink = true
     @ObservationIgnored private var playback: CharacterFacePlayback
     @ObservationIgnored private let binding: CharacterFaceBinding
+    @ObservationIgnored private var conversationCue = CharacterConversationCue.idle
+    @ObservationIgnored private var speechMouth: Float = 0
 
-    var sample: CharacterFacePlayback.Sample { playback.sample }
+    var sample: CharacterFacePlayback.Sample {
+        let baseline = playback.sample
+        var channels = baseline.channels
+        if conversationCue == .listening || conversationCue == .thinking {
+            channels["browRaise"] = max(channels["browRaise"] ?? 0, conversationCue == .listening ? 0.08 : 0.04)
+        }
+        if conversationCue == .speaking { channels["mouthOpen"] = max(channels["mouthOpen"] ?? 0, speechMouth) }
+        return .init(coveringOpacity: baseline.coveringOpacity, channels: channels)
+    }
+
+    /// Overlay conversation cues without replacing selected eye forms or manual facial intent.
+    func setConversationCue(_ cue: CharacterConversationCue, mouth: Float) {
+        conversationCue = cue
+        speechMouth = mouth.isFinite ? min(0.35, max(0, mouth)) : 0
+    }
 
     init(binding: CharacterFaceBinding, seed: UInt64 = .random(in: .min ... .max)) {
         self.binding = binding
@@ -24,7 +40,7 @@ final class CharacterFaceMotion {
         try present(influence: influence)
     }
 
-    func present(influence: Float) throws { try binding.apply(playback.sample, influence: influence) }
+    func present(influence: Float) throws { try binding.apply(sample, influence: influence) }
 
     func previewBlink() {
         guard eyeState == .uncoveredOpen else { return }
@@ -40,6 +56,8 @@ final class CharacterFaceMotion {
     }
 
     func restoreReference() {
+        conversationCue = .idle
+        speechMouth = 0
         binding.restore()
         playback.reset()
     }

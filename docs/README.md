@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Status: classified-floor preview/confirmation, calibrated foot forms, spatial restoration, stance/idle, attention, selected hair physics, facial previews, and initial MiMo text dialogue with confirmed local memory are implemented. Footwear now imports an authored native variant instead of reconstructing the imported mesh at runtime. The toolchain and Simulator use 27.2, matching the user-reported headset version. Live API/persona evaluation, headset acceptance, and measured performance remain open. Last updated: 2026-11-01.
+Status: spatial presence, calibrated foot forms, stance/idle, attention, selected hair physics, facial previews, and MiMo text dialogue with confirmed local memory are implemented and have preliminary user-reported passes. Push-to-talk speech, review, preset synthesis, playback, and coordinated activity cues are implemented with separate headset acceptance outstanding. The toolchain and Simulator use 27.2, matching the user-reported headset version. Structured persona evaluation and measured performance remain open. Last updated: 2026-11-02.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
 
@@ -23,6 +23,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Columbina model intake](characters/columbina-model.md) | Reproduce local model/pose preparation and understand source and redistribution boundaries. |
 | [Memory and emotion](memory-and-emotion.md) | Define what the character remembers and how personality and emotion remain coherent. |
 | [Text conversation and local memory](text-conversation.md) | Configure MiMo, run the first text/memory loop, and understand cancellation, data handling, and verification. |
+| [Push-to-talk conversation](voice-conversation.md) | Record and review speech, audition presets, play replies, interrupt safely, and run the headset acceptance checklist. |
 | [Architecture](architecture.md) | Follow information from observation through behavior to visible and audible results. |
 | [Xiaomi MiMo evaluation](providers/xiaomi-mimo.md) | Review the intended cloud provider, model candidates, API constraints, cost, data handling, and validation plan. |
 | [Milestones](milestones.md) | Choose the next experiment and determine whether its result is sufficient. |

@@ -36,6 +36,7 @@ final class SpatialPrototype {
     var headingDegrees = 0.0 { didSet { updateAppearance(); floorPlacement.cancelPreview() } }
 
     @ObservationIgnored let contentEntity = Entity()
+    @ObservationIgnored let speechEmitter = Entity()
     @ObservationIgnored let floorMarker = FloorPlacementMarker()
     @ObservationIgnored private let character = Entity()
     @ObservationIgnored private lazy var floorDetection = FloorDetection(placement: floorPlacement)
@@ -66,6 +67,10 @@ final class SpatialPrototype {
     init(store: (any PlacementPersisting)? = nil) {
         self.store = store ?? FilePlacementStore()
         character.addChild(PlaceholderCharacter.make())
+        speechEmitter.name = "ColumbinaSpeechEmitter"
+        speechEmitter.position = [0, 1.42, -0.11]
+        speechEmitter.spatialAudio = SpatialAudioComponent(reverbLevel: -12)
+        character.addChild(speechEmitter)
         contentEntity.addChild(character)
         contentEntity.isEnabled = false
         do {
@@ -78,6 +83,22 @@ final class SpatialPrototype {
     }
 
     var hasSavedPlacement: Bool { savedPlacement != nil }
+    var canPresentSpeech: Bool {
+        spaceState == .open && trackingState == .running && deviceIsTracked && isSceneActive
+            && contentEntity.isEnabled && characterIdle?.mode == .playing
+    }
+
+    func attachSpeechCaption(_ entity: Entity) {
+        if entity.parent !== character { character.addChild(entity) }
+        entity.position = [0, 1.78, 0]
+    }
+
+    func presentConversation(_ cue: CharacterConversationCue, mouth: Float) {
+        guard let motion = characterIdle, let face = motion.face else { return }
+        face.setConversationCue(canPresentSpeech ? cue : .idle, mouth: canPresentSpeech ? mouth : 0)
+        guard motion.mode != .reference else { return }
+        do { try face.present(influence: 1) } catch { motion.reportFaceUnavailable(error) }
+    }
     var isTransitioning: Bool { spaceState == .opening || spaceState == .closing }
     var canPlace: Bool {
         spaceState == .open && trackingState == .running && deviceIsTracked && isSceneActive
@@ -682,6 +703,7 @@ final class SpatialPrototype {
     }
 
     private func updateAppearance() {
+        if speechEmitter.parent !== character { character.addChild(speechEmitter) }
         guard characterHeight.isFinite, headingDegrees.isFinite else { return }
         character.scale = SIMD3(repeating: Float(characterHeight) / CharacterAsset.referenceHeight)
         character.orientation = simd_quatf(angle: Float(headingDegrees * .pi / 180), axis: [0, 1, 0])

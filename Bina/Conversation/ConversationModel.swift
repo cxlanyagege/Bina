@@ -23,6 +23,7 @@ final class ConversationModel {
     @ObservationIgnored private var requestTask: Task<Void, Never>?
     @ObservationIgnored private var operationID: UUID?
     @ObservationIgnored private var contextStartIndex = 0
+    @ObservationIgnored weak var observer: (any ConversationObserving)?
 
     init(
         service: (any ConversationServing)? = nil,
@@ -81,16 +82,17 @@ final class ConversationModel {
         }
     }
 
-    func send(_ text: String) {
+    @discardableResult
+    func send(_ text: String) -> UUID? {
         let input = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !input.isEmpty, input.count <= ConversationPrompt.maximumUserCharacters else {
             errorMessage = "请发送 1 到 2000 字的消息。"
-            return
+            return nil
         }
         cancel()
         candidate = nil
         let key: String
-        do { key = try requireKey() } catch { return }
+        do { key = try requireKey() } catch { return nil }
         errorMessage = nil
         notice = nil
         let request: ConversationRequest
@@ -101,7 +103,7 @@ final class ConversationModel {
             )
         } catch {
             errorMessage = "无法准备这次对话，请重试。"
-            return
+            return nil
         }
         let turn = ConversationTurn(id: UUID(), userText: input, createdAt: Date())
         turns.append(turn)
@@ -115,6 +117,7 @@ final class ConversationModel {
         let startedAt = ProcessInfo.processInfo.systemUptime
         operationID = operation
         activity = .reply(turn.id)
+        observer?.conversationDidStartReply(turn.id)
         requestTask = Task { @MainActor [weak self] in
             guard let self else { return }
             do {
@@ -139,17 +142,21 @@ final class ConversationModel {
                 }
                 turns[index].state = .complete
                 finishOperation()
+                observer?.conversationDidCompleteReply(turns[index])
             } catch {
                 guard isCurrent(operation, memoryRevision: memoryRevision),
                       let index = turns.firstIndex(where: { $0.id == turn.id }) else { return }
                 turns[index].state = error is CancellationError ? .interrupted : .failed
                 errorMessage = error is CancellationError ? nil : ConversationFailure.sanitized(error).userMessage
                 finishOperation()
+                observer?.conversationDidFailReply()
             }
         }
+        return turn.id
     }
 
     func cancel() {
+        observer?.conversationDidInvalidate()
         operationID = nil
         requestTask?.cancel()
         requestTask = nil
@@ -157,6 +164,14 @@ final class ConversationModel {
             turns[index].state = .interrupted
         }
         activity = .idle
+    }
+
+    func credentialForSpeech() throws -> String { try requireKey() }
+
+    func setSpeechDelivery(_ state: SpeechDelivery, for id: UUID, playedSeconds: TimeInterval = 0) {
+        guard let index = turns.firstIndex(where: { $0.id == id }) else { return }
+        turns[index].speechDelivery = state
+        turns[index].playedSeconds = max(0, playedSeconds.isFinite ? playedSeconds : 0)
     }
 
     func newConversation() {

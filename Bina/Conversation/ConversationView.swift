@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ConversationView: View {
     @Bindable var model: ConversationModel
+    let speech: SpeechSession
     @State private var draft = ""
     @State private var showsSettings = false
     @State private var showsMemories = false
@@ -135,6 +136,10 @@ struct ConversationView: View {
                 case .interrupted: Text("已停止 · 这段回答不参与后续上下文").font(.caption).foregroundStyle(.secondary)
                 case .failed: Text("回答未完成 · 不参与后续上下文").font(.caption).foregroundStyle(.orange)
                 case .complete:
+                    if turn.speechDelivery == .interrupted || turn.speechDelivery == .failed {
+                        Text("语音未播完 · 保留文字，不作为已完整听到的回答使用")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     if let usage = turn.usage {
                         Text("用量：输入 \(usage.inputTokens) · 输出 \(usage.outputTokens) tokens")
                             .font(.caption2).foregroundStyle(.secondary)
@@ -147,7 +152,6 @@ struct ConversationView: View {
 
     private func send() {
         let text = draft
-        draft = ""
-        model.send(text)
+        if speech.sendText(text) { draft = "" }
     }
 }

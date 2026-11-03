@@ -46,6 +46,12 @@ struct ConversationTurn: Identifiable {
     var state: State = .receiving
     var usage: ConversationUsage?
     var firstContentLatency: Double?
+    var speechDelivery = SpeechDelivery.notRequested
+    var playedSeconds: TimeInterval = 0
+
+    var isUsableInContext: Bool {
+        state == .complete && (speechDelivery == .notRequested || speechDelivery == .played)
+    }
 }
 
 enum ConversationFailure: Error, Equatable {

@@ -5,6 +5,34 @@ import XCTest
 
 @MainActor
 final class BundledCharacterFaceTests: XCTestCase {
+    func testConversationCuesPreserveEyeFormsAndClearOnlyTheirOwnMouthOverlay() async throws {
+        let f = try await FaceFixture()
+        for state: CharacterFacePlayback.EyeState in [.coveredClosed, .uncoveredOpen] {
+            f.face.eyeState = state
+            f.face.automaticBlink = false
+            f.advance(60)
+            let blink = f.value("blink"), cover = try f.coverOpacity(), joints = f.model.jointTransforms
+            f.face.setConversationCue(.listening, mouth: 0)
+            try f.face.present(influence: 1)
+            XCTAssertEqual(f.value("blink"), blink)
+            XCTAssertEqual(try f.coverOpacity(), cover)
+            XCTAssertGreaterThan(f.value("browRaise"), 0)
+            f.face.setConversationCue(.speaking, mouth: 1)
+            try f.face.present(influence: 1)
+            XCTAssertEqual(f.value("mouthOpen"), 0.35, accuracy: 0.00001)
+            XCTAssertEqual(f.value("blink"), blink)
+            f.face.setConversationCue(.idle, mouth: 0)
+            try f.face.present(influence: 1)
+            XCTAssertEqual(f.value("mouthOpen"), 0)
+            for (a, b) in zip(joints, f.model.jointTransforms) {
+                XCTAssertEqual(a.matrix, b.matrix)
+            }
+        }
+        f.face.setConversationCue(.speaking, mouth: 0.35)
+        f.motion.showReference()
+        XCTAssertEqual(f.weights(), f.originalWeights)
+    }
+
     func testDeliveredFacialTargetsAreUniqueAndTheDefaultIsCoveredClosed() async throws {
         let f = try await FaceFixture()
         let names = f.weights().keys

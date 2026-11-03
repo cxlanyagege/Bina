@@ -35,7 +35,7 @@ enum ConversationPrompt {
         ]
         var retained: [ConversationTurn] = []
         var count = 0
-        for turn in history.reversed() where turn.state == .complete {
+        for turn in history.reversed() where turn.isUsableInContext {
             let size = turn.userText.count + turn.answer.count
             guard retained.count < maximumHistoryTurns, count + size <= maximumHistoryCharacters else { break }
             retained.append(turn)

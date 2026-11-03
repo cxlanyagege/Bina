@@ -1,10 +1,10 @@
 # Text Conversation and Local Memory
 
-Status: first text conversation and confirmed local-memory implementation complete; the 2026-11-01 native-footwear correction restores the full 217-test Simulator pass. Authenticated API/persona evaluation and headset acceptance remain unverified. Ordinary Xiaomi MiMo pay-as-you-go API access is used. Last updated: 2026-11-01.
+Status: first text conversation and confirmed local-memory implementation complete. On 2026-11-02 the user reported that the existing spatial features and new text/memory functions work on the headset, a preliminary functional pass without an itemized checklist or persona/latency measurements. The separate [voice increment](voice-conversation.md) adds microphone input, explicit transcript review, speech playback, and coordinated cancellation. Ordinary Xiaomi MiMo pay-as-you-go API access is used. Last updated: 2026-11-02.
 
 ## Scope and ownership
 
-The conversation window provides interruptible streaming text with a versioned adaptation of the [Columbina profile](characters/columbina.md). It coexists with the spatial preview but does not drive joints, expressions, sensing, or speech. The initial model is `mimo-v2.6-flash`; a settings picker allows an explicit Pro comparison through the same adapter. Thinking is disabled for both dialogue and extraction. See the [provider review](providers/xiaomi-mimo.md) for official sources.
+The conversation window provides interruptible streaming text with a versioned adaptation of the [Columbina profile](characters/columbina.md). It coexists with the spatial preview; text output does not contain executable character actions. The [speech coordinator](voice-conversation.md) independently owns recording, explicit transcript review, speech intent, playback, and bounded facial cues. The initial dialogue model is `mimo-v2.6-flash`; a settings picker allows an explicit Pro comparison through the same adapter. Thinking is disabled for both dialogue and extraction. See the [provider review](providers/xiaomi-mimo.md) for official sources.
 
 - `ConversationModel` coordinates turns, configuration, cancellation, context invalidation, and memory proposals.
 - `ConversationPrompt` bounds outbound context and distinguishes the configured relationship, active confirmed memories, and unsupported observations.
@@ -56,7 +56,7 @@ Simulator/device SDK builds verify integration. Paid API access, model persona q
 4. State a simple drink preference. Extract from that utterance, inspect the quoted evidence, and confirm the fact. Check the memory list, restart the process, and ask a paraphrased recall question.
 5. Correct the record in the memory sheet, then ask again. Delete it and verify the old fact is no longer supplied; previous on-screen conversation is excluded from the next request. Missing recall must not turn into an invented shared episode.
 6. Disable writes, verify recall/deletion still work, and test an invalid key or disconnected network. No failed save should be reported as successful.
-7. Use the separate character-and-space tab for the existing spatial preview. Text replies do not yet animate or speak through the character.
+7. Use the separate character-and-space tab for the existing spatial preview. Shared voice controls provide opt-in reading and explicitly reviewed voice turns; follow the separate [voice acceptance checklist](voice-conversation.md#verification-and-headset-acceptance).
 
 ### Results on 2026-10-31
 
@@ -78,4 +78,4 @@ Unsigned Simulator builds initially failed Keychain access. A normal signed buil
 
 ### Full regression restored on 2026-11-01
 
-The footwear correction replaces runtime imported-mesh reconstruction with native loading of a paired, locally authored USD layer. The full visionOS Simulator 27.2 suite passes all 217 tests, with zero failures/skips or reported runtime warnings, at `/private/tmp/Bina-Footwear-Native-Fix-Full.xcresult`. This includes all 60 conversation/memory tests, the previously interrupted character cases, and six new footwear/profile regressions. Focused tests and the generic device SDK build also pass; see the [complete verification](footwear-mesh-investigation.md#correction-verification-on-2026-11-01). No authenticated API call was required. Headset and live-provider acceptance remain open.
+The footwear correction replaced runtime imported-mesh reconstruction with native loading of a paired, locally authored USD layer. That full visionOS Simulator 27.2 suite passed all 217 tests, with zero failures/skips or reported runtime warnings, at `/private/tmp/Bina-Footwear-Native-Fix-Full.xcresult`. This includes all 60 conversation/memory tests, the previously interrupted character cases, and six new footwear/profile regressions. Focused tests and the generic device SDK build also passed; see the [complete verification](footwear-mesh-investigation.md#correction-verification-on-2026-11-01). No authenticated API call was required for those automated checks. The user's 2026-11-02 feedback subsequently provides a preliminary headset pass for the existing spatial and text/memory features. The new voice path needs separate acceptance.

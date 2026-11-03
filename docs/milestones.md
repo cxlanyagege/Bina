@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: D1 spatial checks and preliminary appearance have user-reported passes. Floor preview/confirmation, calibrated sole contact, stance/idle, head attention, selected hair physics, two eye states, blinking, and facial previews are implemented. The latest hair and facial checks have preliminary passes. Floor acceptance and sustained performance remain open. Last updated: 2026-10-31.
+Status: D1 spatial checks, preliminary appearance, and the text/memory loop have user-reported passes. Push-to-talk capture, transcript review, cloud speech synthesis, spatial/window playback, and coordinated activity cues are implemented with separate headset acceptance outstanding. Detailed floor acceptance and sustained performance remain open. Last updated: 2026-11-02.
 
 ## Planning rules
 
@@ -28,7 +28,7 @@ The first placement/restoration experiment now has an implementation. It include
 
 The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved. Head attention, selected hair physics, and facial channels were added subsequently; the latest hair/facial checks have preliminary passes. Current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). Floor preview/confirmation is now implemented but needs physical-room acceptance. Environmental occlusion, measured performance, and broader companion behavior remain separate work.
 
-Current priority: evaluate the newly implemented [MiMo text conversation and confirmed-memory loop](text-conversation.md) with the user's API account and headset. The user reported a preliminary floor/footwear presentation pass; detailed spatial acceptance remains open. Walking remains deferred while the conversational foundation is evaluated.
+Current priority: validate the [push-to-talk voice loop](voice-conversation.md) on the user's headset and account. On 2026-11-02 the user reported that the existing spatial features and [text/memory loop](text-conversation.md) work, a preliminary functional pass. Detailed spatial acceptance, measured latency, and persona evaluation remain open. Walking remains deferred while the conversational foundation is evaluated.
 
 | Experiment | Success evidence | Important failure case |
 | --- | --- | --- |
@@ -102,7 +102,7 @@ The subsequent user report found no major issue in the rear-hair correction. Rec
 
 The facial increment repairs the source export's blend-shape naming collisions, validates six semantic controls, and adds covered/closed versus uncovered/open presentation. The cover fades before eyes open and returns after they close. Uncovered eyes blink naturally. Neutral/smile/curiosity and relaxed/open/round mouth shapes are manual previews. Playback gating, reference restore, safe replacement, primary-motion fallback, and per-frame skeleton/material ownership are tested.
 
-The [facial contract](facial-presentation.md) records its 115-test baseline, repaired/paired resources, and native renders. Subsequent user feedback found the preview natural, a preliminary pass without sustained performance measurements. The user selected floor placement as the next visual increment. The subsequent M2 text/personality and confirmed-memory increment is now implemented separately; voice and synchronized mouth motion remain future work.
+The [facial contract](facial-presentation.md) records its 115-test baseline, repaired/paired resources, and native renders. Subsequent user feedback found the preview natural, a preliminary pass without sustained performance measurements. The user selected floor placement as the next visual increment. The subsequent M2 text/personality and confirmed-memory increment has a user-reported functional pass. The later voice increment adds bounded activity cues and playback-energy jaw motion, with headset validation and detailed phoneme synchronization still open.
 
 ### First real-floor placement
 
@@ -127,7 +127,7 @@ Following that delivery, the user reported no major issues in the headset check.
 
 ## M2: Conversation, personality, and minimum continuity
 
-Status: partially implemented. Ordinary MiMo pay-as-you-go text streaming, a curated Columbina persona, cancellation, explicit memory extraction/confirmation, local persistence, correction, and deletion are present. Live API/persona evaluation, speech, embodied conversational expression, and persistent emotional state remain open. See the [text/memory contract](text-conversation.md) for current controls, tests, and limitations.
+Status: partially implemented. Ordinary MiMo pay-as-you-go text streaming, a curated Columbina persona, explicit memory extraction/confirmation, local persistence, correction, and deletion are present and have a preliminary user-reported functional pass. The first [voice loop](voice-conversation.md) adds reviewed microphone input, preset TTS, spatial/window playback, activity cues, approximate jaw motion, and shared interruption. Voice account/headset acceptance, measured latency, structured persona evaluation, phoneme synchronization, and persistent emotional state remain open. See the [text/memory contract](text-conversation.md) for existing controls and boundaries.
 
 Add one selected speech/model path, the curated Columbina profile, interruptible conversation, coordinated mouth and expression behavior, and a small persistent memory implementation.
 
