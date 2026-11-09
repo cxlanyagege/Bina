@@ -25,7 +25,7 @@ struct BinaApp: App {
         _prototype = State(initialValue: prototype)
         _conversation = State(initialValue: conversation)
         _speech = State(initialValue: SpeechSession(conversation: conversation, player: player, audioSession: audioSession,
-            present: { [weak prototype] cue, mouth in prototype?.presentConversation(cue, mouth: mouth) }))
+            present: { [weak prototype] presentation in prototype?.presentConversation(presentation) }))
     }
 
     var body: some Scene {

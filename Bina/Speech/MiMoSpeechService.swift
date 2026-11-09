@@ -57,9 +57,9 @@ import Foundation
         return text
     }
 
-    func synthesize(_ text: String, voice: MiMoVoice, apiKey: String) async throws -> SpeechAudio {
+    func synthesize(_ text: String, voice: MiMoVoice, affect: DialogueAffect = .calm, apiKey: String) async throws -> SpeechAudio {
         try Task.checkCancellation()
-        let request = try Self.synthesisRequest(text, voice: voice, apiKey: apiKey)
+        let request = try Self.synthesisRequest(text, voice: voice, affect: affect, apiKey: apiKey)
         let data = try await transport.data(for: request, limit: 18 * 1_024 * 1_024)
         try Task.checkCancellation()
         let task = Task.detached {
@@ -83,12 +83,12 @@ import Foundation
         ], apiKey: apiKey)
     }
 
-    nonisolated static func synthesisRequest(_ text: String, voice: MiMoVoice, apiKey: String) throws -> URLRequest {
+    nonisolated static func synthesisRequest(_ text: String, voice: MiMoVoice, affect: DialogueAffect = .calm, apiKey: String) throws -> URLRequest {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, text.count <= 4_000 else { throw SpeechFailure.tooLong }
         return try request([
             "model": "mimo-v2.5-tts", "stream": false,
-            "messages": [["role": "user", "content": "Speak Mandarin naturally, gently, and unhurriedly, with subtle curiosity and playfulness. Use clear speech without forced whispering or singing. Say only the supplied text."], ["role": "assistant", "content": text]],
+            "messages": [["role": "user", "content": affect.speechInstruction], ["role": "assistant", "content": text]],
             "audio": ["format": "wav", "voice": voice.rawValue]
         ], apiKey: apiKey)
     }

@@ -2,7 +2,7 @@
 
 Status: the user selected ordinary pay-as-you-go access. The first native text adapter and confirmed local-memory loop are implemented, defaulting to V2.6 Flash with an explicit Pro comparison setting. See the [runtime contract](../text-conversation.md). Official documentation reviewed on 2026-10-31; no authenticated API calls, persona trials, live latency measurements, or audio tests were performed.
 
-See [architecture](../architecture.md#persistence-and-services), [memory and emotion](../memory-and-emotion.md), the [Columbina profile](../characters/columbina.md), and [portrayal evaluations](../characters/columbina-evaluation.md). Existing spatial and facial controls do not establish conversational integration.
+The status above records the original provider evaluation. Subsequent increments implemented [push-to-talk speech](../voice-conversation.md) and [dialogue expression](../dialogue-expression.md); the user reported preliminary text/memory and basic voice passes on 2026-11-02/03. TTS style-control documentation was rechecked on 2026-11-03. The new expressive behavior, structured persona quality, and measured latency still require device evaluation. See [architecture](../architecture.md#persistence-and-services), [memory and emotion](../memory-and-emotion.md), the [Columbina profile](../characters/columbina.md), and [portrayal evaluations](../characters/columbina-evaluation.md).
 
 ## Model selection
 
@@ -62,7 +62,7 @@ The [structured-output guide](https://mimo.mi.com/docs/zh-CN/quick-start/usage-g
 
 Preserve source turns and the distinction between configured fictional relationships and actual shared history. Correction/deletion must invalidate cached retrieval and pending extractions. Reject results from obsolete turns or memory revisions. Store neither generated acknowledgments nor fictional lore as proof of a real event.
 
-Likewise, future emotional or action proposals must pass the local capability allowlist and existing behavior coordination. They may request supported expression or attention changes; they cannot write RealityKit transforms, skeletal joints, or physics state directly. Start with text output before enabling model-driven gestures.
+The [dialogue-expression increment](../dialogue-expression.md) now adds a bounded private header to the same streaming dialogue response. Local code validates five delivery affects and three continuity decisions, removes protocol content from the visible/spoken answer, and selects a fixed local TTS instruction. It does not add another appraisal API call. Future action proposals must likewise pass local capability validation; models cannot write RealityKit transforms, skeletal joints, or physics state directly. Model-driven gestures remain unimplemented.
 
 The adapter needs bounded input/output, incremental SSE parsing, cancellation, finish/error handling, and rejection of late chunks. Preserve an interrupted reply as interrupted rather than completed. Surface authentication, rate-limit, service, and content-policy failures distinctly enough to recover; do not fabricate a character reply or successful memory write. Default diagnostics should record timing, model, token counts, and request identifiers without logging private text or credentials.
 

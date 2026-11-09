@@ -24,7 +24,7 @@ On 2026-10-31 the user updated Xcode and Simulator. Current local verification c
 
 ## Run on Apple Vision Pro
 
-1. Record the headset system build and Xcode versions. The user reports visionOS 27.2 as of 2026-10-30; the project still requires 27.0 or later.
+1. Record the headset system build and Xcode versions. The user reports visionOS 27.2; the project requires 27.2 or later following the 2026-11-03 deployment-policy decision.
 2. Open `Bina.xcodeproj` in Xcode and select the shared `Bina` scheme.
 3. Select the paired headset as the run destination. Confirm the signing team and normal device-development setup for this installation.
 4. Confirm the matching local resources listed above exist, including the two derived footwear files for foot-form selection. Build and run while wearing the headset.

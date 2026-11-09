@@ -1,6 +1,6 @@
 # Push-to-Talk Conversation
 
-Status: first implementation complete, 2026-11-02; verification is recorded below. Authenticated speech access and headset capture/playback acceptance remain unverified. The user reports that the preceding spatial features and text/memory loop work on the headset. This is a preliminary functional pass, not an itemized performance or failure-recovery evaluation.
+Status: first implementation complete. On 2026-11-03 the user reported that the basic functions work after this increment. Treat this as a preliminary functional pass; no itemized capture/playback checklist, voice selection, latency measurements, installed revision, or device build accompanied the report. Detailed acoustic quality, interruption timing, failure recovery, and sustained performance remain open. Automated evidence from 2026-11-02 is recorded below.
 
 ## Experience and scope
 
@@ -16,7 +16,7 @@ The first increment requests one complete WAV after a complete model reply, rath
 - `SpeechPlaying` isolates actual playback. The live adapter uses RealityKit spatial audio near the placed character's head when available, and clearly identified window playback otherwise. Preparation is cancellable; late resource completion cannot restart stopped audio.
 - `SpeechAudioSession` serializes asynchronous native activation and deactivation shared by capture and playback. Audio stops synchronously at the player/recorder boundary, while hardware teardown drains in order. A late deactivation cannot disable a newer recording. This avoids main-thread blocking from synchronous `setActive` calls.
 - `ConversationModel` continues to own dialogue, credentials, memory/context revisions, and text cancellation. A weak lifecycle observer lets speech stop on new requests, memory mutations, settings changes, or a new conversation. Audio failure preserves the displayed answer.
-- The existing face controller remains the sole facial writer. Listening/thinking cues and a bounded audio-energy mouth overlay preserve user eye-state and manual expression intent. Mouth motion follows actual playback time, not model token timing. This is approximate jaw motion, not phoneme lip-sync.
+- The existing face controller remains the sole facial writer. Listening/thinking cues, validated dialogue expression, and a bounded audio-energy mouth overlay preserve the selected eye form. A manual expression override remains available. Mouth motion follows actual playback time, not model token timing. This is approximate jaw motion, not phoneme lip-sync. See [Dialogue expression](dialogue-expression.md) for the 2026-11-03 facial/vocal coordination and short-term continuity increment.
 
 ## State and interruption
 
@@ -30,7 +30,7 @@ Generated text, speech preparation, actual playback, completed playback, and int
 
 The [ASR guide](https://mimo.mi.com/docs/zh-CN/quick-start/usage-guide/audio/Speech-Recognition) documents `mimo-v2.5-asr`, WAV/MP3 input encoded as Base64, and a 10 MB encoded-input limit. Use explicit Chinese recognition for this first profile. The [TTS guide](https://mimo.mi.com/docs/zh-CN/quick-start/usage-guide/audio/speech-synthesis-v2.5) documents `mimo-v2.5-tts`, Chinese preset IDs `冰糖` and `茉莉`, assistant-role synthesis text, and Base64 audio in the response. This prototype requests non-streaming WAV and validates PCM16 audio before playback. API availability and perceived voice quality require authenticated device checks.
 
-Only the explicit recording is sent to ASR. TTS receives the answer text and a short fixed delivery instruction, not the memory database or recording. Dialogue retains its existing bounded persona/context/memory request. Raw microphone files are temporary and removed on finish/cancel; abandoned WAV files in this feature's own temporary directory are removed when recording next starts after a process exit. Audio and transcript drafts are not persistent chat history. No audio is collected on launch, and no request is made merely by changing a voice. Audition and synthesis are additional paid API operations initiated by the user flow.
+Only the explicit recording is sent to ASR. TTS receives the answer text and one of five fixed local delivery instructions selected by validated affect, not arbitrary model instructions, the memory database, or the recording. The private expression header is never synthesis text. Dialogue retains its bounded persona/context/memory request with optional local expression continuity. Raw microphone files are temporary and removed on finish/cancel; abandoned WAV files in this feature's own temporary directory are removed when recording next starts after a process exit. Audio and transcript drafts are not persistent chat history. No audio is collected on launch, and no request is made merely by changing a voice. Audition and synthesis are additional paid API operations initiated by the user flow.
 
 Capture uses mono 16 kHz PCM16 WAV, at most 30 seconds and 1,024,000 bytes, below the provider limit. Recognized text is bounded by the existing 2,000-character composer limit. Synthesis accepts at most 4,000 characters; playback accepts validated PCM16 WAV at 8–48 kHz, one or two channels, at most 120 seconds and 12 MiB. Unusual WAV encodings are rejected instead of handed unchecked to the renderer. These are local limits, not promises about provider limits or reply latency.
 
@@ -44,12 +44,14 @@ First permission interaction: releasing the control while permission is pending 
 
 ### Automated delivery record
 
+This record predates the user's 2026-11-03 decision to raise the minimum to visionOS 27.2. The 27.0 run and bundled minimum values below describe those preserved builds. Routine verification now follows the [27.2 deployment policy](platform-capabilities.md#local-project-baseline).
+
 Toolchain: Xcode 27.2 (27B52), SDK 27.2. The complete preceding 217 tests are retained, with 34 new speech, lifecycle, native playback, and character-cue cases. Tests use synthetic utterances, isolated credentials, scripted provider results, intercepted URLSession requests, and silent PCM audio. No authenticated ASR/TTS request, real microphone capture, or paid model call was made.
 
 | Check | Result |
 | --- | --- |
 | Full visionOS Simulator 27.2 regression | 251 passed, zero failures/skips or reported runtime warnings. `/private/tmp/Bina-Voice-Release-Full.xcresult`. |
-| Independent visionOS Simulator 27.0 voice regression | All 34 new cases passed, zero failures/skips or reported runtime warnings, on OS build 24M362. Verifies native asynchronous audio, response bounds, cancellation, review, and both eye forms at the minimum supported OS. `/private/tmp/Bina-Voice-Release-27_0.xcresult`. This is a focused run, not a second complete suite. |
+| Independent visionOS Simulator 27.0 voice regression | All 34 new cases passed, zero failures/skips or reported runtime warnings, on OS build 24M362. Verifies native asynchronous audio, response bounds, cancellation, review, and both eye forms at the then-minimum supported OS. `/private/tmp/Bina-Voice-Release-27_0.xcresult`. This is a focused run, not a second complete suite. |
 | Native audio and hardware-transition probes | Six passed with no reported runtime warnings. Includes RealityKit WAV import, actual silent window playback/completion, stop suppressing an obsolete completion, ordered hardware transitions, recovery, and cancellation during microphone activation without starting capture. `/private/tmp/Bina-Voice-Preload.xcresult`. |
 | Simulator test build | Passed with normal ad-hoc identity. `/private/tmp/Bina-Voice-Preload-build-2.log`. |
 | Generic visionOS device SDK build | Passed with signing disabled; not a headset installation or run. `/private/tmp/Bina-Voice-Release-Device.log`. |

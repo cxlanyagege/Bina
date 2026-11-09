@@ -23,17 +23,21 @@ final class ConversationModel {
     @ObservationIgnored private var requestTask: Task<Void, Never>?
     @ObservationIgnored private var operationID: UUID?
     @ObservationIgnored private var contextStartIndex = 0
+    @ObservationIgnored private var continuity = DialogueContinuity()
+    @ObservationIgnored private let uptime: @MainActor () -> TimeInterval
     @ObservationIgnored weak var observer: (any ConversationObserving)?
 
     init(
         service: (any ConversationServing)? = nil,
         memoryStore: (any MemoryPersisting)? = nil,
         keyStore: (any APIKeyPersisting)? = nil,
-        preferences: UserDefaults = .standard
+        preferences: UserDefaults = .standard,
+        uptime: @escaping @MainActor () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
     ) {
         self.service = service ?? MiMoConversationService()
         self.keyStore = keyStore ?? KeychainAPIKeyStore()
         self.preferences = preferences
+        self.uptime = uptime
         selectedModel = preferences.string(forKey: "conversation.model").flatMap(MiMoModel.init(rawValue:)) ?? .flash
         userDisplayName = preferences.string(forKey: "conversation.displayName") ?? ""
         memoryWritingEnabled = preferences.object(forKey: "conversation.memoryWritingEnabled") as? Bool ?? true
@@ -42,6 +46,7 @@ final class ConversationModel {
     }
 
     var isBusy: Bool { activity != .idle }
+    var expressionContext: DialogueContinuity.Context? { continuity.context(at: uptime()) }
 
     @discardableResult
     func saveSettings(model: MiMoModel, displayName: String, newKey: String, allowsMemoryWrites: Bool) -> Bool {
@@ -71,7 +76,7 @@ final class ConversationModel {
     }
 
     func removeAPIKey() {
-        cancel()
+        invalidateContext()
         do {
             try keyStore.remove()
             hasAPIKey = false
@@ -99,7 +104,8 @@ final class ConversationModel {
         do {
             request = try ConversationPrompt.dialogue(
                 input: input, history: Array(turns.dropFirst(contextStartIndex)),
-                library: memory, displayName: userDisplayName, model: selectedModel
+                library: memory, displayName: userDisplayName, model: selectedModel,
+                expressionContinuity: expressionContext
             )
         } catch {
             errorMessage = "无法准备这次对话，请重试。"
@@ -120,14 +126,16 @@ final class ConversationModel {
         observer?.conversationDidStartReply(turn.id)
         requestTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            var decoder = DialogueResponseDecoder()
             do {
                 for try await event in service.stream(request, apiKey: key) {
                     guard isCurrent(operation, memoryRevision: memoryRevision),
                           let index = turns.firstIndex(where: { $0.id == turn.id }) else { return }
                     switch event {
                     case .text(let delta):
-                        guard turns[index].answer.count + delta.count <= 16_384 else { throw ConversationFailure.outputLimit }
-                        turns[index].answer += delta
+                        let text = try decoder.append(delta)
+                        guard turns[index].answer.count + text.count <= 16_384 else { throw ConversationFailure.outputLimit }
+                        turns[index].answer += text
                         if turns[index].firstContentLatency == nil,
                            !turns[index].answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             turns[index].firstContentLatency = ProcessInfo.processInfo.systemUptime - startedAt
@@ -137,10 +145,15 @@ final class ConversationModel {
                 }
                 guard isCurrent(operation, memoryRevision: memoryRevision),
                       let index = turns.firstIndex(where: { $0.id == turn.id }) else { return }
+                turns[index].answer += try decoder.finish()
                 guard !turns[index].answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     throw ConversationFailure.emptyResponse
                 }
+                let resolved = continuity.resolve(decoder.intent, at: uptime())
+                turns[index].expression = resolved.expression
+                turns[index].continuityAfterDelivery = resolved.next
                 turns[index].state = .complete
+                if turns[index].speechDelivery == .notRequested { continuity = resolved.next }
                 finishOperation()
                 observer?.conversationDidCompleteReply(turns[index])
             } catch {
@@ -170,6 +183,12 @@ final class ConversationModel {
 
     func setSpeechDelivery(_ state: SpeechDelivery, for id: UUID, playedSeconds: TimeInterval = 0) {
         guard let index = turns.firstIndex(where: { $0.id == id }) else { return }
+        // Only the current context can commit a fully heard reply; old callbacks cannot restore it.
+        if state == .played {
+            guard turns[index].speechDelivery == .playing || turns[index].speechDelivery == .preparing,
+                  turns[index].state == .complete, index >= contextStartIndex else { return }
+            continuity = turns[index].continuityAfterDelivery
+        }
         turns[index].speechDelivery = state
         turns[index].playedSeconds = max(0, playedSeconds.isFinite ? playedSeconds : 0)
     }
@@ -177,6 +196,7 @@ final class ConversationModel {
     func newConversation() {
         cancel()
         turns = []
+        continuity = DialogueContinuity()
         contextStartIndex = 0
         candidate = nil
         errorMessage = nil
@@ -291,6 +311,7 @@ final class ConversationModel {
         cancel()
         candidate = nil
         contextStartIndex = turns.count
+        continuity = DialogueContinuity()
         errorMessage = nil
     }
 

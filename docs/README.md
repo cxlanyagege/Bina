@@ -1,8 +1,12 @@
 # Documentation Guide
 
-Status: spatial presence, calibrated foot forms, stance/idle, attention, selected hair physics, facial previews, and MiMo text dialogue with confirmed local memory are implemented and have preliminary user-reported passes. Push-to-talk speech, review, preset synthesis, playback, and coordinated activity cues are implemented with separate headset acceptance outstanding. The toolchain and Simulator use 27.2, matching the user-reported headset version. Structured persona evaluation and measured performance remain open. Last updated: 2026-11-02.
+Status: spatial presence, calibrated foot forms, stance/idle, attention, selected hair physics, facial previews, and MiMo text dialogue with confirmed local memory are implemented and have preliminary user-reported passes. Push-to-talk speech, review, preset synthesis, playback, and coordinated activity cues are implemented; the user reported basic functionality working on 2026-11-03. Detailed device acceptance, structured persona evaluation, and measured performance remain open. The toolchain and Simulator use 27.2, matching the user-reported headset version. Last updated: 2026-11-03.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.
+
+The 2026-11-03 [dialogue-expression increment](dialogue-expression.md) adds coordinated facial/vocal delivery and local short-term continuity. All 277 visionOS Simulator 27.2 tests and both SDK builds pass; headset naturalness and persona evaluation remain open.
+
+The user subsequently selected visionOS 27.2 as the minimum runtime for personal use. Routine verification uses 27.2 only. The [next-work queue](milestones.md#next-work) distinguishes deferred headset acceptance from documentation and test preparation that can proceed independently.
 
 ## Reading order
 
@@ -24,6 +28,7 @@ These documents distinguish long-term design from the limited implementation alr
 | [Memory and emotion](memory-and-emotion.md) | Define what the character remembers and how personality and emotion remain coherent. |
 | [Text conversation and local memory](text-conversation.md) | Configure MiMo, run the first text/memory loop, and understand cancellation, data handling, and verification. |
 | [Push-to-talk conversation](voice-conversation.md) | Record and review speech, audition presets, play replies, interrupt safely, and run the headset acceptance checklist. |
+| [Dialogue expression](dialogue-expression.md) | Review validated expression intents, matching vocal styles, delivery-backed continuity, and headset evaluation. |
 | [Architecture](architecture.md) | Follow information from observation through behavior to visible and audible results. |
 | [Xiaomi MiMo evaluation](providers/xiaomi-mimo.md) | Review the intended cloud provider, model candidates, API constraints, cost, data handling, and validation plan. |
 | [Milestones](milestones.md) | Choose the next experiment and determine whether its result is sufficient. |

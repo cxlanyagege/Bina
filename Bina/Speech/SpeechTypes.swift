@@ -10,10 +10,6 @@ nonisolated enum SpeechDelivery: String {
     case notRequested, preparing, playing, played, interrupted, failed
 }
 
-nonisolated enum CharacterConversationCue: Equatable {
-    case idle, listening, thinking, speaking
-}
-
 enum SpeechFailure: Error, Equatable {
     case permissionDenied, recording, tooShort, tooLong, storage, invalidAudio, emptyTranscript, playback
 
@@ -44,7 +40,7 @@ enum SpeechFailure: Error, Equatable {
 
 @MainActor protocol SpeechServing {
     func transcribe(_ recording: Data, apiKey: String) async throws -> String
-    func synthesize(_ text: String, voice: MiMoVoice, apiKey: String) async throws -> SpeechAudio
+    func synthesize(_ text: String, voice: MiMoVoice, affect: DialogueAffect, apiKey: String) async throws -> SpeechAudio
 }
 
 enum SpeechPlaybackRoute: String { case character, window }

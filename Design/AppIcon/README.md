@@ -1,12 +1,12 @@
 # Bina App Icon
 
-The icon uses Columbina's white feathered head ornament as its central motif, with pearl-white relief and restrained lavender shading. The background transitions vertically from deep violet (`#38234F`) through iris purple (`#78549D`) to light lavender (`#C2A2DC`), inspired by her eye color.
+The icon uses Columbina's white feathered head ornament as its central motif, with pearl-white relief and restrained lavender shading. The background transitions vertically from lighter violet (`#9678B5`) at the top through iris purple (`#7B599F`) to deeper violet (`#603F82`) at the bottom, inspired by her eye color. The restrained light-to-dark gradient supports system lighting while preserving contrast with the white ornament.
 
 ## Artwork
 
 - [Square composite](bina-icon-v1.png): the production layers composited at 1024 by 1024 pixels.
 - [Circular preview](bina-icon-v1-circular.png): a static preview of the circular crop.
-- [Initial concept](bina-icon-concept-v1.png): the original generated composition before the foreground was separated and its margins refined.
+- [Initial concept](bina-icon-concept-v1.png): the original generated composition with the earlier dark-to-light background, before the foreground was separated and its margins refined.
 - [Background source](background.svg): the editable gradient specification.
 - [Generation prompts](generation-prompts.txt): the complete prompts used with the built-in `image_gen` tool.
 
@@ -38,5 +38,7 @@ swift scripts/check-app-icon-alpha.swift
 The check rejects the retained pre-fix image with 440 stray regions and passes the repaired image with zero disconnected regions. It also checks dimensions, transparent background, nonempty content, and the circular safe margin. A PNG round-trip comparison verified that the repair changed only the isolated pixels' alpha values.
 
 The complete generic visionOS Debug build passed again after this alpha repair. Its log is `/private/tmp/Bina-AppIcon-Alpha-Fix-Build.log`.
+
+On 2026-11-03, the background changed to the softer top-to-bottom light-to-dark palette documented above. The background PNG matches the SVG's top, middle, and bottom color stops and remains an opaque 1024-by-1024 sRGB image. The foreground's SHA-256 remained unchanged, the alpha regression check passed, and both previews were refreshed. The complete generic visionOS Debug build passed; its log is `/private/tmp/Bina-AppIcon-Gradient-Build.log`.
 
 The static preview does not reproduce system lighting or parallax. Their final appearance remains to be checked on Apple Vision Pro.

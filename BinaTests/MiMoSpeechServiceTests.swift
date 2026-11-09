@@ -3,6 +3,23 @@ import Testing
 @testable import Bina
 
 @MainActor struct MiMoSpeechServiceTests {
+    @Test func eachAffectUsesAFixedStyleWithoutChangingTheVoiceOrSpokenText() throws {
+        var styles: Set<String> = []
+        let text = "今天想聊什么？"
+        for affect in DialogueAffect.allCases {
+            let request = try MiMoSpeechService.synthesisRequest(text, voice: .moli, affect: affect, apiKey: "sk-fixture")
+            let data = try #require(request.httpBody)
+            let body = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            let messages = try #require(body["messages"] as? [[String: String]])
+            #expect(messages[0] == ["role": "user", "content": affect.speechInstruction])
+            #expect(messages[1] == ["role": "assistant", "content": text])
+            #expect((body["audio"] as? [String: String]) == ["format": "wav", "voice": "茉莉"])
+            #expect(!messages[0]["content"]!.contains(text))
+            styles.insert(messages[0]["content"]!)
+        }
+        #expect(styles.count == DialogueAffect.allCases.count)
+    }
+
     @Test func recognitionUsesBoundedChineseAudioAndKeepsCredentialsOutOfTheBody() throws {
         let audio = SpeechFixture.wav()
         let request = try MiMoSpeechService.recognitionRequest(audio, apiKey: "sk-fixture")

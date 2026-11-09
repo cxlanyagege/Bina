@@ -48,6 +48,8 @@ struct ConversationTurn: Identifiable {
     var firstContentLatency: Double?
     var speechDelivery = SpeechDelivery.notRequested
     var playedSeconds: TimeInterval = 0
+    var expression = DialogueExpression.calm
+    var continuityAfterDelivery = DialogueContinuity()
 
     var isUsableInContext: Bool {
         state == .complete && (speechDelivery == .notRequested || speechDelivery == .played)

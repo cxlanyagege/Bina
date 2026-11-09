@@ -51,15 +51,17 @@ import Foundation
     var recordings: [Data] = []
     var spokenTexts: [String] = []
     var voices: [MiMoVoice] = []
+    var affects: [DialogueAffect] = []
     var recognition: [CheckedContinuation<String, Error>?] = []
     var synthesis: [CheckedContinuation<SpeechAudio, Error>?] = []
     func transcribe(_ recording: Data, apiKey: String) async throws -> String {
         recordings.append(recording)
         return try await withCheckedThrowingContinuation { recognition.append($0) }
     }
-    func synthesize(_ text: String, voice: MiMoVoice, apiKey: String) async throws -> SpeechAudio {
+    func synthesize(_ text: String, voice: MiMoVoice, affect: DialogueAffect, apiKey: String) async throws -> SpeechAudio {
         spokenTexts.append(text)
         voices.append(voice)
+        affects.append(affect)
         return try await withCheckedThrowingContinuation { synthesis.append($0) }
     }
     func recognize(_ text: String, at index: Int = 0) {
@@ -101,14 +103,21 @@ import Foundation
     let keys = TestAPIKeyStore()
     let conversation: ConversationModel
     let speech: SpeechSession
+    let clock: FixtureSpeechClock
+    let presentation: FixtureSpeechPresentation
     var cues: [(CharacterConversationCue, Float)] = []
 
     init(limit: Duration = .seconds(30)) {
+        let clock = FixtureSpeechClock()
+        let presentation = FixtureSpeechPresentation()
+        self.clock = clock
+        self.presentation = presentation
         let conversation = ConversationModel(service: chat, memoryStore: TestMemoryStore(), keyStore: keys,
-            preferences: ConversationFixture.preferences())
+            preferences: ConversationFixture.preferences(), uptime: { clock.time })
         self.conversation = conversation
         speech = SpeechSession(conversation: conversation, recorder: recorder, service: service, player: player,
-            preferences: ConversationFixture.preferences(), recordingLimit: limit)
+            preferences: ConversationFixture.preferences(), recordingLimit: limit,
+            uptime: { clock.time }, present: { presentation.values.append($0) })
     }
 
     func record() async throws {
@@ -134,3 +143,6 @@ import Foundation
         chat.continuations.forEach { $0.finish() }
     }
 }
+
+@MainActor final class FixtureSpeechClock { var time: TimeInterval = 100 }
+@MainActor final class FixtureSpeechPresentation { var values: [CharacterConversationPresentation] = [] }

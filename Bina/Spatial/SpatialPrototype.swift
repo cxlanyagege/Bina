@@ -93,10 +93,11 @@ final class SpatialPrototype {
         entity.position = [0, 1.78, 0]
     }
 
-    func presentConversation(_ cue: CharacterConversationCue, mouth: Float) {
+    func presentConversation(_ presentation: CharacterConversationPresentation) {
         guard let motion = characterIdle, let face = motion.face else { return }
-        face.setConversationCue(canPresentSpeech ? cue : .idle, mouth: canPresentSpeech ? mouth : 0)
-        guard motion.mode != .reference else { return }
+        let value = canPresentSpeech ? presentation : .init()
+        face.setConversationCue(value.cue, mouth: value.mouth, expression: value.expression)
+        guard motion.mode == .playing else { return }
         do { try face.present(influence: 1) } catch { motion.reportFaceUnavailable(error) }
     }
     var isTransitioning: Bool { spaceState == .opening || spaceState == .closing }

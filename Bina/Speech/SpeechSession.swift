@@ -29,7 +29,7 @@ import Observation
         }
     }
 
-    private(set) var phase = Phase.idle { didSet { present(phase.cue, 0) } }
+    private(set) var phase = Phase.idle { didSet { publishPresentation() } }
     private(set) var voice: MiMoVoice
     private(set) var readTypedReplies: Bool
     private(set) var errorMessage: String?
@@ -41,7 +41,9 @@ import Observation
     @ObservationIgnored private let service: any SpeechServing
     @ObservationIgnored private let player: any SpeechPlaying
     @ObservationIgnored private let preferences: UserDefaults
-    @ObservationIgnored private let present: @MainActor (CharacterConversationCue, Float) -> Void
+    @ObservationIgnored private let present: @MainActor (CharacterConversationPresentation) -> Void
+    @ObservationIgnored private let uptime: @MainActor () -> TimeInterval
+    @ObservationIgnored private var expressionEnvelope = DialogueExpressionEnvelope()
     @ObservationIgnored private var task: Task<Void, Never>?
     @ObservationIgnored private var limitTask: Task<Void, Never>?
     @ObservationIgnored private var workID: UUID?
@@ -58,7 +60,8 @@ import Observation
         service: (any SpeechServing)? = nil, player: (any SpeechPlaying)? = nil,
         audioSession: SpeechAudioSession? = nil,
         preferences: UserDefaults = .standard, recordingLimit: Duration = .seconds(30),
-        present: @escaping @MainActor (CharacterConversationCue, Float) -> Void = { _, _ in }
+        uptime: @escaping @MainActor () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
+        present: @escaping @MainActor (CharacterConversationPresentation) -> Void = { _ in }
     ) {
         self.conversation = conversation
         let audioSession = audioSession ?? SpeechAudioSession()
@@ -68,6 +71,7 @@ import Observation
         self.preferences = preferences
         self.recordingLimit = recordingLimit
         self.present = present
+        self.uptime = uptime
         voice = preferences.string(forKey: "speech.voice").flatMap(MiMoVoice.init(rawValue:)) ?? .bingtang
         readTypedReplies = preferences.bool(forKey: "speech.readTypedReplies")
         conversation.observer = self
@@ -175,6 +179,7 @@ import Observation
         errorMessage = nil
         do { try recorder.cancel() } catch { errorMessage = SpeechFailure.message(error) }
         audio = nil
+        expressionEnvelope.clear()
         recordingStart = nil
         transcript = ""
         subtitle = ""
@@ -186,13 +191,18 @@ import Observation
     func conversationDidStartReply(_ id: UUID) { phase = .thinking }
 
     func conversationDidCompleteReply(_ turn: ConversationTurn) {
-        guard replyID == turn.id else { phase = .idle; return }
-        synthesize(turn.answer, turnID: turn.id)
+        guard replyID == turn.id else {
+            expressionEnvelope.show(turn.expression, at: uptime())
+            phase = .idle
+            return
+        }
+        synthesize(turn.answer, turnID: turn.id, expression: turn.expression)
     }
 
     func conversationDidFailReply() {
         if let replyID { conversation.setSpeechDelivery(.failed, for: replyID) }
         replyID = nil
+        expressionEnvelope.clear()
         phase = .idle
     }
 
@@ -203,14 +213,14 @@ import Observation
         }
         if spatialAvailable && !available && spatialInteraction { stop() }
         spatialAvailable = available
-        let mouth = phase == .speaking ? audio?.mouthOpenness(at: player.currentTime) ?? 0 : 0
-        present(available ? phase.cue : .idle, available ? mouth : 0)
+        publishPresentation(available: available)
     }
 
     func spaceDidDisappear() {
         if spatialInteraction { stop() }
         spatialAvailable = false
-        present(.idle, 0)
+        expressionEnvelope.clear()
+        present(.init())
     }
 
     private func send(_ text: String, aloud: Bool) -> Bool {
@@ -223,7 +233,7 @@ import Observation
         return true
     }
 
-    private func synthesize(_ text: String, turnID: UUID?) {
+    private func synthesize(_ text: String, turnID: UUID?, expression: DialogueExpression = .calm) {
         let id = beginWork()
         replyID = turnID
         subtitle = text
@@ -232,7 +242,7 @@ import Observation
             guard let self else { return }
             do {
                 let key = try conversation.credentialForSpeech()
-                let audio = try await service.synthesize(text, voice: voice, apiKey: key)
+                let audio = try await service.synthesize(text, voice: voice, affect: expression.affect, apiKey: key)
                 guard isCurrent(id) else { return }
                 self.audio = audio
                 try await player.play(audio) { [weak self] success in
@@ -244,6 +254,8 @@ import Observation
                     self.workID = nil
                     self.replyID = nil
                     self.audio = nil
+                    if success { self.expressionEnvelope.release(at: self.uptime()) }
+                    else { self.expressionEnvelope.clear() }
                     self.subtitle = ""
                     self.task = nil
                     self.phase = .idle
@@ -252,6 +264,7 @@ import Observation
                 guard isCurrent(id) else { return }
                 playbackRoute = player.route
                 if let turnID { conversation.setSpeechDelivery(.playing, for: turnID) }
+                expressionEnvelope.show(expression, at: uptime(), speaking: true)
                 phase = .speaking
             } catch { fail(error, id: id) }
         }
@@ -263,6 +276,12 @@ import Observation
         workID = id
         workRevision = conversation.memory.revision
         return id
+    }
+
+    private func publishPresentation(available: Bool = true) {
+        guard available else { present(.init()); return }
+        let mouth = phase == .speaking ? audio?.mouthOpenness(at: player.currentTime) ?? 0 : 0
+        present(.init(cue: phase.cue, mouth: mouth, expression: expressionEnvelope.sample(at: uptime())))
     }
 
     private func isCurrent(_ id: UUID) -> Bool {

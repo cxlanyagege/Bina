@@ -9,6 +9,7 @@ nonisolated struct CharacterFacePlayback {
     struct Intent {
         var eyeState = EyeState.coveredClosed
         var expression = Expression.neutral
+        var expressionStrength: Float = 1
         var mouthPose = MouthPose.relaxed
         var automaticBlink = true
     }
@@ -70,8 +71,9 @@ nonisolated struct CharacterFacePlayback {
             previousEyeState = intent.eyeState
         }
         openness = Self.approach(openness, target: intent.eyeState == .uncoveredOpen ? 1 : 0, step: Float(step / 0.4))
-        smile = Self.approach(smile, target: intent.expression == .gentleSmile ? 1 : 0, step: Float(step / 0.3))
-        curiosity = Self.approach(curiosity, target: intent.expression == .curious ? 1 : 0, step: Float(step / 0.3))
+        let strength = intent.expressionStrength.isFinite ? max(0, min(1, intent.expressionStrength)) : 0
+        smile = Self.approach(smile, target: intent.expression == .gentleSmile ? strength : 0, step: Float(step / 0.3))
+        curiosity = Self.approach(curiosity, target: intent.expression == .curious ? strength : 0, step: Float(step / 0.3))
         mouthOpen = Self.approach(mouthOpen, target: intent.mouthPose == .open ? 1 : 0, step: Float(step / 0.18))
         mouthRound = Self.approach(mouthRound, target: intent.mouthPose == .round ? 1 : 0, step: Float(step / 0.18))
 

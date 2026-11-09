@@ -5,6 +5,65 @@ import XCTest
 
 @MainActor
 final class BundledCharacterFaceTests: XCTestCase {
+    func testDialogueExpressionsReuseBoundedShapesAndPreserveBothEyeFormsAndSkeleton() async throws {
+        let f = try await FaceFixture()
+        f.face.automaticBlink = false
+        let joints = f.model.jointTransforms
+        for eye: CharacterFacePlayback.EyeState in [.coveredClosed, .uncoveredOpen] {
+            f.face.eyeState = eye
+            var smiles: [DialogueAffect: Float] = [:]
+            var brows: [DialogueAffect: Float] = [:]
+            for affect in DialogueAffect.allCases {
+                f.face.setConversationCue(.idle, mouth: 0, expression: .init(affect: affect))
+                for _ in 0..<60 { try f.face.advance(by: 1.0 / 60, influence: 1) }
+                smiles[affect] = f.value("smile")
+                brows[affect] = f.value("browRaise")
+                XCTAssertEqual(f.value("blink"), eye == .coveredClosed ? 1 : 0)
+                XCTAssertEqual(try f.coverOpacity(), eye == .coveredClosed ? 1 : 0)
+                XCTAssertLessThanOrEqual(f.value("smile"), 0.22)
+                XCTAssertLessThanOrEqual(f.value("browRaise"), 0.18)
+                XCTAssertEqual(f.value("mouthOpen"), 0)
+                assertPose(f.model.jointTransforms, joints)
+            }
+            XCTAssertGreaterThan(smiles[.cheerful]!, smiles[.warm]!)
+            XCTAssertGreaterThan(smiles[.warm]!, 0)
+            XCTAssertEqual(smiles[.concerned]!, 0)
+            XCTAssertGreaterThan(brows[.concerned]!, 0)
+            XCTAssertLessThan(brows[.concerned]!, 0.06)
+            XCTAssertGreaterThan(brows[.curious]!, brows[.concerned]!)
+        }
+    }
+
+    func testDialogueExpressionRespectsPauseReferenceAndManualOverride() async throws {
+        let f = try await FaceFixture()
+        f.face.setConversationCue(.speaking, mouth: 0.25, expression: .init(affect: .cheerful))
+        f.advance(60)
+        XCTAssertGreaterThan(f.value("smile"), 0)
+        f.motion.pause()
+        let weights = f.weights()
+        f.face.setConversationCue(.speaking, mouth: 0.25, expression: .init(affect: .concerned))
+        f.advance(60)
+        XCTAssertEqual(f.weights(), weights)
+        f.motion.showReference()
+        XCTAssertEqual(f.weights(), f.originalWeights)
+        f.motion.showNatural()
+        f.face.followsDialogue = false
+        f.face.expression = .gentleSmile
+        f.face.setConversationCue(.speaking, mouth: 0.2, expression: .init(affect: .concerned))
+        f.advance(60)
+        XCTAssertGreaterThan(f.value("smile"), 0)
+        XCTAssertEqual(f.value("mouthOpen"), 0.2)
+        XCTAssertEqual(f.value("blink"), 1)
+        XCTAssertEqual(try f.coverOpacity(), 1)
+        f.face.followsDialogue = true
+        f.face.setConversationCue(.idle, mouth: 0)
+        f.advance(60)
+        XCTAssertEqual(f.value("smile"), 0)
+        f.face.followsDialogue = false
+        f.advance(60)
+        XCTAssertGreaterThan(f.value("smile"), 0)
+    }
+
     func testConversationCuesPreserveEyeFormsAndClearOnlyTheirOwnMouthOverlay() async throws {
         let f = try await FaceFixture()
         for state: CharacterFacePlayback.EyeState in [.coveredClosed, .uncoveredOpen] {
@@ -78,6 +137,7 @@ final class BundledCharacterFaceTests: XCTestCase {
         let f = try await FaceFixture()
         f.face.eyeState = .uncoveredOpen
         f.face.automaticBlink = false
+        f.face.followsDialogue = false
         f.face.expression = .gentleSmile
         f.face.mouthPose = .round
         f.advance(120)
@@ -115,6 +175,7 @@ final class BundledCharacterFaceTests: XCTestCase {
         try baseline.configureHairPhysics(f.physics, pose: f.pose)
         let placement = f.character.transform.matrix
         f.face.eyeState = .uncoveredOpen
+        f.face.followsDialogue = false
         f.face.expression = .gentleSmile
         f.face.mouthPose = .open
         var maximumPoseError: Float = 0
@@ -186,6 +247,7 @@ final class BundledCharacterFaceTests: XCTestCase {
     func testValidReplacementRestoresTheOriginalReferenceRatherThanTheLastPreview() async throws {
         let f = try await FaceFixture()
         f.face.eyeState = .uncoveredOpen
+        f.face.followsDialogue = false
         f.face.expression = .gentleSmile
         f.advance(60)
         XCTAssertGreaterThan(f.value("smile"), 0)

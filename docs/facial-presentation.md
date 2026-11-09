@@ -61,7 +61,7 @@ Imported facial weights and materials are captured before any preview change. In
 
 ## Controls and lifecycle
 
-The control window adds a facial group with eye-state selection, natural-blink preference, expression selection, mouth-shape selection, blink preview, and reset. Facial controls are available during normal playback. Blink controls are inactive in the covered state.
+The control window adds a facial group with eye-state selection, natural-blink preference, an automatic dialogue-expression toggle, manual expression selection, mouth-shape selection, blink preview, and reset. Automatic expression is enabled by default and returns to a neutral baseline after a reply fades. Turn it off to use manual expression selection; the last manual choice is retained. Facial controls are available during normal playback. Blink controls are inactive in the covered state. The [dialogue-expression contract](dialogue-expression.md) defines the validated affect mapping, vocal coordination, short-term continuity, and separate headset acceptance for this later increment. No facial asset regeneration is required.
 
 - Pause freezes the displayed facial state, including an in-progress transition or blink.
 - Hidden/inactive content freezes facial time; visibility recovery advances from the retained state with a bounded step.

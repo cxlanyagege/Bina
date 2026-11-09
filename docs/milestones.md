@@ -1,6 +1,6 @@
 # Milestones and Validation
 
-Status: D1 spatial checks, preliminary appearance, and the text/memory loop have user-reported passes. Push-to-talk capture, transcript review, cloud speech synthesis, spatial/window playback, and coordinated activity cues are implemented with separate headset acceptance outstanding. Detailed floor acceptance and sustained performance remain open. Last updated: 2026-11-02.
+Status: D1 spatial checks, preliminary appearance, text/memory, and basic push-to-talk voice have user-reported passes. Dialogue-driven facial/vocal expression and local short-term continuity are implemented with all 277 Simulator 27.2 tests and both SDK builds passing; independent headset acceptance is outstanding. Detailed floor/acoustic acceptance and sustained performance remain open. Last updated: 2026-11-03.
 
 ## Planning rules
 
@@ -8,9 +8,26 @@ Begin with the largest uncertainty that affects the next observable experience. 
 
 Use the user's Apple Vision Pro for spatial and character evaluation. Record measurable results before setting production budgets. Resolve product decisions when they affect dependent work; routine reversible engineering choices do not need a separate approval process.
 
+The user selected a personal-use visionOS 27.2 minimum on 2026-11-03. Debug, Release, app, and test targets share that baseline. Routine verification uses the 27.2 Simulator and device SDK; earlier runtime results remain historical evidence rather than an ongoing compatibility obligation.
+
+## Next work
+
+This is the recommended sequence as of 2026-11-03, not a claim that the proposed increments are implemented. The user cannot test on the headset immediately, so acceptance of the latest facial/vocal expression and short-term continuity remains pending. Independent documentation and deterministic test preparation can proceed while waiting.
+
+| Priority | Work | Availability and completion evidence |
+| --- | --- | --- |
+| 1 | Accept and calibrate the current expression increment. | When the headset is available, compare practical explanations, good news, curiosity, and an explicitly difficult day. Continue a topic, change it, and interrupt. Check both eye forms and manual override. Record the installed app revision, system build, preset voice, and a few observations; avoid retaining private transcripts by default. |
+| 2 | Design the first evidence-backed episodic-memory increment, then implement it as a separate task. | Schema, migration, retrieval rules, and scripted cases can be prepared without the headset. Begin with one user-confirmed conversation event or promise, with source utterance references and separate occurrence/recording dates. Require restart recall, correction, deletion, and truthful uncertainty. Generated narration is not evidence that an event happened or a promise was fulfilled. |
+| 3 | Establish repeatable persona and recall evaluation. | Prepare varied synthetic scenarios now using the existing Columbina evaluations. Cover ordinary opinions, playfulness, concern, disagreement, absent history, and corrected facts. Compare representative model replies without requiring one exact sentence or treating familiar address as evidence of a shared event. Actual cloud quality remains a separate measured result. |
+| 4 | Measure the voice pipeline, then improve the slowest stage. | Identify capture/ASR, model response, synthesis, first audio, and interruption timing separately. Assess preset voice quality on device. Choose streaming or sentence playback only if measurements justify it, preserving cancellation across every stage. |
+| 5 | Add a small conversational gesture vocabulary. | Start with a nod and greeting gesture after the current expressive behavior is accepted. Reuse the existing pose owner, coordinate with listening/speaking, and verify cuffs, collar/hair, fixed feet, pause/reference, and interruption. Walking requires a separate ground-contact, locomotion, and costume plan. |
+| 6 | Connect one prepared real object to conversation. | Select a suitable physical object and reference asset when this increment begins. Prove observation validity and loss handling before enabling a small action such as pointing. Continue toward scene occlusion and locomotion through separate measured experiments. |
+
+The most useful work while the headset is unavailable is episodic-memory design and the persona/recall scenario set. The next feature implementation is a proposal; no episodic store, extra gesture, or object-sensing capability is added by this planning update. The user does not need to prepare new assets for those documentation tasks. Headset feedback on the current increment is the next device-dependent input.
+
 ## D0: Documentation and source intake
 
-Current state: documentation drafted; persona source review and its design adaptation are complete. The user has initially reviewed the documents. A local model source and notice have been inspected and conversion completed. The user reported visionOS 27.2 on 2026-10-30; the project still targets 27.0. Runtime persona integration has not started.
+Current state: documentation, persona source review, adaptation, and runtime persona integration are complete. The user has initially reviewed the documents. A local model source and notice have been inspected and conversion completed. The project requires visionOS 27.2 following the user's 2026-11-03 personal-use decision. Independent canon verification and any future distribution review remain separate from implementation.
 
 Deliverables:
 
@@ -28,7 +45,7 @@ The first placement/restoration experiment now has an implementation. It include
 
 The character experiment has a local USDZ conversion and asynchronous runtime-loading path. The preceding static preview passed ARKit USD validation, SDK builds, and 39 tests, including actual bundled loading, materials, and bounds normalization. After eye-material and clothing-backface corrections, the user reported no obvious visual issues in a preliminary headset check on 2026-10-30. Natural stance and restrained procedural idle are now implemented, including pause/resume and source-pose comparison. The user found posture and motion generally acceptable, then reported cuff penetration even while paused. After pose calibration and an actual imported hand/cuff geometry regression, the user confirmed the issue resolved. Head attention, selected hair physics, and facial channels were added subsequently; the latest hair/facial checks have preliminary passes. Current evidence belongs in the [verification record](spatial-prototype.md#automated-verification). Floor preview/confirmation is now implemented but needs physical-room acceptance. Environmental occlusion, measured performance, and broader companion behavior remain separate work.
 
-Current priority: validate the [push-to-talk voice loop](voice-conversation.md) on the user's headset and account. On 2026-11-02 the user reported that the existing spatial features and [text/memory loop](text-conversation.md) work, a preliminary functional pass. Detailed spatial acceptance, measured latency, and persona evaluation remain open. Walking remains deferred while the conversational foundation is evaluated.
+The user reported a preliminary functional pass for the spatial/text/memory features on 2026-11-02 and for the basic [voice functions](voice-conversation.md) on 2026-11-03. The user then authorized [dialogue-driven expression, coordinated vocal delivery, and short-term continuity](dialogue-expression.md); implementation and automated verification are complete, with headset evaluation deferred until the device is available. Detailed spatial/acoustic acceptance, measured latency, and persona evaluation remain open. Episodic-memory design can proceed independently; calibrate the current expressive behavior before adding more embodied interaction. Walking remains deferred while the conversational foundation is evaluated.
 
 | Experiment | Success evidence | Important failure case |
 | --- | --- | --- |
@@ -121,13 +138,13 @@ Acceptance checks:
 
 Walking, navigation, room collision, foot IK, and environment occlusion remain later increments. Device evidence for ground contact should precede motion that moves the feet.
 
-The user subsequently clarified water heels versus barefoot. A separate [footwear binding](footwear.md) now removes heel geometry, supplies fixed barefoot ankle/forefoot calibration, and measures each form's visible contact. The shared pose owner, existing saved anchor, and four original resources remain intact. Reference comparison restores original heels/pose; natural playback restores the preference. Validate both forms on the user's headset before extending foot motion. Local development and Simulator now use 27.2, matching the reported headset version; the deployment minimum remains 27.0.
+The user subsequently clarified water heels versus barefoot. A separate [footwear binding](footwear.md) now removes heel geometry, supplies fixed barefoot ankle/forefoot calibration, and measures each form's visible contact. The shared pose owner, existing saved anchor, and four original resources remain intact. Reference comparison restores original heels/pose; natural playback restores the preference. Validate both forms on the user's headset before extending foot motion. Local development, Simulator, and the minimum deployment target now use 27.2, matching the reported headset version.
 
 Following that delivery, the user reported no major issues in the headset check. Record a preliminary foot-form/contact presentation pass. No detailed checklist, drift/contact measurements, recovery results, or sustained-performance data accompanied it; broader spatial acceptance remains open.
 
 ## M2: Conversation, personality, and minimum continuity
 
-Status: partially implemented. Ordinary MiMo pay-as-you-go text streaming, a curated Columbina persona, explicit memory extraction/confirmation, local persistence, correction, and deletion are present and have a preliminary user-reported functional pass. The first [voice loop](voice-conversation.md) adds reviewed microphone input, preset TTS, spatial/window playback, activity cues, approximate jaw motion, and shared interruption. Voice account/headset acceptance, measured latency, structured persona evaluation, phoneme synchronization, and persistent emotional state remain open. See the [text/memory contract](text-conversation.md) for existing controls and boundaries.
+Status: partially implemented. Ordinary MiMo pay-as-you-go text streaming, a curated Columbina persona, explicit memory extraction/confirmation, local persistence, correction, and deletion are present and have a preliminary user-reported functional pass. The [voice loop](voice-conversation.md) adds reviewed microphone input, preset TTS, spatial/window playback, activity cues, approximate jaw motion, and shared interruption; basic functionality also has a preliminary user-reported pass. The [expression increment](dialogue-expression.md) adds restrained dialogue-driven facial/vocal delivery and ephemeral emotional continuity. Its headset acceptance, detailed speech acceptance, measured latency, structured persona evaluation, phoneme synchronization, and persistent emotional state remain open. See the [text/memory contract](text-conversation.md) for existing controls and boundaries.
 
 Add one selected speech/model path, the curated Columbina profile, interruptible conversation, coordinated mouth and expression behavior, and a small persistent memory implementation.
 
@@ -188,6 +205,6 @@ Evaluate rendering, spatial audio, tracking, embodied expression, and comfort on
 - Real-floor contact and sensing/recovery on the headset, broader transition/costume quality, and measured performance. Cuff correction, rear-hair stability, and facial naturalness have preliminary user-reported passes.
 - Character scale, interaction distance, and voice direction for the source-derived Simplified Chinese style.
 - The first physical reference object and its available 3D asset.
-- Full device system build and near-term distribution intent; the user-reported system version is 27.2.
+- Full device system build; the reported version is 27.2. The current distribution scope is personal use, as confirmed on 2026-11-03.
 
-Choose inputs in dependency order. Model services, storage libraries, and a larger animation system remain unselected until their experiments justify a choice.
+Choose inputs in dependency order. MiMo and the existing native local-memory store are already selected. Additional storage dependencies and a larger animation system require a concrete need demonstrated by the next experiments.

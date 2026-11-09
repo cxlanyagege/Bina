@@ -102,4 +102,4 @@ Record actual visible contact error, detection delay, anchor restoration, drift,
 - [Apple: PlaneAnchor](https://developer.apple.com/documentation/arkit/planeanchor).
 - [Apple: Tracking specific points in world space](https://developer.apple.com/documentation/visionos/tracking-points-in-world-space).
 
-The floor APIs were originally checked against the installed XROS 27.0 ARKit Swift interface; subsequent builds use the installed XROS 27.2 SDK. The minimum deployment target remains 27.0.
+The floor APIs were originally checked against the installed XROS 27.0 ARKit Swift interface; subsequent builds use the installed XROS 27.2 SDK. The minimum deployment target is now 27.2, following the user's 2026-11-03 decision. Earlier 27.0 verification remains historical evidence.

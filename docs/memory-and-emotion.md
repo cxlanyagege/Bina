@@ -1,6 +1,6 @@
 # Memory and Emotion
 
-Status: initial cloud text dialogue and explicitly confirmed local semantic memory are implemented and have a preliminary user-reported functional pass. The first voice loop supplies local listening/thinking/speaking cues and approximate audio-driven jaw motion. Episodic memory, durable emotional state, and nuanced emotional expression remain design proposals. Last updated: 2026-11-02.
+Status: cloud text dialogue, confirmed local semantic memory, and basic voice functions have preliminary user-reported functional passes. The 2026-11-03 dialogue-expression increment adds restrained facial/vocal delivery and local short-term emotional continuity. Its headset evaluation remains open. Episodic memory and durable emotional state remain proposals. Last updated: 2026-11-03.
 
 This document defines how Bina can remember shared experiences and respond with
 coherent, humanlike emotion while keeping her statements grounded in available evidence.
@@ -139,6 +139,8 @@ Repeated retrieval of a memory must not strengthen its factual status or create 
 
 ## Emotion and Relationship Dynamics
 
+The implemented first subset is defined in [Dialogue expression](dialogue-expression.md): one bounded intent in the existing reply request, five delivery affects, at most two continued replies, a five-minute expiry, and coordinated presentation. Continuity commits only on completed text delivery or fully played speech. It is ephemeral and distinct from the confirmed memory store. New chat and context/memory replacement clear it. Broader appraisal and cross-session relationship behavior below remain future work.
+
 Use a lightweight appraisal model before considering elaborate psychological simulation.
 An interaction event can be appraised against Bina's personality, current conversational goal,
 recent context, and known interaction preferences to produce an expressive response.
@@ -159,7 +161,7 @@ and preferences the user has expressed, rather than arbitrary numerical affectio
 Familiarity should affect continuity and expression without overriding user boundaries.
 Avoid emotional pressure, such as treating absence as wrongdoing or demanding exclusivity.
 
-Emotion is a proposed behavior model, not a detector of the user's internal state.
+Emotion is a behavior model, not a detector of the user's internal state.
 The user's words and actions may suggest a mood, but uncertain interpretations should remain tentative.
 Personal disclosures should not automatically become permanent emotional or personality labels.
 
@@ -171,7 +173,7 @@ The behavior layer resolves conflicts and requests only supported actions from p
 The model must not issue direct per-frame transforms or bypass spatial validation.
 
 Listening, speaking, and interruption need shared turn ownership.
-The [first voice implementation](voice-conversation.md) uses a single local session and validates late results across ASR, dialogue, synthesis, and playback. These activity cues do not infer the user's emotions or implement durable emotional appraisal. Existing covered/open eye selection remains independent of speech.
+The [voice implementation](voice-conversation.md) uses a single local session and validates late results across ASR, dialogue, synthesis, and playback. Dialogue-driven delivery is composed with those activity cues through the existing face writer. It does not infer the user's emotions or implement durable emotional appraisal. Existing covered/open eye selection remains independent of speech.
 On user interruption, stop or fade speech promptly, cancel obsolete queued gestures,
 and transition to an appropriate listening pose without erasing useful conversational context.
 Delayed model responses and animation completions must be ignored if their turn is obsolete.
