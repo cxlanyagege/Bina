@@ -72,3 +72,33 @@ Bina/Resources/Characters/ColumbinaFootwear.json
 
 # Local Python authoring caches.
 __pycache__/
+
+# macOS metadata
+.DS_Store
+._*
+.LSOverride
+
+# Local build output and caches
+/.swiftpm/
+/build/
+/DerivedData/
+
+# Xcode user-specific settings and source control metadata
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode archives, test results, and debug symbols
+*.xcarchive/
+*.xcresult/
+
+# Local signing credentials and provisioning profiles
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
+
+# Editor temporary files
+*.swp
+*.swo
+*~

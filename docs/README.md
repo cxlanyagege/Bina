@@ -1,5 +1,7 @@
 # Documentation Guide
 
+The [macOS guide](macos/README.md) covers the native toolbox, its Control Center extension, and the build and test workflow. The documents below cover the Apple Vision Pro companion.
+
 Status: spatial presence, calibrated foot forms, stance/idle, attention, selected hair physics, facial previews, and MiMo text dialogue with confirmed local memory are implemented and have preliminary user-reported passes. Push-to-talk speech, review, preset synthesis, playback, and coordinated activity cues are implemented; the user reported basic functionality working on 2026-11-03. Detailed device acceptance, structured persona evaluation, and measured performance remain open. The toolchain and Simulator use 27.2, matching the user-reported headset version. Last updated: 2026-11-03.
 
 These documents distinguish long-term design from the limited implementation already present. The spatial prototype guide records current behavior; the remaining feature designs remain proposals unless explicitly identified otherwise.

@@ -1,10 +1,14 @@
 # Bina
 
-Bina is a long-term visionOS companion project for Apple Vision Pro. Its goal is to create a character who appears to share the user's physical space, responds naturally, and remembers meaningful experiences across sessions.
+Bina includes a native macOS toolbox and a companion app for Apple Vision Pro. The visionOS app aims to create a character who appears to share the user's physical space, responds naturally, and remembers meaningful experiences across sessions.
 
 The first character is **Columbina from Genshin Impact**, retaining her character identity and personality. Bina is the application name. A local USDZ model and paired pose data support a character preview; the original and generated character assets are excluded from the repository.
 
-## Project status
+## macOS toolbox
+
+Keep Awake provides separate controls for display sleep and idle system sleep in the main window and Control menu. Control Center can toggle Keep Display Awake directly. See the [macOS guide](docs/macos/README.md) for installation, offline help, and development.
+
+## visionOS project status
 
 The spatial prototype supports mixed immersive entry, classified-floor placement with preview and confirmation, manual-height fallback, saved-world-anchor restoration, recovery, and explicit forgetting. Grounded placements use calibrated sole contact through scale and heading changes. The user reported the original placeholder's four basic feature groups working on a physical headset on 2026-10-29; this predates the character and floor increments. Build and automated-test evidence are recorded in the [verification record](docs/spatial-prototype.md#automated-verification), alongside the [device feedback](docs/spatial-prototype.md#initial-device-feedback).
 
