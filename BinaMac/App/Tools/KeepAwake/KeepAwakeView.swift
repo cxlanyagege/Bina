@@ -9,7 +9,7 @@ struct KeepAwakeView: View {
                 Toggle("保持常亮", isOn: $model.keepsDisplayAwake)
                     .toggleStyle(.switch)
 
-                Toggle("自动入睡", isOn: $model.allowsAutomaticSleep)
+                Toggle("不要入眠", isOn: $model.keepsSystemAwake)
                     .toggleStyle(.switch)
             }
 
@@ -24,7 +24,7 @@ struct KeepAwakeView: View {
                 }
                 .accessibilityElement(children: .combine)
             } footer: {
-                Text("关闭「自动入睡」可阻止熄屏后的闲置睡眠。")
+                Text("开启「不要入眠」可阻止熄屏后的闲置睡眠。")
             }
         }
         .formStyle(.grouped)
@@ -43,7 +43,7 @@ struct KeepAwakeView: View {
     }
 
     private var idleSleepStatus: LocalizedStringKey {
-        if !model.allowsAutomaticSleep {
+        if model.keepsSystemAwake {
             return "阻止闲置睡眠"
         }
         return model.keepsDisplayAwake ? "常亮期间保持苏醒" : "跟随系统设置"
@@ -57,7 +57,7 @@ struct KeepAwakeCommands: Commands {
         @Bindable var model = model
         CommandMenu("控制") {
             Toggle("保持常亮", isOn: $model.keepsDisplayAwake)
-            Toggle("自动入睡", isOn: $model.allowsAutomaticSleep)
+            Toggle("不要入眠", isOn: $model.keepsSystemAwake)
         }
     }
 }

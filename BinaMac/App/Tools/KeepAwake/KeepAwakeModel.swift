@@ -23,15 +23,15 @@ final class KeepAwakeModel {
     }
 
     // This reflects Bina's system assertion. macOS and other apps can also affect idle sleep.
-    var allowsAutomaticSleep: Bool {
-        get { !systemSession.isActive }
-        set { setProtection(in: systemSession, enabled: !newValue) }
+    var keepsSystemAwake: Bool {
+        get { systemSession.isActive }
+        set { setProtection(in: systemSession, enabled: newValue) }
     }
 
     func shutdown() {
         // Process exit also removes assertions if explicit cleanup fails.
         keepsDisplayAwake = false
-        allowsAutomaticSleep = true
+        keepsSystemAwake = false
     }
 
     private func setProtection(in session: KeepAwakeSession, enabled: Bool) {

@@ -23,10 +23,10 @@ public struct IdleSleepAssertionError: LocalizedError {
 
     public var errorDescription: String? {
         switch (target, operation) {
-        case (.display, .acquire): "无法开启保持常亮，请重试。"
-        case (.display, .release): "无法关闭保持常亮，请重试或退出 Bina。"
-        case (.system, .acquire): "无法关闭自动入睡，请重试。"
-        case (.system, .release): "无法开启自动入睡，请重试或退出 Bina。"
+        case (.display, .acquire): "无法开启「保持常亮」，请重试。"
+        case (.display, .release): "无法关闭「保持常亮」，请重试或退出 Bina。"
+        case (.system, .acquire): "无法开启「不要入眠」，请重试。"
+        case (.system, .release): "无法关闭「不要入眠」，请重试或退出 Bina。"
         case (_, .inspect): "暂时无法读取电源状态，请重试。"
         }
     }

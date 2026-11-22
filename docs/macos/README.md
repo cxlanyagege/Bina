@@ -21,13 +21,13 @@ In the macOS menu bar, choose **Help > Bina Help** (`Bina 帮助`) to open the o
 The tool opens selected in the sidebar. The window and Control menu offer the same switches.
 
 - **Keep Display Awake** (`保持常亮`) keeps the display on and also prevents idle system sleep. It starts off.
-- **Automatic Sleep** (`自动入睡`) lets macOS manage idle system sleep. Turn it off to keep the Mac awake while allowing the display to sleep. It starts on.
+- **Prevent Idle Sleep** keeps the Mac awake while allowing the display to sleep. It starts off.
 
 Closing the window leaves both settings active for the current app session. Reopen Bina to show its window. Quit Bina to release both requests. Manual sleep, lid closure, and system power or thermal policies are handled by macOS.
 
 ### Control Center and app lifetime
 
-The app delegate owns independent IOKit assertions for the display and system. Turning Automatic Sleep off acquires a system assertion even while the display assertion is active. The system assertion then continues protecting the Mac from idle sleep after the display assertion is released. [IOKit assertion types](https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes)
+The app delegate owns independent IOKit assertions for the display and system. Turning Prevent Idle Sleep on acquires a system assertion even while the display assertion is active. The system assertion then continues protecting the Mac from idle sleep after the display assertion is released. [IOKit assertion types](https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes)
 
 The app and WidgetKit extension both compile `SetKeepAwakeIntent.swift`. The intent runs in the containing app with dynamic foreground support and uses the app-owned display session. The extension reads the live display assertion. The app asks Control Center to reload when the display request changes. Failed IOKit transitions preserve the previous state. macOS removes the app's assertions if the process exits unexpectedly. [App Intent runtime behavior](https://developer.apple.com/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents)
 
