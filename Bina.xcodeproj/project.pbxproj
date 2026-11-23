@@ -23,13 +23,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		B1AA0000000000000000000A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1C3107AE30865C1C007FCA2D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 1C3107B530865C1C007FCA2D;
-			remoteInfo = Bina;
-		};
 		0BB9EEE1690637E8570AE8F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1C3107AE30865C1C007FCA2D /* Project object */;
@@ -79,6 +72,13 @@
 			remoteGlobalIDString = 4D48EC5119431572AD0602AC;
 			remoteInfo = BinaMacControls;
 		};
+		B1AA0000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C3107AE30865C1C007FCA2D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C3107B530865C1C007FCA2D;
+			remoteInfo = Bina;
+		};
 		B2290BC7FE4112632A105E52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1C3107AE30865C1C007FCA2D /* Project object */;
@@ -98,28 +98,26 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		9C35ABB8B6CAF3B1E41E926C /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
-			name = "Embed App Extensions";
+			dstSubfolder = PlugIns;
 			files = (
 				F0A98EE34E813C2AA9672A2C /* BinaMacControls.appex in Embed App Extensions */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			name = "Embed App Extensions";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1C3107B630865C1C007FCA2D /* Bina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bina.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B1AA00000000000000000002 /* BinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2ECDCCDCBC1C372E06789464 /* Controls-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Controls-Info.plist; sourceTree = "<group>"; };
+		2ECDCCDCBC1C372E06789464 /* Controls-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Controls-Info.plist"; sourceTree = "<group>"; };
 		431429A78684AC98A1CBF78D /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
 		483EC86B202CF53B0E1055B4 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		61C004D06792C37C529F4284 /* libKeepAwakePower.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libKeepAwakePower.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		63A701E90D6BBC3F49251B50 /* BinaMacControls.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = BinaMacControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		63A701E90D6BBC3F49251B50 /* BinaMacControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BinaMacControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DFF933ACEE00ADCDB1886DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9136614EF0B09EB69164569E /* Bina.app (macOS) */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bina.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9136614EF0B09EB69164569E /* Bina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F14E81EDFABA77BD1A68CB9 /* SetKeepAwakeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetKeepAwakeIntent.swift; sourceTree = "<group>"; };
+		B1AA00000000000000000002 /* BinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C645126952871C91E8289000 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E2B5E9E5D15E0CEB66B96BDE /* KeepAwakeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepAwakeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF3FA171D9EB859499AC1A98 /* Controls.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Controls.entitlements; sourceTree = "<group>"; };
@@ -150,12 +148,7 @@
 			path = Bina;
 			sourceTree = "<group>";
 		};
-		B1AA00000000000000000003 /* BinaTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BinaTests;
-			sourceTree = "<group>";
-		};
-		398199EE5999F6B064EBBF22 /* App Tests */ = {
+		398199EE5999F6B064EBBF22 /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
 			sourceTree = "<group>";
@@ -170,9 +163,14 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		89CF34E196620E12EEDB3443 /* Keep Awake Tests */ = {
+		89CF34E196620E12EEDB3443 /* KeepAwake */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KeepAwake;
+			sourceTree = "<group>";
+		};
+		B1AA00000000000000000003 /* BinaTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BinaTests;
 			sourceTree = "<group>";
 		};
 		B3086DA501F6BB4E08D656D2 /* KeepAwakePower */ = {
@@ -193,57 +191,47 @@
 			files = (
 			);
 		};
+		47C61A6745A67DE67E683E87 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		5C738A815DF8B169B4E592BC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		7626F3E7B2E7B06D81032719 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				27762DB394B23197BB46EBB2 /* libKeepAwakeCore.a in Frameworks */,
+				E1349E87319A97E1D797337A /* libKeepAwakePower.a in Frameworks */,
+			);
+		};
+		860EC7A7C15604E76182A500 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				9C62D07E626159442125F1CD /* libKeepAwakeCore.a in Frameworks */,
+			);
+		};
+		9305C5473B42D9E7C521D0DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				1B5024F09F6EF3F9983BB096 /* libKeepAwakeCore.a in Frameworks */,
+				C6FC35C91540FF710498BADE /* libKeepAwakePower.a in Frameworks */,
+			);
+		};
 		B1AA00000000000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
 		};
-		47C61A6745A67DE67E683E87 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		5C738A815DF8B169B4E592BC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7626F3E7B2E7B06D81032719 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				27762DB394B23197BB46EBB2 /* libKeepAwakeCore.a in Frameworks */,
-				E1349E87319A97E1D797337A /* libKeepAwakePower.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		860EC7A7C15604E76182A500 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9C62D07E626159442125F1CD /* libKeepAwakeCore.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9305C5473B42D9E7C521D0DA /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1B5024F09F6EF3F9983BB096 /* libKeepAwakeCore.a in Frameworks */,
-				C6FC35C91540FF710498BADE /* libKeepAwakePower.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		EA5AE9CF637A9597836675B9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				75A7681E3019520D48C51BE4 /* libKeepAwakeCore.a in Frameworks */,
 				1296AD182C286EE1BE5415EC /* libKeepAwakePower.a in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -263,7 +251,7 @@
 			children = (
 				1C3107B630865C1C007FCA2D /* Bina.app */,
 				B1AA00000000000000000002 /* BinaTests.xctest */,
-				9136614EF0B09EB69164569E /* Bina.app (macOS) */,
+				9136614EF0B09EB69164569E /* Bina.app */,
 				63A701E90D6BBC3F49251B50 /* BinaMacControls.appex */,
 				FC48ECDCA768305DE30A97CC /* libKeepAwakeCore.a */,
 				61C004D06792C37C529F4284 /* libKeepAwakePower.a */,
@@ -289,14 +277,14 @@
 				72026E2B8C19C0C8558A067A /* Shared */,
 				E36714892BC6EEFEF3260B74 /* KeepAwakeCore */,
 				B3086DA501F6BB4E08D656D2 /* KeepAwakePower */,
-				EEEEBD84D24DBFC4A673D922 /* Mac Resources */,
-				FFFF3448D476CDA49F8A9AA1 /* Mac Tests */,
+				EEEEBD84D24DBFC4A673D922 /* Resources */,
+				FFFF3448D476CDA49F8A9AA1 /* Tests */,
 				431429A78684AC98A1CBF78D /* Build.xcconfig */,
 			);
 			path = BinaMac;
 			sourceTree = "<group>";
 		};
-		EEEEBD84D24DBFC4A673D922 /* Mac Resources */ = {
+		EEEEBD84D24DBFC4A673D922 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				C645126952871C91E8289000 /* AppIcon.icon */,
@@ -309,11 +297,11 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		FFFF3448D476CDA49F8A9AA1 /* Mac Tests */ = {
+		FFFF3448D476CDA49F8A9AA1 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				398199EE5999F6B064EBBF22 /* App Tests */,
-				89CF34E196620E12EEDB3443 /* Keep Awake Tests */,
+				398199EE5999F6B064EBBF22 /* App */,
+				89CF34E196620E12EEDB3443 /* KeepAwake */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -339,27 +327,6 @@
 			productReference = 1C3107B630865C1C007FCA2D /* Bina.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B1AA00000000000000000001 /* BinaTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */;
-			buildPhases = (
-				B1AA00000000000000000004 /* Sources */,
-				B1AA00000000000000000005 /* Frameworks */,
-				B1AA00000000000000000006 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B1AA0000000000000000000B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				B1AA00000000000000000003 /* BinaTests */,
-			);
-			name = BinaTests;
-			productName = BinaTests;
-			productReference = B1AA00000000000000000002 /* BinaTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		4D48EC5119431572AD0602AC /* BinaMacControls */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 61728728BD9C62922946072F /* Build configuration list for PBXNativeTarget "BinaMacControls" */;
@@ -368,7 +335,8 @@
 				7626F3E7B2E7B06D81032719 /* Frameworks */,
 				88A2CFA51EE8D488CB7E99F3 /* Resources */,
 			);
-			buildRules = ();
+			buildRules = (
+			);
 			dependencies = (
 				853CEC92847EEFED451F59EB /* PBXTargetDependency */,
 				9A0A328EFDBE2D70ABC9D96F /* PBXTargetDependency */,
@@ -390,7 +358,8 @@
 				CC76A1B4E2CB1140C6570D6C /* Resources */,
 				9C35ABB8B6CAF3B1E41E926C /* Embed App Extensions */,
 			);
-			buildRules = ();
+			buildRules = (
+			);
 			dependencies = (
 				F7C2C78C0811AF5A05CD7AB7 /* PBXTargetDependency */,
 				0EFF0F99E874DABAE582BE48 /* PBXTargetDependency */,
@@ -401,7 +370,7 @@
 			);
 			name = BinaMac;
 			productName = Bina;
-			productReference = 9136614EF0B09EB69164569E /* Bina.app (macOS) */;
+			productReference = 9136614EF0B09EB69164569E /* Bina.app */;
 			productType = "com.apple.product-type.application";
 		};
 		73807BF79F458568622F05C6 /* KeepAwakeTests */ = {
@@ -411,13 +380,14 @@
 				D2BDC734E309E6F42BE137C8 /* Sources */,
 				9305C5473B42D9E7C521D0DA /* Frameworks */,
 			);
-			buildRules = ();
+			buildRules = (
+			);
 			dependencies = (
 				E632BA151D68D0A557CCB59E /* PBXTargetDependency */,
 				6CFF9850C38D9779A6CE65C8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				89CF34E196620E12EEDB3443 /* Keep Awake Tests */,
+				89CF34E196620E12EEDB3443 /* KeepAwake */,
 			);
 			name = KeepAwakeTests;
 			productName = KeepAwakeTests;
@@ -431,16 +401,38 @@
 				7904F3ACC6BB0CDD283737A4 /* Sources */,
 				5C738A815DF8B169B4E592BC /* Frameworks */,
 			);
-			buildRules = ();
+			buildRules = (
+			);
 			dependencies = (
 				9935551C55519BB33826CCC5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				398199EE5999F6B064EBBF22 /* App Tests */,
+				398199EE5999F6B064EBBF22 /* App */,
 			);
 			name = BinaMacTests;
 			productName = BinaMacTests;
 			productReference = FED84104F6FAE00E53223EC6 /* BinaMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B1AA00000000000000000001 /* BinaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */;
+			buildPhases = (
+				B1AA00000000000000000004 /* Sources */,
+				B1AA00000000000000000005 /* Frameworks */,
+				B1AA00000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1AA0000000000000000000B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B1AA00000000000000000003 /* BinaTests */,
+			);
+			name = BinaTests;
+			productName = BinaTests;
+			productReference = B1AA00000000000000000002 /* BinaTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		BD92C679C4740E65F96A7229 /* KeepAwakePower */ = {
@@ -450,7 +442,8 @@
 				FB30D1415C26550856A4C347 /* Sources */,
 				860EC7A7C15604E76182A500 /* Frameworks */,
 			);
-			buildRules = ();
+			buildRules = (
+			);
 			dependencies = (
 				D9AB28AD724A3952641B1A59 /* PBXTargetDependency */,
 			);
@@ -469,8 +462,8 @@
 				AF3E167EBC5C7B7338783E9A /* Sources */,
 				47C61A6745A67DE67E683E87 /* Frameworks */,
 			);
-			buildRules = ();
-			dependencies = ();
+			buildRules = (
+			);
 			fileSystemSynchronizedGroups = (
 				E36714892BC6EEFEF3260B74 /* KeepAwakeCore */,
 			);
@@ -489,11 +482,11 @@
 				LastSwiftUpdateCheck = 2710;
 				LastUpgradeCheck = 2720;
 				TargetAttributes = {
-					B128F23FB43D9287C9A203FA = {
-						TestTargetID = 552C6C7004515BEC7872EF5D;
-					};
 					1C3107B530865C1C007FCA2D = {
 						CreatedOnToolsVersion = 27.1;
+					};
+					B128F23FB43D9287C9A203FA = {
+						TestTargetID = 552C6C7004515BEC7872EF5D;
 					};
 					B1AA00000000000000000001 = {
 						CreatedOnToolsVersion = 27.1;
@@ -533,27 +526,23 @@
 			files = (
 			);
 		};
+		88A2CFA51EE8D488CB7E99F3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				0DA73FF5D8AA873E9EA8D8C9 /* InfoPlist.strings in Resources */,
+			);
+		};
 		B1AA00000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
 		};
-		88A2CFA51EE8D488CB7E99F3 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0DA73FF5D8AA873E9EA8D8C9 /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		CC76A1B4E2CB1140C6570D6C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				2DFF50B95B630EABE4CC42DA /* AppIcon.icon in Resources */,
 				971ECE1D5A06FBE8DFE621BC /* InfoPlist.strings in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -563,59 +552,46 @@
 			files = (
 			);
 		};
+		7904F3ACC6BB0CDD283737A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		A9ACD0421044224A661E72FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				276BC7F566DF3ED2AA782341 /* SetKeepAwakeIntent.swift in Sources */,
+			);
+		};
+		AF3E167EBC5C7B7338783E9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		B1AA00000000000000000004 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
 			);
 		};
-		7904F3ACC6BB0CDD283737A4 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A9ACD0421044224A661E72FC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				276BC7F566DF3ED2AA782341 /* SetKeepAwakeIntent.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AF3E167EBC5C7B7338783E9A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2BDC734E309E6F42BE137C8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
+			files = (
+			);
 		};
 		FB30D1415C26550856A4C347 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
+			files = (
+			);
 		};
 		FF110F116290ACD9EA9FE980 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				3FB47A0C98481FFDE9DFF1EC /* SetKeepAwakeIntent.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B1AA0000000000000000000B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 1C3107B530865C1C007FCA2D /* Bina */;
-			targetProxy = B1AA0000000000000000000A /* PBXContainerItemProxy */;
-		};
 		0EFF0F99E874DABAE582BE48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BD92C679C4740E65F96A7229 /* KeepAwakePower */;
@@ -646,6 +622,11 @@
 			target = BD92C679C4740E65F96A7229 /* KeepAwakePower */;
 			targetProxy = B2290BC7FE4112632A105E52 /* PBXContainerItemProxy */;
 		};
+		B1AA0000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1C3107B530865C1C007FCA2D /* Bina */;
+			targetProxy = B1AA0000000000000000000A /* PBXContainerItemProxy */;
+		};
 		D9AB28AD724A3952641B1A59 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = EFD9A96BDB767E220650CA7E /* KeepAwakeCore */;
@@ -675,6 +656,33 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		036B872EAFF2CE0D708034A2 /* Release configuration for PBXNativeTarget "KeepAwakePower" */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				DEFINES_MODULE = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		162CC91F108CC8681681CA04 /* Debug configuration for PBXNativeTarget "BinaMacTests" */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BINA_MAC_BUNDLE_IDENTIFIER).Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Contents/MacOS/Bina";
+			};
+			name = Debug;
+		};
 		1C3107C730865C1D007FCA2D /* Debug configuration for PBXNativeTarget "Bina" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -856,79 +864,6 @@
 			};
 			name = Release;
 		};
-		B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = SWZ4MK4TS3;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 7;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
-			};
-			name = Debug;
-		};
-		B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = SWZ4MK4TS3;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 7;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
-			};
-			name = Release;
-		};
-		036B872EAFF2CE0D708034A2 /* Release configuration for PBXNativeTarget "KeepAwakePower" */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				DEFINES_MODULE = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
-		};
-		162CC91F108CC8681681CA04 /* Debug configuration for PBXNativeTarget "BinaMacTests" */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				ENABLE_TESTABILITY = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(BINA_MAC_BUNDLE_IDENTIFIER).Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Contents/MacOS/Bina";
-			};
-			name = Debug;
-		};
 		1C89EAE1D4A3F0EF9E29EC2A /* Release configuration for PBXNativeTarget "KeepAwakeCore" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
@@ -1083,6 +1018,52 @@
 			};
 			name = Debug;
 		};
+		B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SWZ4MK4TS3;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
+			};
+			name = Debug;
+		};
+		B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SWZ4MK4TS3;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = cxlanyagege.BinaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Bina.app/Bina";
+			};
+			name = Release;
+		};
 		B678A72F5023294D20C8D5C2 /* Release configuration for PBXNativeTarget "BinaMacTests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
@@ -1099,6 +1080,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		130781E40F5C6410363AB8F6 /* Build configuration list for PBXNativeTarget "BinaMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				162CC91F108CC8681681CA04 /* Debug configuration for PBXNativeTarget "BinaMacTests" */,
+				B678A72F5023294D20C8D5C2 /* Release configuration for PBXNativeTarget "BinaMacTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		1C3107B130865C1C007FCA2D /* Build configuration list for PBXProject "Bina" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1115,30 +1104,12 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */,
-				B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */,
-			);
-			defaultConfigurationName = Release;
-		};
-		130781E40F5C6410363AB8F6 /* Build configuration list for PBXNativeTarget "BinaMacTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				162CC91F108CC8681681CA04 /* Debug configuration for PBXNativeTarget "BinaMacTests" */,
-				B678A72F5023294D20C8D5C2 /* Release configuration for PBXNativeTarget "BinaMacTests" */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		2B74860AFF94427F4F592E6C /* Build configuration list for PBXNativeTarget "KeepAwakeTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2FC613E5ABE65DA86F8AEC48 /* Debug configuration for PBXNativeTarget "KeepAwakeTests" */,
 				7C033B4FD7FC4F6364B4B4EA /* Release configuration for PBXNativeTarget "KeepAwakeTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		61728728BD9C62922946072F /* Build configuration list for PBXNativeTarget "BinaMacControls" */ = {
@@ -1147,7 +1118,6 @@
 				60A03C7FEBF6ADE9152DC85A /* Debug configuration for PBXNativeTarget "BinaMacControls" */,
 				757517CE0FA61F1DD5F30C69 /* Release configuration for PBXNativeTarget "BinaMacControls" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		7FFB9B2B30E51E363DB4698D /* Build configuration list for PBXNativeTarget "BinaMac" */ = {
@@ -1156,7 +1126,6 @@
 				88A10A0E722D15B1D27CEF9C /* Debug configuration for PBXNativeTarget "BinaMac" */,
 				7F0FBECEEB918705A958D4D7 /* Release configuration for PBXNativeTarget "BinaMac" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		88D00A6980E3400C60C17557 /* Build configuration list for PBXNativeTarget "KeepAwakePower" */ = {
@@ -1165,7 +1134,6 @@
 				8BE4CDBAB731708904DCAD85 /* Debug configuration for PBXNativeTarget "KeepAwakePower" */,
 				036B872EAFF2CE0D708034A2 /* Release configuration for PBXNativeTarget "KeepAwakePower" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		8C2B1FDDA7019E4BF62A3FA3 /* Build configuration list for PBXNativeTarget "KeepAwakeCore" */ = {
@@ -1174,7 +1142,14 @@
 				A6FC5DC998FA8F5E392C28E0 /* Debug configuration for PBXNativeTarget "KeepAwakeCore" */,
 				1C89EAE1D4A3F0EF9E29EC2A /* Release configuration for PBXNativeTarget "KeepAwakeCore" */,
 			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1AA00000000000000000007 /* Build configuration list for PBXNativeTarget "BinaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1AA00000000000000000008 /* Debug configuration for PBXNativeTarget "BinaTests" */,
+				B1AA00000000000000000009 /* Release configuration for PBXNativeTarget "BinaTests" */,
+			);
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

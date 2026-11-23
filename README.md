@@ -6,7 +6,7 @@ The first character is **Columbina from Genshin Impact**, retaining her characte
 
 ## macOS toolbox
 
-Keep Awake provides separate controls for display sleep and idle system sleep in the main window and Control menu. Control Center can toggle Keep Display Awake directly. See the [macOS guide](docs/macos/README.md) for installation, offline help, and development.
+Keep Awake provides separate controls for display sleep and idle system sleep in the main window and Control menu. Control Center can toggle Keep Display Awake directly. Application Management lets you browse local apps and inspect their version, location, and bundle identifier. See the [macOS guide](docs/macos/README.md) for installation, offline help, and development.
 
 ## visionOS project status
 

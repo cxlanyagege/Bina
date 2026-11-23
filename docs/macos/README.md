@@ -1,6 +1,6 @@
 # Bina for macOS
 
-Bina for macOS is a native toolbox. Its first tool, Keep Awake, controls idle display sleep and idle system sleep. The interface and built-in help use Simplified Chinese.
+Bina for macOS is a native toolbox with tools for managing idle sleep and browsing installed applications. The interface and built-in help use Simplified Chinese.
 
 ## Run locally
 
@@ -30,6 +30,12 @@ Closing the window leaves both settings active for the current app session. Reop
 The app delegate owns independent IOKit assertions for the display and system. Turning Prevent Idle Sleep on acquires a system assertion even while the display assertion is active. The system assertion then continues protecting the Mac from idle sleep after the display assertion is released. [IOKit assertion types](https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes)
 
 The app and WidgetKit extension both compile `SetKeepAwakeIntent.swift`. The intent runs in the containing app with dynamic foreground support and uses the app-owned display session. The extension reads the live display assertion. The app asks Control Center to reload when the display request changes. Failed IOKit transitions preserve the previous state. macOS removes the app's assertions if the process exits unexpectedly. [App Intent runtime behavior](https://developer.apple.com/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents)
+
+## Application Management
+
+Select Application Management in the tools sidebar to browse separately installed apps. Use the toolbar search field to filter by display name. Select a row to see its version, location, and bundle identifier on the App Details page. With the list focused, use the arrow keys to select a row and Return to open it. The toolbar Back button restores the search and list position.
+
+The tool reads the shared and current user's application folders and supplements them with Spotlight results from local volumes. The catalog omits macOS system apps based on their bundle locations. Separately installed Apple apps are eligible for discovery. Discovery outside the standard folders depends on Spotlight indexing and the file access macOS grants to Bina.
 
 ## Development
 

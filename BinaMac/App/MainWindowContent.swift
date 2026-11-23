@@ -3,6 +3,7 @@ import SwiftUI
 struct MainWindowContent: View {
     private enum Tool {
         case keepAwake
+        case appManagement
     }
 
     let keepAwake: KeepAwakeModel
@@ -15,6 +16,9 @@ struct MainWindowContent: View {
                     NavigationLink(value: Tool.keepAwake) {
                         Label("保持苏醒", systemImage: "cup.and.saucer")
                     }
+                    NavigationLink(value: Tool.appManagement) {
+                        Label("应用管理", systemImage: "square.grid.2x2")
+                    }
                 }
             }
             .listStyle(.sidebar)
@@ -23,6 +27,8 @@ struct MainWindowContent: View {
             switch selection {
             case .keepAwake, .none:
                 KeepAwakeView(model: keepAwake)
+            case .appManagement:
+                AppManagementView()
             }
         }
         .frame(minWidth: 480, minHeight: 320)
