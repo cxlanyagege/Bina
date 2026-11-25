@@ -121,7 +121,6 @@
 		C645126952871C91E8289000 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E2B5E9E5D15E0CEB66B96BDE /* KeepAwakeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepAwakeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF3FA171D9EB859499AC1A98 /* Controls.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Controls.entitlements; sourceTree = "<group>"; };
-		F6CA5BDE2C26E594E6D56BFE /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		FC48ECDCA768305DE30A97CC /* libKeepAwakeCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libKeepAwakeCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED84104F6FAE00E53223EC6 /* BinaMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BinaMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -291,7 +290,6 @@
 				8DFF933ACEE00ADCDB1886DA /* Info.plist */,
 				2ECDCCDCBC1C372E06789464 /* Controls-Info.plist */,
 				C1330E7BFC23C601DE8FEC16 /* InfoPlist.strings */,
-				F6CA5BDE2C26E594E6D56BFE /* App.entitlements */,
 				EF3FA171D9EB859499AC1A98 /* Controls.entitlements */,
 			);
 			path = Resources;
@@ -951,8 +949,7 @@
 			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = BinaMac/Resources/App.entitlements;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BinaMac/Resources/Info.plist;
@@ -972,8 +969,7 @@
 			baseConfigurationReference = 431429A78684AC98A1CBF78D /* Build.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = BinaMac/Resources/App.entitlements;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;

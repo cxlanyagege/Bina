@@ -8,13 +8,14 @@ struct MainWindowContent: View {
 
     let keepAwake: KeepAwakeModel
     @State private var selection: Tool? = .keepAwake
+    @State private var didRequestAppManagementDiskAccess = false
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section("工具") {
                     NavigationLink(value: Tool.keepAwake) {
-                        Label("保持苏醒", systemImage: "cup.and.saucer")
+                        Label("保持清醒", systemImage: "cup.and.saucer")
                     }
                     NavigationLink(value: Tool.appManagement) {
                         Label("应用管理", systemImage: "square.grid.2x2")
@@ -28,7 +29,7 @@ struct MainWindowContent: View {
             case .keepAwake, .none:
                 KeepAwakeView(model: keepAwake)
             case .appManagement:
-                AppManagementView()
+                AppManagementView(didRequestDiskAccess: $didRequestAppManagementDiskAccess)
             }
         }
         .frame(minWidth: 480, minHeight: 320)

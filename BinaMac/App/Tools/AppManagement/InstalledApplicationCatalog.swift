@@ -117,15 +117,16 @@ struct InstalledApplicationCatalog: Sendable {
             }
     }
 
-    private static func isSystemApplicationURL(_ url: URL) -> Bool {
+    static func isSystemApplicationURL(_ url: URL) -> Bool {
         let path = url.standardizedFileURL.path
         let dataVolume = "/System/Volumes/Data"
         // Use the logical path when Spotlight returns a location on the startup data volume.
         let logicalPath = path.hasPrefix(dataVolume + "/") ? String(path.dropFirst(dataVolume.count)) : path
-        return logicalPath.hasPrefix("/System/") || logicalPath.hasPrefix("/Library/Apple/System/")
+        return logicalPath == "/System" || logicalPath.hasPrefix("/System/")
+            || logicalPath == "/Library/Apple/System" || logicalPath.hasPrefix("/Library/Apple/System/")
     }
 
-    private static func isMissingFile(_ error: Error) -> Bool {
+    static func isMissingFile(_ error: Error) -> Bool {
         let error = error as NSError
         return
             (error.domain == NSCocoaErrorDomain

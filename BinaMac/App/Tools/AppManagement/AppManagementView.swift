@@ -2,10 +2,14 @@ import AppKit
 import SwiftUI
 
 struct AppManagementView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @Binding var didRequestDiskAccess: Bool
     @State private var catalog: InstalledApplicationCatalog?
     @State private var searchText = ""
     @State private var path: [InstalledApplication] = []
     @State private var selectedApplication: InstalledApplication?
+    @State private var hasRestrictedScanAccess = false
+    @State private var showSettingsError = false
     @FocusState private var isListFocused: Bool
     @AccessibilityFocusState(for: .voiceOver) private var focusedApplication: URL?
 
@@ -18,6 +22,9 @@ struct AppManagementView: View {
                     ProgressView("正在查找应用…")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if hasRestrictedScanAccess { diskAccessFooter }
             }
             .onChange(of: searchText) {
                 selectedApplication = nil
@@ -32,13 +39,30 @@ struct AppManagementView: View {
                 }
             }
             .navigationDestination(for: InstalledApplication.self) { application in
-                AppDetailsView(application: application)
+                let hasOtherCopies =
+                    catalog?.applications.contains {
+                        $0.id != application.id && $0.bundleIdentifier != nil
+                            && $0.bundleIdentifier?.lowercased() == application.bundleIdentifier?.lowercased()
+                    } == true
+                AppDetailsView(application: application, hasOtherCopies: hasOtherCopies) {
+                    if let catalog {
+                        self.catalog = InstalledApplicationCatalog(
+                            applications: catalog.applications.filter { $0.id != application.id },
+                            hasUnreadableLocations: catalog.hasUnreadableLocations)
+                    }
+                    path.removeAll()
+                }
             }
         }
         .onChange(of: path) { previousPath, path in
             if path.isEmpty, let application = previousPath.last {
-                selectedApplication = application
+                selectedApplication = catalog?.applications.contains(application) == true ? application : nil
             }
+        }
+        .alert("无法打开权限设置", isPresented: $showSettingsError) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("请在「系统设置 → 隐私与安全 → 完全磁盘访问权限」中添加 Bina。")
         }
         .task {
             let result = await InstalledApplicationCatalog.load()
@@ -46,6 +70,32 @@ struct AppManagementView: View {
                 catalog = result
             }
         }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            let isRestricted = await AppManagementDiskAccess.hasRestrictedScanAccess()
+            guard !Task.isCancelled else { return }
+            hasRestrictedScanAccess = isRestricted
+            if isRestricted && !didRequestDiskAccess { openDiskAccessSettings() }
+        }
+    }
+
+    private var diskAccessFooter: some View {
+        HStack {
+            Label("部分扫描位置受限。可检查 Bina 的完全磁盘访问权限。", systemImage: "lock")
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button("打开设置…", action: openDiskAccessSettings)
+                .controlSize(.small)
+                .help("打开完全磁盘访问权限设置")
+        }
+        .font(.footnote)
+        .padding(12)
+        .background(.bar)
+    }
+
+    private func openDiskAccessSettings() {
+        didRequestDiskAccess = true
+        showSettingsError = !AppManagementDiskAccess.openSettings()
     }
 
     @ViewBuilder
@@ -112,7 +162,7 @@ struct AppManagementView: View {
                     focusedApplication = selectedApplication.id
                 }
                 .safeAreaInset(edge: .bottom, alignment: .leading) {
-                    if catalog.hasUnreadableLocations {
+                    if catalog.hasUnreadableLocations && !hasRestrictedScanAccess {
                         Text("有些位置无法读取，应用列表可能不完整。")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -166,6 +216,10 @@ private struct ApplicationSearchField: NSViewRepresentable {
 
 private struct AppDetailsView: View {
     let application: InstalledApplication
+    let hasOtherCopies: Bool
+    let onUninstalled: () -> Void
+    @State private var showingUninstall = false
+    @State private var applicationWasMoved = false
 
     var body: some View {
         ScrollView {
@@ -190,6 +244,25 @@ private struct AppDetailsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle("应用详情")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("卸载…", systemImage: "trash") { showingUninstall = true }
+                    .labelStyle(.iconOnly)
+                    .help("卸载…")
+                    .disabled(application.url.path == Bundle.main.bundleURL.resolvingSymlinksInPath().path)
+            }
+        }
+        .sheet(isPresented: $showingUninstall, onDismiss: completeUninstall) {
+            AppUninstallSheet(application: application, hasOtherCopies: hasOtherCopies) {
+                applicationWasMoved = true
+            }
+        }
+    }
+
+    private func completeUninstall() {
+        if applicationWasMoved {
+            onUninstalled()
+        }
     }
 
     private func metadataRow(_ label: LocalizedStringKey, value: String?) -> some View {

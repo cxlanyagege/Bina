@@ -37,13 +37,21 @@ Select Application Management in the tools sidebar to browse separately installe
 
 The tool reads the shared and current user's application folders and supplements them with Spotlight results from local volumes. The catalog omits macOS system apps based on their bundle locations. Separately installed Apple apps are eligible for discovery. Discovery outside the standard folders depends on Spotlight indexing and the file access macOS grants to Bina.
 
+When macOS denies access to the user’s Cookies scan directory with `EPERM`, entering Application Management opens System Settings once per window session. If System Settings lands on the Privacy & Security overview, as it does in the macOS 27.3 beta, select Full Disk Access there. You can grant access, relaunch Bina if prompted, or continue browsing with the current permissions.
+
+In App Details, click the trash icon to review the application and its related files. Bina automatically searches `~/Library`, `/Library`, and `/private/var/db/receipts`. The scanner checks standard Library locations and bounded subfolders, including nested application support, synced preferences, cookies, diagnostic reports, and recent document lists. Candidates can match the main app or an embedded component's bundle identifier, a filename variant, an app name, a declared app group, or a launch job reference. A single list shows the icon, name, path, and available size of the application and each related item. Directory permissions and system-service protections can limit the scan even when Full Disk Access is enabled.
+
+Click a row to highlight it and double-click to reveal the item in Finder. The row context menu can also reveal the item or copy its path. All related items eligible to move start checked. Clear the checkbox for any item you want to keep. The footer shows the number of listed items, the number selected, and the combined size of the selection, including the application. If some selected sizes are unavailable, Bina shows a lower bound when calculable. Shared containers, background services, plug-ins, installer receipts, and files associated with other installed copies are listed for separate review. When Bina finds a dedicated uninstaller, it offers to reveal it in Finder.
+
+Choose Move to Trash to move the reviewed application and the selected related items. Bina validates each item again and moves the application before processing the related items. The result lists each move and any failures. macOS may require App Management permission to move an application. See [Privacy & Security settings on Mac](https://support.apple.com/en-bw/guide/mac-help/mchl211c911f/mac).
+
 ## Development
 
 Open `Bina.xcodeproj` and select the shared `BinaMac` scheme. `BinaMac/Build.xcconfig` configures the macOS SDK, Swift language mode, and deployment target for the Mac targets.
 
 - `BinaMac/App` owns the window, menu commands, help, and tool presentation. Add new tools under `App/Tools` and register them in `MainWindowContent`.
 - `KeepAwakeCore` owns the session state and assertion contract. `KeepAwakePower` implements the contract and status queries with IOKit. Both build as static libraries.
-- The Mac app embeds the `BinaMacControls` WidgetKit extension. Both targets use App Sandbox.
+- The Mac app is signed with hardened runtime for local use outside the Mac App Store. It runs outside App Sandbox, and the embedded `BinaMacControls` WidgetKit extension uses App Sandbox.
 - `BinaMacTests` uses the Mac app as its host. `KeepAwakeTests` tests the libraries and live IOKit assertions.
 
 ```sh

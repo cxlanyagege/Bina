@@ -28,9 +28,9 @@ struct KeepAwakeView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("保持苏醒")
+        .navigationTitle("保持清醒")
         .alert(
-            "无法更改苏醒设置",
+            "无法更改清醒设置",
             isPresented: Binding(
                 get: { model.errorMessage != nil },
                 set: { if !$0 { model.errorMessage = nil } }
@@ -46,7 +46,7 @@ struct KeepAwakeView: View {
         if model.keepsSystemAwake {
             return "阻止闲置睡眠"
         }
-        return model.keepsDisplayAwake ? "常亮期间保持苏醒" : "跟随系统设置"
+        return model.keepsDisplayAwake ? "常亮期间保持清醒" : "跟随系统设置"
     }
 }
 
