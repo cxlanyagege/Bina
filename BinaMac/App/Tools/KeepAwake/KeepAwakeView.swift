@@ -11,6 +11,9 @@ struct KeepAwakeView: View {
 
                 Toggle("不要入眠", isOn: $model.keepsSystemAwake)
                     .toggleStyle(.switch)
+
+                Toggle("缓慢刷新", isOn: $model.slowsRefreshRate)
+                    .toggleStyle(.switch)
             }
 
             Section {
@@ -58,6 +61,7 @@ struct KeepAwakeCommands: Commands {
         CommandMenu("控制") {
             Toggle("保持常亮", isOn: $model.keepsDisplayAwake)
             Toggle("不要入眠", isOn: $model.keepsSystemAwake)
+            Toggle("缓慢刷新", isOn: $model.slowsRefreshRate)
         }
     }
 }

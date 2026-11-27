@@ -22,14 +22,17 @@ The tool opens selected in the sidebar. The window and Control menu offer the sa
 
 - **Keep Display Awake** (`保持常亮`) keeps the display on and also prevents idle system sleep. It starts off.
 - **Prevent Idle Sleep** keeps the Mac awake while allowing the display to sleep. It starts off.
+- **Slow Refresh** (`缓慢刷新`) temporarily selects a 60 Hz mode on the main display. It starts off. The selected mode must match the current resolution, backing pixel size, pixel encoding, and display format. If a matching mode is unavailable, Bina leaves the display as it is and reports the failure.
 
-Closing the window leaves both settings active for the current app session. Reopen Bina to show its window. Quit Bina to release both requests. Manual sleep, lid closure, and system power or thermal policies are handled by macOS.
+Closing the window leaves these settings active for the current app session. Reopen Bina to show its window. Turning off Slow Refresh restores the display mode saved at activation. An intervening display mode change made outside Bina takes precedence. Quitting Bina releases both sleep assertions and ends the refresh-rate override. Manual sleep, lid closure, and system power or thermal policies are handled by macOS.
 
 ### Control Center and app lifetime
 
 The app delegate owns independent IOKit assertions for the display and system. Turning Prevent Idle Sleep on acquires a system assertion even while the display assertion is active. The system assertion then continues protecting the Mac from idle sleep after the display assertion is released. [IOKit assertion types](https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes)
 
 The app and WidgetKit extension both compile `SetKeepAwakeIntent.swift`. The intent runs in the containing app with dynamic foreground support and uses the app-owned display session. The extension reads the live display assertion. The app asks Control Center to reload when the display request changes. Failed IOKit transitions preserve the previous state. macOS removes the app's assertions if the process exits unexpectedly. [App Intent runtime behavior](https://developer.apple.com/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents)
+
+Slow Refresh uses an app-scoped Core Graphics configuration. The session records the display UUID and the exact original mode, including adaptive refresh modes. The app disallows mode switches in a mirroring set because a switch can affect other displays. macOS can end an app-scoped configuration when the process exits. [Core Graphics configuration scope](https://developer.apple.com/documentation/coregraphics/cgconfigureoption/forapponly)
 
 ## Application Management
 
