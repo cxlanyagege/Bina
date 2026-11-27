@@ -43,7 +43,9 @@ struct InstalledApplicationCatalogTests {
 
         #expect(catalog.applications.map(\.name) == ["Utility 2", "Utility 10", "Utility 10"])
         #expect(Set(catalog.applications.map(\.url.path)) == Set([first.path, second.path, separateCopy.path]))
-        #expect(catalog.applications.map(\.version) == ["2.1", "10", nil])
+        #expect(catalog.applications.map(\.version.shortVersion) == ["2.1", nil, nil])
+        #expect(catalog.applications.map(\.version.buildVersion) == ["42", "10", nil])
+        #expect(catalog.applications.map(\.version.displayVersion) == ["2.1", "10", nil])
         #expect(catalog.applications.allSatisfy { $0.bundleIdentifier == "test.Bina.ApplicationCatalog" })
         #expect(!catalog.hasUnreadableLocations)
     }
@@ -63,11 +65,50 @@ struct InstalledApplicationCatalogTests {
         #expect(!catalog.hasUnreadableLocations)
     }
 
+    @MainActor
+    @Test func refreshesForInstallVersionChangeAndRemovalInAnApplicationFolder() async throws {
+        let workspace = try makeWorkspace()
+        defer { deleteWorkspace(workspace) }
+        let applications = workspace.appending(path: "Applications", directoryHint: .isDirectory)
+        let checks = ApplicationUpdateChecks { application in
+            ApplicationUpdateResult(installedVersion: application.version, source: nil, outcome: .noUpdate(nil))
+        }
+        defer { checks.cancel() }
+
+        let model = AppManagementModel(
+            updateChecks: checks, changeDebounce: .milliseconds(80),
+            loadCatalog: { await InstalledApplicationCatalog.scan(directories: [applications], indexedURLs: []) })
+        model.isPresented = true
+        let observer = ApplicationDirectoryChanges(directories: [applications]) {
+            model.installedApplicationsDidChange()
+        }
+        defer { withExtendedLifetime(observer) {} }
+
+        await model.refreshIfNeeded()
+        #expect(model.catalog?.applications.isEmpty == true)
+
+        let nested = applications.appending(path: "Utilities", directoryHint: .isDirectory)
+        let app = try makeApplication("Example", in: nested, metadata: ["CFBundleShortVersionString": "1.0"])
+        try await waitForCatalog { model.catalog?.applications.map(\.url) == [app] }
+
+        let oldBundle = try #require(Bundle(url: app))
+        #expect(oldBundle.infoDictionary?["CFBundleShortVersionString"] as? String == "1.0")
+        defer { withExtendedLifetime(oldBundle) {} }
+        try makeApplication("Example", in: nested, metadata: ["CFBundleShortVersionString": "1.1"])
+        let rescanned = await InstalledApplicationCatalog.scan(directories: [applications], indexedURLs: [])
+        #expect(rescanned.applications.first?.version.displayVersion == "1.1")
+        try await waitForCatalog { model.catalog?.applications.first?.version.displayVersion == "1.1" }
+
+        try FileManager.default.moveItem(at: app, to: workspace.appending(path: "Moved.app"))
+        try await waitForCatalog { model.catalog?.applications.isEmpty == true }
+    }
+
     @Test func searchFiltersByDisplayNameWithoutChangingTheOriginalOrder() {
         let names = ["Alphabét", "Archive", "Café Alphabet"]
         let applications = names.map {
             InstalledApplication(
-                url: URL(filePath: "/Applications/\($0).app"), name: $0, version: nil, bundleIdentifier: nil)
+                url: URL(filePath: "/Applications/\($0).app"), name: $0,
+                version: ApplicationVersion(shortVersion: nil, buildVersion: nil), bundleIdentifier: nil)
         }
         let catalog = InstalledApplicationCatalog(applications: applications, hasUnreadableLocations: false)
 
@@ -91,6 +132,7 @@ struct InstalledApplicationCatalogTests {
         }
     }
 
+    @discardableResult
     private func makeApplication(_ name: String, in directory: URL, metadata: [String: String] = [:]) throws -> URL {
         let url = directory.appending(path: "\(name).app", directoryHint: .isDirectory)
         let contents = url.appending(path: "Contents", directoryHint: .isDirectory)
@@ -103,7 +145,16 @@ struct InstalledApplicationCatalogTests {
             ]
         ) { supplied, _ in supplied }
         let data = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
-        try data.write(to: contents.appending(path: "Info.plist"))
+        try data.write(to: contents.appending(path: "Info.plist"), options: .atomic)
         return url
+    }
+
+    @MainActor
+    private func waitForCatalog(_ condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now + .seconds(5)
+        while !condition() && ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        try #require(condition())
     }
 }

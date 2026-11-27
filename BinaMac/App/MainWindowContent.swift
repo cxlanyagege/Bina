@@ -9,6 +9,7 @@ struct MainWindowContent: View {
     let keepAwake: KeepAwakeModel
     @State private var selection: Tool? = .keepAwake
     @State private var didRequestAppManagementDiskAccess = false
+    @State private var appManagement = AppManagementModel()
 
     var body: some View {
         NavigationSplitView {
@@ -29,7 +30,7 @@ struct MainWindowContent: View {
             case .keepAwake, .none:
                 KeepAwakeView(model: keepAwake)
             case .appManagement:
-                AppManagementView(didRequestDiskAccess: $didRequestAppManagementDiskAccess)
+                AppManagementView(model: appManagement, didRequestDiskAccess: $didRequestAppManagementDiskAccess)
             }
         }
         .frame(minWidth: 480, minHeight: 320)

@@ -362,7 +362,8 @@ struct ApplicationUninstallTests {
                 .appending(path: UUID().uuidString, directoryHint: .isDirectory)
             application = InstalledApplication(
                 url: root.appending(path: "Demo.app", directoryHint: .isDirectory),
-                name: "Demo", version: "1.0", bundleIdentifier: "com.example.Demo")
+                name: "Demo", version: ApplicationVersion(shortVersion: "1.0", buildVersion: nil),
+                bundleIdentifier: "com.example.Demo")
             let info = [
                 "CFBundlePackageType": "APPL", "CFBundleIdentifier": "com.example.Demo", "CFBundleName": "Demo",
             ].merging(overrides) { _, value in value }

@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 import OSLog
 import UniformTypeIdentifiers
@@ -5,7 +6,7 @@ import UniformTypeIdentifiers
 struct InstalledApplication: Hashable, Identifiable, Sendable {
     let url: URL
     let name: String
-    let version: String?
+    let version: ApplicationVersion
     let bundleIdentifier: String?
 
     var id: URL { url }
@@ -17,17 +18,21 @@ struct InstalledApplicationCatalog: Sendable {
     let hasUnreadableLocations: Bool
 
     private static let logger = Logger(subsystem: "BinaMac", category: "ApplicationCatalog")
-    private static let packageExtensions: Set<String> = ["app", "appex", "bundle", "framework", "plugin", "xpc"]
+    static let packageExtensions: Set<String> = ["app", "appex", "bundle", "framework", "plugin", "xpc"]
 
-    @MainActor
-    static func load() async -> Self {
-        let indexedURLs = await indexedApplicationURLs()
+    static var applicationDirectories: [URL] {
         let fileManager = FileManager.default
         var directories = fileManager.urls(for: .applicationDirectory, in: .localDomainMask)
         if let home = fileManager.homeDirectory(forUser: NSUserName()) {
             directories.append(home.appending(path: "Applications", directoryHint: .isDirectory))
         }
-        return await scan(directories: directories, indexedURLs: indexedURLs)
+        return directories
+    }
+
+    @MainActor
+    static func load() async -> Self {
+        let indexedURLs = await indexedApplicationURLs()
+        return await scan(directories: applicationDirectories, indexedURLs: indexedURLs)
     }
 
     func matching(_ searchText: String) -> [InstalledApplication] {
@@ -74,9 +79,11 @@ struct InstalledApplicationCatalog: Sendable {
                 let values = try url.resourceValues(
                     forKeys: [.isDirectoryKey, .isApplicationKey, .localizedNameKey, .fileResourceIdentifierKey]
                 )
-                guard values.isDirectory == true, let bundle = Bundle(url: url), let info = bundle.infoDictionary,
+                // Read the current plist even if a previous version of this bundle is cached at the same URL.
+                guard values.isDirectory == true,
+                    let info = CFBundleCopyInfoDictionaryInDirectory(url as CFURL) as? [String: Any],
                     info["CFBundlePackageType"] as? String == "APPL"
-                        || (values.isApplication == true && bundle.executableURL != nil)
+                        || (values.isApplication == true && Bundle(url: url)?.executableURL != nil)
                 else { continue }
                 if let identifier = values.fileResourceIdentifier as? NSObject,
                     !fileIdentifiers.insert(identifier).inserted
@@ -86,10 +93,10 @@ struct InstalledApplicationCatalog: Sendable {
 
                 let displayName = values.localizedName ?? url.lastPathComponent
                 let name = displayName.lowercased().hasSuffix(".app") ? String(displayName.dropLast(4)) : displayName
+                let metadata = ApplicationBundleMetadata(info: info)
                 applications.append(
                     InstalledApplication(
-                        url: url, name: name, version: version(in: info),
-                        bundleIdentifier: nonemptyString(info["CFBundleIdentifier"])
+                        url: url, name: name, version: metadata.version, bundleIdentifier: metadata.bundleIdentifier
                     ))
             } catch {
                 if !isMissingFile(error) {
@@ -106,7 +113,7 @@ struct InstalledApplicationCatalog: Sendable {
         return Self(applications: applications, hasUnreadableLocations: hasUnreadableLocations)
     }
 
-    private static func isListableApplicationURL(_ url: URL) -> Bool {
+    static func isListableApplicationURL(_ url: URL) -> Bool {
         guard url.isFileURL, url.pathExtension.caseInsensitiveCompare("app") == .orderedSame,
             !isSystemApplicationURL(url)
         else { return false }
@@ -117,13 +124,17 @@ struct InstalledApplicationCatalog: Sendable {
             }
     }
 
-    static func isSystemApplicationURL(_ url: URL) -> Bool {
+    static func logicalPath(of url: URL) -> String {
         let path = url.standardizedFileURL.path
         let dataVolume = "/System/Volumes/Data"
         // Use the logical path when Spotlight returns a location on the startup data volume.
-        let logicalPath = path.hasPrefix(dataVolume + "/") ? String(path.dropFirst(dataVolume.count)) : path
-        return logicalPath == "/System" || logicalPath.hasPrefix("/System/")
-            || logicalPath == "/Library/Apple/System" || logicalPath.hasPrefix("/Library/Apple/System/")
+        return path.hasPrefix(dataVolume + "/") ? String(path.dropFirst(dataVolume.count)) : path
+    }
+
+    static func isSystemApplicationURL(_ url: URL) -> Bool {
+        let path = logicalPath(of: url)
+        return path == "/System" || path.hasPrefix("/System/")
+            || path == "/Library/Apple/System" || path.hasPrefix("/Library/Apple/System/")
     }
 
     static func isMissingFile(_ error: Error) -> Bool {
@@ -134,24 +145,18 @@ struct InstalledApplicationCatalog: Sendable {
             || (error.domain == NSPOSIXErrorDomain && error.code == Int(ENOENT))
     }
 
-    private static func version(in info: [String: Any]) -> String? {
-        nonemptyString(info["CFBundleShortVersionString"]) ?? nonemptyString(info["CFBundleVersion"])
-    }
-
-    private static func nonemptyString(_ value: Any?) -> String? {
-        guard let value = value as? String, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return nil
-        }
-        return value
-    }
-
     @MainActor
-    private static func indexedApplicationURLs() async -> [URL] {
+    static func makeIndexQuery() -> NSMetadataQuery {
         let query = NSMetadataQuery()
         query.searchScopes = [NSMetadataQueryLocalComputerScope]
         query.predicate = NSPredicate(
             format: "%K == %@", NSMetadataItemContentTypeTreeKey, UTType.applicationBundle.identifier)
+        return query
+    }
 
+    @MainActor
+    private static func indexedApplicationURLs() async -> [URL] {
+        let query = makeIndexQuery()
         let (completion, signal) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
         let observer = NotificationCenter.default.addObserver(
             forName: .NSMetadataQueryDidFinishGathering, object: query, queue: nil

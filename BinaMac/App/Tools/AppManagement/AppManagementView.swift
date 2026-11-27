@@ -3,15 +3,19 @@ import SwiftUI
 
 struct AppManagementView: View {
     @Environment(\.scenePhase) private var scenePhase
+    let model: AppManagementModel
     @Binding var didRequestDiskAccess: Bool
-    @State private var catalog: InstalledApplicationCatalog?
     @State private var searchText = ""
     @State private var path: [InstalledApplication] = []
     @State private var selectedApplication: InstalledApplication?
     @State private var hasRestrictedScanAccess = false
     @State private var showSettingsError = false
+    @State private var showsUpdates = false
+    @State private var showsUninstall = false
     @FocusState private var isListFocused: Bool
     @AccessibilityFocusState(for: .voiceOver) private var focusedApplication: URL?
+
+    private var catalog: InstalledApplicationCatalog? { model.catalog }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -33,42 +37,64 @@ struct AppManagementView: View {
             .toolbar {
                 if path.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
+                        updatesButton
+                    }
+
+                    ToolbarSpacer(.fixed, placement: .primaryAction)
+
+                    ToolbarItem(placement: .primaryAction) {
                         ApplicationSearchField(text: $searchText)
                             .frame(width: 160)
                     }
                 }
             }
             .navigationDestination(for: InstalledApplication.self) { application in
+                let current = currentCopy(of: application) ?? application
                 let hasOtherCopies =
                     catalog?.applications.contains {
-                        $0.id != application.id && $0.bundleIdentifier != nil
-                            && $0.bundleIdentifier?.lowercased() == application.bundleIdentifier?.lowercased()
+                        $0.id != current.id && $0.bundleIdentifier != nil
+                            && $0.bundleIdentifier?.lowercased() == current.bundleIdentifier?.lowercased()
                     } == true
-                AppDetailsView(application: application, hasOtherCopies: hasOtherCopies) {
-                    if let catalog {
-                        self.catalog = InstalledApplicationCatalog(
-                            applications: catalog.applications.filter { $0.id != application.id },
-                            hasUnreadableLocations: catalog.hasUnreadableLocations)
+                AppDetailsView(
+                    application: current, hasOtherCopies: hasOtherCopies, updateChecks: model.updateChecks,
+                    showingUninstall: $showsUninstall
+                ) { applicationWasMoved in
+                    if applicationWasMoved {
+                        if FileManager.default.fileExists(atPath: current.url.path) {
+                            model.installedApplicationsDidChange()
+                        } else {
+                            model.remove(current)
+                        }
+                        path.removeAll()
+                    } else {
+                        closeDetailsIfMissing()
                     }
-                    path.removeAll()
                 }
             }
         }
         .onChange(of: path) { previousPath, path in
             if path.isEmpty, let application = previousPath.last {
-                selectedApplication = catalog?.applications.contains(application) == true ? application : nil
+                selectedApplication = currentCopy(of: application)
             }
+        }
+        .onChange(of: catalog?.applications) {
+            if let selectedApplication { self.selectedApplication = currentCopy(of: selectedApplication) }
+            // A scan may observe the removal before the user has read the uninstall result.
+            if !showsUninstall { closeDetailsIfMissing() }
         }
         .alert("无法打开权限设置", isPresented: $showSettingsError) {
             Button("好", role: .cancel) {}
         } message: {
             Text("请在「系统设置 → 隐私与安全 → 完全磁盘访问权限」中添加 Bina。")
         }
-        .task {
-            let result = await InstalledApplicationCatalog.load()
-            if !Task.isCancelled {
-                catalog = result
-            }
+        .onAppear {
+            model.isPresented = true
+            model.startObservingChangesIfNeeded()
+        }
+        .onDisappear { model.isPresented = false }
+        .task(id: path.isEmpty) {
+            guard path.isEmpty else { return }
+            await model.refreshIfNeeded()
         }
         .task(id: scenePhase) {
             guard scenePhase == .active else { return }
@@ -76,6 +102,24 @@ struct AppManagementView: View {
             guard !Task.isCancelled else { return }
             hasRestrictedScanAccess = isRestricted
             if isRestricted && !didRequestDiskAccess { openDiskAccessSettings() }
+        }
+    }
+
+    private func currentCopy(of application: InstalledApplication) -> InstalledApplication? {
+        catalog?.applications.first { $0.id == application.id && $0.bundleIdentifier == application.bundleIdentifier }
+    }
+
+    private func closeDetailsIfMissing() {
+        if let application = path.last, currentCopy(of: application) == nil { path.removeAll() }
+    }
+
+    private var updatesButton: some View {
+        let isChecking = catalog == nil || model.isRefreshing || model.updateChecks.isChecking
+        return ApplicationUpdateButton(title: "应用更新", isChecking: isChecking) {
+            showsUpdates = true
+        }
+        .popover(isPresented: $showsUpdates, arrowEdge: .top) {
+            ApplicationUpdatesPopover(scope: .catalog(model), checks: model.updateChecks)
         }
     }
 
@@ -217,11 +261,15 @@ private struct ApplicationSearchField: NSViewRepresentable {
 private struct AppDetailsView: View {
     let application: InstalledApplication
     let hasOtherCopies: Bool
-    let onUninstalled: () -> Void
-    @State private var showingUninstall = false
+    let updateChecks: ApplicationUpdateChecks
+    @Binding var showingUninstall: Bool
+    let onUninstallDismissed: (Bool) -> Void
     @State private var applicationWasMoved = false
+    @State private var showsUpdates = false
 
     var body: some View {
+        let updateResult = updateChecks.results[application.id]
+        let isCheckingForUpdates = updateChecks.isChecking(application)
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Label {
@@ -233,7 +281,8 @@ private struct AppDetailsView: View {
                 .accessibilityAddTraits(.isHeader)
 
                 VStack(alignment: .leading, spacing: 0) {
-                    metadataRow("版本", value: application.version)
+                    let installedVersion = updateResult?.installedVersion ?? application.version
+                    metadataRow("已安装版本", value: formattedVersion(installedVersion))
                     Divider()
                     metadataRow("位置", value: application.url.path)
                     Divider()
@@ -245,7 +294,14 @@ private struct AppDetailsView: View {
         }
         .navigationTitle("应用详情")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                ApplicationUpdateButton(title: "应用更新", isChecking: isCheckingForUpdates) {
+                    showsUpdates = true
+                    if updateChecks.results[application.id] == nil { updateChecks.check(application) }
+                }
+                .popover(isPresented: $showsUpdates, arrowEdge: .top) {
+                    ApplicationUpdatesPopover(scope: .application(application), checks: updateChecks)
+                }
                 Button("卸载…", systemImage: "trash") { showingUninstall = true }
                     .labelStyle(.iconOnly)
                     .help("卸载…")
@@ -259,10 +315,19 @@ private struct AppDetailsView: View {
         }
     }
 
-    private func completeUninstall() {
-        if applicationWasMoved {
-            onUninstalled()
+    private func formattedVersion(_ version: ApplicationVersion) -> String? {
+        if let shortVersion = version.shortVersion, let buildVersion = version.buildVersion,
+            shortVersion != buildVersion
+        {
+            return String(localized: "\(shortVersion)（构建号 \(buildVersion)）")
         }
+        return version.displayVersion
+    }
+
+    private func completeUninstall() {
+        let wasMoved = applicationWasMoved
+        applicationWasMoved = false
+        onUninstallDismissed(wasMoved)
     }
 
     private func metadataRow(_ label: LocalizedStringKey, value: String?) -> some View {
@@ -280,7 +345,7 @@ private struct AppDetailsView: View {
     }
 }
 
-private struct InstalledApplicationIcon: View {
+struct InstalledApplicationIcon: View {
     let application: InstalledApplication
     let size: CGFloat
 
